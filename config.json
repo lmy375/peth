@@ -1,0 +1,26 @@
+{
+    "eth": [
+        "https://rpc.ankr.com/eth",
+        "https://api.etherscan.io/api?"
+    ],
+    "bsc": [
+        "https://rpc.ankr.com/bsc",
+        "https://api.bscscan.com/api?"
+    ],
+    "heco": [
+        "https://http-mainnet.hecochain.com",
+        "https://api.hecoinfo.com/api?"
+    ],
+    "matic": [
+        "https://rpc.ankr.com/polygon",
+        "https://api.polygonscan.com/api?"
+    ],
+    "avax": [
+        "https://rpc.ankr.com/avalanche",
+        "https://api.snowtrace.io/api?"
+    ],
+    "ftm": [
+        "https://rpc.ankr.com/fantom",
+        "https://api.ftmscan.com/api?"
+    ]
+}
