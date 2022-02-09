@@ -1,6 +1,4 @@
 import time
-import json
-
 import requests
 
 from config import DEFAULT_API_INTERVAL

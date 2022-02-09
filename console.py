@@ -2,6 +2,9 @@ import cmd
 import json
 
 from sigs import ERC20Signatures
+from utils import get_4byte_sig
+from code import Code
+from opcodes import OpCode
 
 class PethConsole(cmd.Cmd):
 
@@ -27,6 +30,45 @@ class PethConsole(cmd.Cmd):
         except Exception as e:
             print("Error: ", e)
             return False # don't stop
+
+    def do_4byte(self, arg):
+        """
+        4byte <hex_sig> : query text signature in 4byte database.
+        """
+        if not arg:
+            print("4byte <hex_sig> :query text signature in 4byte database.")
+            return
+
+        sigs = get_4byte_sig(arg)
+        if sigs:
+            print('\n'.join(sigs))
+        else:
+            print("Not found in 4byte.directory.")
+
+    def do_abi4byte(self, arg):
+        """
+        abi4byte <addr> : disassemble the code and print all signatures.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        bytes_code = bytes(self.web3.eth.get_code(addr))
+        code = Code(bytes_code)
+        
+        while True:
+            ins = code.next_instruction()
+            
+            # Only search the first basic block.
+            if ins.op.is_jumpdest:
+                break
+
+            if ins.op is OpCode.PUSH4:
+                if ins.opnd == 0xffffffff:
+                    continue
+
+                sig = hex(ins.opnd)
+                sigs = get_4byte_sig(sig)
+                sigs = sigs[::-1]
+                print(sig, ', '.join(sigs))
+
 
     def do_balance(self, arg):
         """

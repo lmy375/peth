@@ -22,5 +22,10 @@
     "ftm": [
         "https://rpc.ankr.com/fantom",
         "https://api.ftmscan.com/api?"
+    ],
+    "metis": [
+        "https://andromeda.metis.io/?owner=1088",
+        "https://andromeda-explorer.metis.io/api?"
     ]
+
 }

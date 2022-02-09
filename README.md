@@ -84,14 +84,23 @@ Documented commands (type help <topic>):
 ========================================
 balance  bye  contract  erc20  exit  help  nonce  number  quit  storage
 
+# print current block number
 peth > number
 14158806
+
+# print balance
 peth > balance 0xdAC17F958D2ee523a2206206994597C13D831ec7
 1 Wei( 0.0000 Ether)
+
+# print nonce
 peth > nonce 0xdAC17F958D2ee523a2206206994597C13D831ec7
 1
+
+# print specified slot of storage
 peth > storage 0xdAC17F958D2ee523a2206206994597C13D831ec7 1
 0x000000000000000000000000000000000000000000000000008d7b18430396d4
+
+# print contract information of Etherscan.
 peth > contract 0xdAC17F958D2ee523a2206206994597C13D831ec7
   SourceCode :   pragma solidity ^0.4.17;
   ABI :  [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string ...
@@ -151,13 +160,60 @@ peth > contract 0xdAC17F958D2ee523a2206206994597C13D831ec7
   event Transfer(address from,address to,uint256 value) 
   event Pause() 
   event Unpause() 
+
+# print ERC20 information (Call ERC20 view methods)
 peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7
 totalSupply() -> (uint256) => 39823315849942740
 name() -> (string) => Tether USD
 symbol() -> (string) => USDT
 decimals() -> (uint8) => 6
+
+# Call ERC20 method
 peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 balanceOf 0xdAC17F958D2ee523a2206206994597C13D831ec7
 644096679570
+
+# Query 4byte database.
+peth > 4byte 0x70a08231
+passphrase_calculate_transfer(uint64,address)
+branch_passphrase_public(uint256,bytes8)
+balanceOf(address)
+
+# Extract selector dispatching code and print signatures.
+peth > abi4byte 0xdAC17F958D2ee523a2206206994597C13D831ec7
+0x6fdde03 name(), message_hour(uint256,int8,uint16,bytes32)
+0x753c30c deprecate(address)
+0x95ea7b3 approve(address,uint256), sign_szabo_bytecode(bytes16,uint128)
+0xe136b19 deprecated()
+0xecb93c0 addBlackList(address)
+0x18160ddd totalSupply(), voting_var(address,uint256,int128,int128)
+0x23b872dd transferFrom(address,address,uint256), gasprice_bit_ether(int128)
+0x26976e3f upgradedAddress()
+0x27e235e3 balances(address)
+0x313ce567 decimals(), available_assert_time(uint16,uint64)
+0x35390714 maximumFee()
+0x3eaaf86b _totalSupply()
+0x3f4ba83a unpause()
+0x59bf1abe getBlackListStatus(address)
+0x5c658165 allowed(address,address)
+0x5c975abb paused()
+0x70a08231 balanceOf(address), branch_passphrase_public(uint256,bytes8), passphrase_calculate_transfer(uint64,address)
+0x8456cb59 pause()
+0x893d20e8 getOwner()
+0x8da5cb5b owner(), ideal_warn_timed(uint256,uint128)
+0x95d89b41 symbol(), link_classic_internal(uint64,int64)
+0xa9059cbb transfer(address,uint256), many_msg_babbage(bytes1), transfer(bytes4[9],bytes5[6],int48[11]), func_2093253501(bytes)
+0xc0324c77 setParams(uint256,uint256)
+0xcc872b66 issue(uint256)
+0xdb006a75 redeem(uint256)
+0xdd62ed3e allowance(address,address), remove_good(uint256[],bytes8,bool), _func_5437782296(address,address)
+0xdd644f72 basisPointsRate()
+0xe47d6060 isBlackListed(address)
+0xe4997dc5 removeBlackList(address)
+0xe5b5019a MAX_UINT()
+0xf2fde38b transferOwnership(address)
+0xf3bdc228 destroyBlackFunds(address)
+
+
 peth > exit
 bye!
 ```
