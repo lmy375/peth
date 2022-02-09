@@ -55,13 +55,15 @@ class PethConsole(cmd.Cmd):
         
         while True:
             ins = code.next_instruction()
-            
-            # Only search the first basic block.
-            if ins.op.is_jumpdest:
-                break
 
+            if ins is None:
+                break
+            
             if ins.op is OpCode.PUSH4:
                 if ins.opnd == 0xffffffff:
+                    continue
+
+                if ins.opnd < 0x00ffffff:
                     continue
 
                 sig = hex(ins.opnd)
