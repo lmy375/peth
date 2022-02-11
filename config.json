@@ -26,6 +26,10 @@
     "metis": [
         "https://andromeda.metis.io/?owner=1088",
         "https://andromeda-explorer.metis.io/api?"
+    ],
+    "arbi": [
+        "https://arb1.arbitrum.io/rpc",
+        "https://api.arbiscan.io/api?"
     ]
 
 }

@@ -4,6 +4,7 @@ import eth_abi
 
 from scan import ScanAPI
 from sigs import Signature, Signatures
+from graph import ContractRelationGraph
 
 class Peth(object):
 
@@ -80,3 +81,14 @@ class Peth(object):
                 print("Error in parse return data", e)
                 return r
         return r
+
+    def print_contract_graph(self, addr, include_view=False):
+        addr = Web3.toChecksumAddress(addr)
+        graph = ContractRelationGraph(addr, self)
+        graph.visit(addr, include_view)
+        graph.print_assets()
+        print("=====================")
+        print(graph.dump())
+        print("=====================")
+        print("Open http://relation-graph.com/#/options-tools and paste the json.")
+

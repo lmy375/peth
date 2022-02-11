@@ -68,6 +68,12 @@ def get_args():
         help="Start peth console.",
     )
 
+    parser.add_argument(
+        "--graph",
+        action="store_true",
+        help="Generate contract graph.",
+    )
+
     args = parser.parse_args()
     return args
 
@@ -96,6 +102,9 @@ def main():
         sig_or_name = args.eth_call[0]
         arg_list = args.eth_call[1:]
         print(peth.eth_call(sender, to, sig_or_name, arg_list))
+    elif args.graph:
+        addr = args.to
+        peth.print_contract_graph(addr)
 
     if args.console:
         c = PethConsole(peth)

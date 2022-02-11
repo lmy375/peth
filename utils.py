@@ -30,4 +30,3 @@ def get_4byte_sig(sig, only_one=False):
             return None
     else:
         return [i["text_signature"] for i in results]
-

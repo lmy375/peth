@@ -102,6 +102,20 @@ class PethConsole(cmd.Cmd):
         """
         print(self.web3.eth.get_block_number())
 
+    def do_code(self, arg):
+        """
+        code <address> : Get code of address.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        print(self.web3.eth.get_code(addr).hex())
+
+    def do_disasm(self, arg):
+        """
+        disasm <address> : Get assembly code of address.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        print(Code.disasm(self.web3.eth.get_code(addr)))
+
     def do_contract(self, arg):
         """
         contract <address> : print contract information (from Etherscan).
@@ -117,16 +131,23 @@ class PethConsole(cmd.Cmd):
                 typ = abi["type"]
                 name = abi.get("name", "")
                 mut = abi.get("stateMutability", "")
-                args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
-                func_sig = f"{typ} {name}({args_sig})"
+                func_sig = f"{typ} {name}"
+                if "inputs" in abi:
+                    args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
+                    func_sig += f"({args_sig})"
+                else:
+                    func_sig += "()"
+
                 if "outputs" in abi:
                     return_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["outputs"])
                     func_sig += f" returns({return_sig})"
+               
                 func_sig += " " + mut
                 print(' ', func_sig)
 
         except Exception as e:
-            print(abi)
+            print(e)
+            print(abis)
 
     def do_erc20(self, arg):
         """
@@ -161,6 +182,20 @@ class PethConsole(cmd.Cmd):
                     args[2:]
             )
             print(value)
+
+    def do_ERC1967(self, arg):
+        addr = self.web3.toChecksumAddress(arg)
+        print("Implementation", self.web3.eth.get_storage_at(addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex())
+        print("Admin", self.web3.eth.get_storage_at(addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex())
+        print("Rollback", self.web3.eth.get_storage_at(addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
+        print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
+
+    def do_graph(self, arg):
+        """
+        Print contract relation graph.
+        """
+        if arg:
+            self.peth.print_contract_graph(arg)
 
     def do_bye(self, arg):
         """
