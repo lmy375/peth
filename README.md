@@ -252,6 +252,13 @@ Written to diff/MasterChef_ProtofiMasterChef_0.28.html
 peth > sh open diff/BEP20_ProtofiERC20_0.68.html
 peth > sh open diff/MasterChef_ProtofiMasterChef_0.28.html
 
+# Diff with UniswapV2 factory, pair, router. 
+peth > diff uni bsc 0 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 0
+Written to diff/uni_factory/UniswapV2ERC20_PancakeERC20_0.99.html
+Written to diff/uni_factory/UniswapV2Pair_PancakePair_0.98.html
+Written to diff/uni_factory/UniswapV2Factory_PancakeFactory_0.92.html
+Written to diff/uni_pair/UniswapV2ERC20_PancakeERC20_0.99.html
+Written to diff/uni_pair/UniswapV2Pair_PancakePair_0.98.html
 
 # Happy end.
 peth > exit

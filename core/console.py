@@ -7,7 +7,7 @@ from eth.utils import get_4byte_sig
 from eth.bytecode import Code
 from eth.opcodes import OpCode
 from eth.scan import ScanAPI
-from util.source import ContractSource
+from util import diff
 
 from .config import config
 
@@ -20,6 +20,11 @@ class PethConsole(cmd.Cmd):
         super().__init__()
         self.peth = peth
         self.web3 = peth.web3
+        self._debug = False
+
+    def do_debug(self, arg):
+        self._debug = not self._debug
+        print("debug set to", self._debug)
 
     def _print_json(self, d):
         for k, v in d.items():
@@ -34,6 +39,8 @@ class PethConsole(cmd.Cmd):
             return super().onecmd(line)
         except Exception as e:
             print("Error: ", e)
+            if self._debug:
+                raise Exception from e
             return False # don't stop
 
     def do_eth_call(self, arg):
@@ -45,7 +52,7 @@ class PethConsole(cmd.Cmd):
         to = args[0]
         sig_or_name = args[1]
         arg_list = args[2:]
-        print(self.peth.eth_call(sender, to, sig_or_name, arg_list))
+        print(self.peth.eth_call(to, sig_or_name, arg_list, sender))
 
     def do_rpc_call(self, arg):
         """
@@ -189,23 +196,14 @@ class PethConsole(cmd.Cmd):
                 "decimals() -> (uint8)",
             ]
             for sig in sigs:
-                value = self.peth.eth_call(
-                    "0x0000000000000000000000000000000000000000",
-                    arg,
-                    sig
-                )
+                value = self.peth.eth_call(arg, sig)
                 print(sig, '=>', value)
         else:
             addr = args[0]
             func = args[1]
             sig = ERC20Signatures.find_by_name(func)
             assert sig, "Unknown ERC20 view function"
-            value = self.peth.eth_call(
-                    "0x0000000000000000000000000000000000000000",
-                    addr,
-                    sig,
-                    args[2:]
-            )
+            value = self.peth.eth_call(addr, sig, args[2:])
             print(value)
 
     def do_proxy(self, arg):
@@ -230,38 +228,34 @@ class PethConsole(cmd.Cmd):
         """
         diff <addr1> <addr2>
         diff <chain1> <addr1> <chain2> <addr2>
-        diff <pattern> <chain> <addr>
+        
+        diff uni <chain> <factory> <pair> <router>
+e
+        # If address is unknown, use 0 as placeholder.
+        # eg:
+        diff uni bsc 0 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 0
         """
         args = arg.split()
+        if args[0] in diff.PATTERNS:
+            args = [None if i == '0' else i for i in args]
+            diff.diff_pattern(*args)
+            return
 
         if len(args) == 2:
             addr1 = args[0]
             addr2 = args[1]
-            src1 = self.peth.scan.get_contract_info(addr1)["SourceCode"]
-            src2 = self.peth.scan.get_contract_info(addr2)["SourceCode"]
+            src1 = self.peth.scan.get_source(addr1)
+            src2 = self.peth.scan.get_source(addr2)
+            diff.diff_source(src1, src2)
         elif len(args) == 4:
             chain1 = args[0]
             addr1 = args[1]
             chain2 = args[2]
             addr2 = args[3]
-            assert chain1 in config.keys(), f"Invalid chain1 {chain1}"
-            assert chain2 in config.keys(), f"Invalid chain1 {chain2}"
-            scan1 = ScanAPI.get_or_create(config[chain1][1])
-            scan2 = ScanAPI.get_or_create(config[chain2][1])
-            src1 = scan1.get_contract_info(addr1)["SourceCode"]
-            src2 = scan2.get_contract_info(addr2)["SourceCode"]
-        elif len(args) == 3:
-            pattern = args[0]
-
-            
+            diff.diff_chain_src(chain1, addr1, chain2, addr2)
         else:
             print('[!] Invalid args.')
             return
-        
-        src1 = ContractSource(src1)
-        src2 = ContractSource(src2)
-
-        src1.compare(src2)    
 
     def do_sh(self, arg):
         """

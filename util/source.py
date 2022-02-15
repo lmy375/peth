@@ -75,7 +75,10 @@ class ContractSource(object):
         open(output_filename + '.html', 'w').write(buf)
         print("Written to " + output_filename+'.html')
 
-    def compare(self, other, output='diff'):
+    def compare(self, other, output=None):
+
+        if output is None:
+            output = 'diff'
 
         if not os.path.isdir(output):
             os.makedirs(output)

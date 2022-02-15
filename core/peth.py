@@ -2,12 +2,17 @@
 from web3 import Web3
 import eth_abi
 
+from core.config import config
 from eth.scan import ScanAPI
 from eth.sigs import Signature, Signatures
+from eth.utils import process_args
 
 from util.graph import ContractRelationGraph
 
+
 class Peth(object):
+
+    cache = {}
 
     def __init__(self, rpc_url, scan_url) -> None:
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
@@ -28,17 +33,8 @@ class Peth(object):
             return "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
         return r
 
-    def format_address_args(self, args):
-        r = []
-        for i in args:
-            if i.startswith('0x') and len(i) == 42:
-                r.append(Web3.toChecksumAddress(i))
-            else:
-                r.append(i)
-        return r
-
-
-    def eth_call(self, sender, to, sig_or_name, args=[], **kwargs):
+    def eth_call(self, to, sig_or_name, args=[], sender=None, **kwargs):
+        args = process_args(args)
         if type(sig_or_name) is str:
             if '(' in sig_or_name:
                 sig = Signature.from_sig(sig_or_name)
@@ -51,10 +47,12 @@ class Peth(object):
         else:
             assert False, f"Invalid sig_or_name {sig_or_name}"
 
-        args = self.format_address_args(args)
         data = sig.selector
         if sig.args_sig and sig.args_sig != "()":
             data += eth_abi.encode_single(sig.args_sig, args)
+        
+        if not sender:
+            sender = '0x0000000000000000000000000000000000000000'
         
         tx = {
             "from": sender,
@@ -92,3 +90,10 @@ class Peth(object):
         print(graph.dump())
         print("=====================")
         print("Open http://relation-graph.com/#/options-tools and paste the json.")
+
+    @classmethod
+    def get_or_create(cls, chain):
+        assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
+        if chain not in cls.cache:
+            cls.cache[chain] = cls(*config[chain])
+        return cls.cache[chain]

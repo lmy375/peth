@@ -92,7 +92,7 @@ def main():
     if args.rpc_url:
         peth = Peth(args.rpc_url, args.scan_url)
     else:
-        peth = Peth(*config[args.chain])
+        peth = Peth.get_or_create(args.chain)
 
     if args.rpc_call_raw:
         method = args.rpc_call_raw[0]
@@ -107,14 +107,11 @@ def main():
         to = args.to
         sig_or_name = args.eth_call[0]
         arg_list = args.eth_call[1:]
-        print(peth.eth_call(sender, to, sig_or_name, arg_list))
+        print(peth.eth_call(to, sig_or_name, arg_list, sender))
     elif args.graph:
         addr = args.to
         peth.print_contract_graph(addr)
 
-    
-
-    
     c = PethConsole(peth)
     if args.console:
         c.cmdloop()

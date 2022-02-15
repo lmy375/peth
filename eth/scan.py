@@ -1,10 +1,10 @@
 import time
 import requests
 
-DEFAULT_API_INTERVAL = 6
+
+from core.config import config, DEFAULT_API_INTERVAL
 
 class ScanAPI(object):
-
 
     cache = {}
 
@@ -42,9 +42,16 @@ class ScanAPI(object):
     def get_abi(self, addr):
         return self.get_contract_info(addr)["ABI"]
 
+    def get_source(self, addr):
+        return self.get_contract_info(addr)["SourceCode"]
+
     @classmethod
     def get_or_create(cls, scan_url):
         if scan_url not in cls.cache:
             cls.cache[scan_url] = cls(scan_url)
         return cls.cache[scan_url]
 
+    @classmethod
+    def get_source_by_chain(cls, chain, addr):
+        assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
+        return ScanAPI.get_or_create(config[chain][1]).get_source(addr)    

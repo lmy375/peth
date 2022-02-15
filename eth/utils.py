@@ -1,4 +1,5 @@
 import requests
+from web3 import Web3
 
 try:
     from Crypto.Hash import keccak
@@ -30,3 +31,24 @@ def get_4byte_sig(sig, only_one=False):
             return None
     else:
         return [i["text_signature"] for i in results]
+
+
+def process_args(args):
+    """
+    Try to covert address, int values.
+    """
+    r = []
+    for arg in args:
+        if Web3.isAddress(arg):
+            r.append(Web3.toChecksumAddress(arg))
+            continue
+            
+        try:
+            if arg.startswith('0x'):
+                r.append(int(arg, 16))
+            else:
+                r.append(int(arg))
+        except Exception as e:
+            r.append(arg)
+    return r
+    
