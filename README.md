@@ -242,7 +242,26 @@ PUSH1 0x50
 JUMPI
 ....
 
+# Diff contract source.
+peth > diff bsc 0x73feaa1eE314F8c655E354234017bE2193C9E24E ftm 0xa71f52aee8311c22b6329EF7715A5B8aBF1c6588
+Written to diff/Ownable_ProtonToken_0.16.html
+Written to diff/BEP20_ProtofiERC20_0.68.html
+Written to diff/CakeToken_ElectronToken_0.62.html
+Written to diff/SyrupBar_ElectronToken_0.62.html
+Written to diff/MasterChef_ProtofiMasterChef_0.28.html
+peth > sh open diff/BEP20_ProtofiERC20_0.68.html
+peth > sh open diff/MasterChef_ProtofiMasterChef_0.28.html
+
+
 # Happy end.
 peth > exit
 bye!
+```
+
+All commands in the console can be executed via `--cmd`. 
+```
+➜  peth-cli git:(master) ✗ python main.py --cmd number
+14210380
+➜  peth-cli git:(master) ✗ python main.py --cmd balance 0xdAC17F958D2ee523a2206206994597C13D831ec7
+1 Wei( 0.0000 Ether)
 ```

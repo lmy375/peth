@@ -1,10 +1,14 @@
 import cmd
 import json
+import os
 
 from sigs import ERC20Signatures
 from utils import get_4byte_sig
-from code import Code
+from bytecode import Code
 from opcodes import OpCode
+from config import config
+from scan import ScanAPI
+from source import ContractSource
 
 class PethConsole(cmd.Cmd):
 
@@ -30,6 +34,26 @@ class PethConsole(cmd.Cmd):
         except Exception as e:
             print("Error: ", e)
             return False # don't stop
+
+    def do_eth_call(self, arg):
+        """
+        eth_call <to> <sig_or_name> <arg1> <arg2> ... : call contract with 0x sender.
+        """
+        sender = '0x0000000000000000000000000000000000000000'
+        args = arg.split()
+        to = args[0]
+        sig_or_name = args[1]
+        arg_list = args[2:]
+        print(self.peth.eth_call(sender, to, sig_or_name, arg_list))
+
+    def do_rpc_call(self, arg):
+        """
+        rpc_call <method> <arg1> <arg2> ...
+        """
+        args = arg.split()
+        method = args[0]
+        arg_list = args[1:]
+        print(self.peth.rpc_call(method, arg_list))
 
     def do_4byte(self, arg):
         """
@@ -183,7 +207,10 @@ class PethConsole(cmd.Cmd):
             )
             print(value)
 
-    def do_ERC1967(self, arg):
+    def do_proxy(self, arg):
+        """
+        proxy <address>: Print ERC1967 proxy information
+        """
         addr = self.web3.toChecksumAddress(arg)
         print("Implementation", self.web3.eth.get_storage_at(addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex())
         print("Admin", self.web3.eth.get_storage_at(addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex())
@@ -196,6 +223,38 @@ class PethConsole(cmd.Cmd):
         """
         if arg:
             self.peth.print_contract_graph(arg)
+
+    def do_diff(self, arg):
+        """
+        diff <addr1> 
+        diff <chain1> <addr1> <chain2> <addr2>
+        """
+        args = arg.split()
+        if len(args) == 2:
+            addr1 = args[0]
+            addr2 = args[1]
+            src1 = self.peth.scan.get_contract_info(addr1)["SourceCode"]
+            src2 = self.peth.scan.get_contract_info(addr2)["SourceCode"]
+        else:
+            assert len(args) == 4, "Invalid args."
+            chain1 = args[0]
+            addr1 = args[1]
+            chain2 = args[2]
+            addr2 = args[3]
+            assert chain1 in config.keys(), f"Invalid chain1 {chain1}"
+            assert chain2 in config.keys(), f"Invalid chain1 {chain2}"
+            scan1 = ScanAPI.get_or_create(config[chain1][1])
+            scan2 = ScanAPI.get_or_create(config[chain2][1])
+            src1 = scan1.get_contract_info(addr1)["SourceCode"]
+            src2 = scan2.get_contract_info(addr2)["SourceCode"]
+        
+        src1 = ContractSource(src1)
+        src2 = ContractSource(src2)
+
+        src1.compare(src2)    
+
+    def do_sh(self, arg):
+        os.system(arg)
 
     def do_bye(self, arg):
         """

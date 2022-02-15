@@ -12,7 +12,7 @@ class Peth(object):
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
         assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
         if scan_url:
-            self.scan = ScanAPI(scan_url)
+            self.scan = ScanAPI.get_or_create(scan_url)
         else:
             self.scan = None
 
@@ -91,4 +91,3 @@ class Peth(object):
         print(graph.dump())
         print("=====================")
         print("Open http://relation-graph.com/#/options-tools and paste the json.")
-

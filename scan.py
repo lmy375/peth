@@ -5,7 +5,13 @@ from config import DEFAULT_API_INTERVAL
 
 class ScanAPI(object):
 
+    cache = {}
+
     def __init__(self, scan_url) -> None:
+        """
+        Do NOT use this, use get_or_create instead to 
+        bypass API rate.
+        """
         self.scan_url = scan_url
         self.has_api_key = 'apikey' in scan_url
         self._last_scan_call = 0
@@ -34,4 +40,10 @@ class ScanAPI(object):
 
     def get_abi(self, addr):
         return self.get_contract_info(addr)["ABI"]
+
+    @classmethod
+    def get_or_create(cls, scan_url):
+        if scan_url not in cls.cache:
+            cls.cache[scan_url] = cls(scan_url)
+        return cls.cache[scan_url]
 

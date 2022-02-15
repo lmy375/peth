@@ -69,6 +69,12 @@ def get_args():
     )
 
     parser.add_argument(
+        "--cmd",
+        nargs="+",
+        help="Execute one command in peth console.",
+    )
+
+    parser.add_argument(
         "--graph",
         action="store_true",
         help="Generate contract graph.",
@@ -106,32 +112,15 @@ def main():
         addr = args.to
         peth.print_contract_graph(addr)
 
-    if args.console:
-        c = PethConsole(peth)
-        c.cmdloop()
-
-    # 
     
-    # addr = Web3.toChecksumAddress(args.address)
 
-    # args.func(args)
-
-    # python peth.py 
-    # rpc method args
-    # call sig args
-
-
-
-    # balance address
-    # nonce address
-    # storage address
-
-    # address address
-    # erc20 address
-    # proxy address
-    # 
-
-
+    
+    c = PethConsole(peth)
+    if args.console:
+        c.cmdloop()
+    elif args.cmd:
+        cmd = ' '.join(args.cmd)
+        c.onecmd(cmd)
 
 if __name__ == "__main__":
     main()
