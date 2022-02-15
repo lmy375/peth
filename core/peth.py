@@ -2,9 +2,10 @@
 from web3 import Web3
 import eth_abi
 
-from scan import ScanAPI
-from sigs import Signature, Signatures
-from graph import ContractRelationGraph
+from eth.scan import ScanAPI
+from eth.sigs import Signature, Signatures
+
+from util.graph import ContractRelationGraph
 
 class Peth(object):
 

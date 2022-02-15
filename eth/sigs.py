@@ -1,7 +1,7 @@
 import json
 import re
 
-from utils import func_selector
+from .utils import func_selector
 
 
 class Signature(object):

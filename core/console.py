@@ -2,13 +2,14 @@ import cmd
 import json
 import os
 
-from sigs import ERC20Signatures
-from utils import get_4byte_sig
-from bytecode import Code
-from opcodes import OpCode
-from config import config
-from scan import ScanAPI
-from source import ContractSource
+from eth.sigs import ERC20Signatures
+from eth.utils import get_4byte_sig
+from eth.bytecode import Code
+from eth.opcodes import OpCode
+from eth.scan import ScanAPI
+from util.source import ContractSource
+
+from .config import config
 
 class PethConsole(cmd.Cmd):
 
@@ -224,19 +225,21 @@ class PethConsole(cmd.Cmd):
         if arg:
             self.peth.print_contract_graph(arg)
 
+
     def do_diff(self, arg):
         """
-        diff <addr1> 
+        diff <addr1> <addr2>
         diff <chain1> <addr1> <chain2> <addr2>
+        diff <pattern> <chain> <addr>
         """
         args = arg.split()
+
         if len(args) == 2:
             addr1 = args[0]
             addr2 = args[1]
             src1 = self.peth.scan.get_contract_info(addr1)["SourceCode"]
             src2 = self.peth.scan.get_contract_info(addr2)["SourceCode"]
-        else:
-            assert len(args) == 4, "Invalid args."
+        elif len(args) == 4:
             chain1 = args[0]
             addr1 = args[1]
             chain2 = args[2]
@@ -247,6 +250,13 @@ class PethConsole(cmd.Cmd):
             scan2 = ScanAPI.get_or_create(config[chain2][1])
             src1 = scan1.get_contract_info(addr1)["SourceCode"]
             src2 = scan2.get_contract_info(addr2)["SourceCode"]
+        elif len(args) == 3:
+            pattern = args[0]
+
+            
+        else:
+            print('[!] Invalid args.')
+            return
         
         src1 = ContractSource(src1)
         src2 = ContractSource(src2)
@@ -254,6 +264,9 @@ class PethConsole(cmd.Cmd):
         src1.compare(src2)    
 
     def do_sh(self, arg):
+        """
+        Run system shell command.
+        """
         os.system(arg)
 
     def do_bye(self, arg):

@@ -1,9 +1,10 @@
 import time
 import requests
 
-from config import DEFAULT_API_INTERVAL
+DEFAULT_API_INTERVAL = 6
 
 class ScanAPI(object):
+
 
     cache = {}
 

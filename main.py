@@ -1,9 +1,9 @@
 import json
 from argparse import ArgumentParser
 
-from config import config
-from peth import Peth
-from console import PethConsole
+from core.config import config
+from core.peth import Peth
+from core.console import PethConsole
 
 def get_args():
     parser = ArgumentParser(

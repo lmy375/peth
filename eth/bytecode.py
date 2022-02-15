@@ -1,7 +1,7 @@
 import codecs
 from typing import Dict, List, Optional
 
-from opcodes import OpCode
+from .opcodes import OpCode
 
 class Instruction(object):
     def __init__(self, op: OpCode, opnd: Optional[int] = None, pc: int = 0) -> None:
