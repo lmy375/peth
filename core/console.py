@@ -1,6 +1,7 @@
 import cmd
 import json
 import os
+import difflib
 
 from eth.sigs import ERC20Signatures
 from eth.utils import get_4byte_sig, sha3_256
@@ -175,6 +176,33 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         print(Code.disasm(self.web3.eth.get_code(addr)))
 
+
+    def __get_asm_lines(self, chain, addr):
+        peth = Peth.get_or_create(chain)
+        addr = peth.web3.toChecksumAddress(addr)
+        return Code.disasm(peth.web3.eth.get_code(addr)).splitlines()
+
+
+    def do_diffasm(self, arg):
+        """
+        diffasm <chain1> <addr1> <chain2> <addr2> : diff bytecode.
+        """
+        chain1, addr1, chain2, addr2 = arg.split()
+        asm1 = self.__get_asm_lines(chain1, addr1)
+        asm2 = self.__get_asm_lines(chain2, addr2)
+        s = difflib.SequenceMatcher(None, asm1, asm2)
+        similarity = s.ratio()
+        d = difflib.HtmlDiff()
+        buf = d.make_file(asm1, asm2)
+        output_filename = '%s_%s_%s_%s_%0.2f' % (
+            chain1, addr1, chain2, addr2, similarity
+        )
+        if not os.path.isdir('diff'):
+            os.makedirs('diff')
+        output_filename = os.path.join('diff', output_filename)
+        open(output_filename + '.html', 'w').write(buf)
+        print("Written to " + output_filename+'.html')
+
     def do_contract(self, arg):
         """
         contract <address> : print contract information (from Etherscan).
@@ -258,7 +286,9 @@ class PethConsole(cmd.Cmd):
         
         diff uni <chain> <factory> <pair> <router>
         diff sushi <masterchef>
-e
+        diff comp <comptroller implementation>
+        diff ctoken <cERC20 implementation>
+
         # If address is unknown, use 0 as placeholder.
         # eg:
         diff uni bsc 0 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 0

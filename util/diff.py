@@ -45,9 +45,19 @@ def diff_sushi(chain, masterchef):
     # MasterChef
     diff_chain_src('eth', '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd', chain, masterchef)
 
+def diff_comp(chain, comptroller):
+    # Comptroller implementation.
+    diff_chain_src('eth', '0xbafe01ff935c7305907c33bf824352ee5979b526', chain, comptroller)
+
+def diff_ctoken(chain, ctoken):
+    # CErc20Delegator
+    diff_chain_src('eth', '0xa035b9e130f2b1aedc733eefb1c67ba4c503491f', chain, ctoken)
+
 PATTERNS = {
     'uni': diff_uniswap,
-    "sushi": diff_sushi
+    "sushi": diff_sushi,
+    'comp': diff_comp,
+    'ctoken': diff_ctoken
 }
 
 def diff_pattern(*args):

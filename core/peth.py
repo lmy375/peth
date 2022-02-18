@@ -20,7 +20,9 @@ class Peth(object):
         self.scan_url = scan_url
 
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
-        assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
+
+        # assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
+        
         if scan_url:
             self.scan = ScanAPI.get_or_create(scan_url)
         else:
