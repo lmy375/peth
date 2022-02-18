@@ -10,29 +10,12 @@ class ContractSource(object):
         if code:
             self.parse_source(code)
 
-    def _normalize_src(self, src: str):
-        try:
-            if src.startswith("{"):
-                tmp = src
-                if src.startswith("{{"):
-                    tmp = src.replace('{{', "{").replace("}}", '}')
-                sources = json.loads(tmp)
-                if "sources" in sources:
-                    sources = sources["sources"]
-
-                srcs = [sources[name]["content"] for name in sources]
-                return '\n//////\n'.join(srcs)
-        except Exception as e:
-            print(e)
-
-        return src
 
     def parse_source(self, code: str):
         """
         Split full source code into contracts code.
         Note this method may throw exceptions.
         """
-        code = self._normalize_src(code)
 
         while True:
 
@@ -83,16 +66,41 @@ class ContractSource(object):
         if not os.path.isdir(output):
             os.makedirs(output)
 
-        to_comp = other.contracts
+        src_left = dict(self.contracts)
+        dst_left = dict(other.contracts)
+
+        to_comp = dict(other.contracts)
         for name1, src1, in self.contracts.items():
             if name1 in to_comp:
                 src2 = to_comp[name1]
-                filename = name1 + '_same'
+                s = difflib.SequenceMatcher(None, src1, src2)
+                similarity = s.ratio()
+                filename = "%s_SAMENAME_%0.2f" % (name1, similarity)
                 self.__diff_file(src1, src2, os.path.join(output, filename))
-            else:
-                for name2, src2 in to_comp.items():
-                    s = difflib.SequenceMatcher(None, src1, src2)
-                    similarity = s.ratio()
-                    if similarity > 0.1:
-                        filename = "%s_%s_%0.2f" % (name1, name2, similarity)
-                        self.__diff_file(src1, src2, os.path.join(output, filename))
+                src_left[name1] = None
+                dst_left[name1] = None
+
+                # Skip similarity-guided comparison for the contract.
+                del to_comp[name1]
+                continue 
+
+            for name2, src2 in to_comp.items():
+                s = difflib.SequenceMatcher(None, src1, src2)
+                similarity = s.ratio()
+                filename = "%s_%s_%0.2f" % (name1, name2, similarity)
+                # print(filename)
+                if similarity > 0.1:
+                    self.__diff_file(src1, src2, os.path.join(output, filename))
+                    src_left[name1] = None
+                    dst_left[name2] = None
+        
+        src_left_names = list(filter(lambda x: src_left[x], src_left))
+        dst_left_names = list(filter(lambda x: dst_left[x], dst_left))
+        if src_left_names or dst_left_names:
+            print("Non-matched contracts:")
+            print(','.join(src_left_names))
+            print('-'*10)
+            print(','.join(dst_left_names))
+
+        
+

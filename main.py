@@ -117,6 +117,7 @@ def main():
         c.cmdloop()
     elif args.cmd:
         cmd = ' '.join(args.cmd)
+        c._debug = True
         c.onecmd(cmd)
 
 if __name__ == "__main__":

@@ -30,6 +30,10 @@
     "arbi": [
         "https://arb1.arbitrum.io/rpc",
         "https://api.arbiscan.io/api?"
+    ],
+    "boba": [
+        "https://mainnet.boba.network/",
+        "https://blockexplorer.boba.network/api?"
     ]
 
 }

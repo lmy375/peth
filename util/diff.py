@@ -1,4 +1,5 @@
 import os
+from web3 import Web3
 
 from core.peth import Peth
 from eth.scan import ScanAPI
@@ -20,9 +21,15 @@ def diff_chain_src(chain1, addr1, chain2, addr2, output=None):
 def diff_uniswap(chain, factory=None, pair=None, router=None):
     peth = Peth.get_or_create(chain)
     if factory and not pair:
-        pair = peth.eth_call(factory, "allPairs(uint)->(address)", [0])
+        r = peth.eth_call(factory, "allPairs(uint256)->(address)", [0])
+        if Web3.isAddress(r):
+            pair = r
+            print('[*] Auto find pair contract', r)
     if not factory and pair:
-        factory = peth.eth_call(pair, "factory()->(address)")
+        r = peth.eth_call(pair, "factory()->(address)")
+        if Web3.isAddress(r):
+            factory = r
+            print('[*] Auto find factory contract', r)
     
     if factory: 
         # UniswapV2Factory 
@@ -34,8 +41,13 @@ def diff_uniswap(chain, factory=None, pair=None, router=None):
         # UniswapV2Router02
         diff_chain_src('eth', '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', chain, router, "uni_router")
 
+def diff_sushi(chain, masterchef):
+    # MasterChef
+    diff_chain_src('eth', '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd', chain, masterchef)
+
 PATTERNS = {
-    'uni': diff_uniswap
+    'uni': diff_uniswap,
+    "sushi": diff_sushi
 }
 
 def diff_pattern(*args):

@@ -1,6 +1,6 @@
 import time
 import requests
-
+import json
 
 from core.config import config, DEFAULT_API_INTERVAL
 
@@ -18,6 +18,7 @@ class ScanAPI(object):
         self._last_scan_call = 0
 
     def get(self, url):
+        # print(url)
         now = time.time()
         if not self.has_api_key:
             interval = now - self._last_scan_call
@@ -28,11 +29,16 @@ class ScanAPI(object):
             r = requests.get(url)
             self._last_scan_call = time.time()
             d = r.json()
+
+            # retry.
+            if "Max rate limit reached" in d["result"]: 
+                return self.get(url)
+
             assert d["status"] == "1", d
             assert type(d["result"]) is list, d["result"]
             return d["result"][0]
         except Exception as e:
-            print("[!]", e)
+            print("[!] Etherscan API fail.", e, url)
             return None      
 
     def get_contract_info(self, addr):
@@ -43,7 +49,32 @@ class ScanAPI(object):
         return self.get_contract_info(addr)["ABI"]
 
     def get_source(self, addr):
-        return self.get_contract_info(addr)["SourceCode"]
+        ret = ""
+        info = self.get_contract_info(addr)
+
+        if "SourceCode" in info:
+            src = info["SourceCode"]
+            try:
+                if src.startswith("{"):
+                    tmp = src
+                    if src.startswith("{{"):
+                        tmp = src.replace('{{', "{").replace("}}", '}')
+                    sources = json.loads(tmp)
+                    if "sources" in sources:
+                        sources = sources["sources"]
+                    for name in sources:
+                        ret += "//%s\n" % name
+                        ret += "%s\n" % sources[name]["content"]
+
+            except Exception as e:
+                print('[!] get_source: SourceCode may be not properly handled.')
+                ret += "%s\n" % src
+
+        if "AdditionalSources" in info:
+            for item in info["AdditionalSources"]:
+                ret += "//%s\n" % item["Filename"]
+                ret += "%s\n" % item["SourceCode"] 
+        return ret
 
     @classmethod
     def get_or_create(cls, scan_url):

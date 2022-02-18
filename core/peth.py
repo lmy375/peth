@@ -14,13 +14,22 @@ class Peth(object):
 
     cache = {}
 
-    def __init__(self, rpc_url, scan_url) -> None:
+    def __init__(self, rpc_url, scan_url, chain="Custom") -> None:
+        self.chain = chain
+        self.rpc_url = rpc_url
+        self.scan_url = scan_url
+
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
         assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
         if scan_url:
             self.scan = ScanAPI.get_or_create(scan_url)
         else:
             self.scan = None
+    
+    def print_info(self):
+        print("Chain:", self.chain)
+        print("RPC:", self.rpc_url)
+        print("API:", self.scan_url)
 
     def rpc_call_raw(self, method, args=[]):
         return self.web3.provider.make_request(method, args)
@@ -33,7 +42,7 @@ class Peth(object):
             return "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
         return r
 
-    def eth_call(self, to, sig_or_name, args=[], sender=None, **kwargs):
+    def eth_call(self, to, sig_or_name, args=[], sender=None, throw_on_revert=False, **kwargs):
         args = process_args(args)
         if type(sig_or_name) is str:
             if '(' in sig_or_name:
@@ -62,8 +71,11 @@ class Peth(object):
         tx.update(kwargs)
         r = self.rpc_call_raw('eth_call', [tx, 'latest'])
         if "error" in r:
-            return "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
-        
+            msg = "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
+            if throw_on_revert:
+                raise Exception(msg)
+            return msg
+
         if "result" in r:
             try:
                 data = r["result"][2:] # skip 0x
@@ -78,6 +90,8 @@ class Peth(object):
                     return r["result"]
             except Exception as e:
                 print("Error in parse return data", e)
+                if throw_on_revert:
+                    raise Exception from e
                 return r
         return r
 
@@ -95,5 +109,6 @@ class Peth(object):
     def get_or_create(cls, chain):
         assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
         if chain not in cls.cache:
-            cls.cache[chain] = cls(*config[chain])
+            rpc_url, scan_url = config[chain]
+            cls.cache[chain] = cls(rpc_url, scan_url, chain)
         return cls.cache[chain]

@@ -163,7 +163,7 @@ class ContractRelationGraph(object):
             name = abi["name"]
             args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
             return_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["outputs"])
-            func_sig = f"{contract_name}.{name}({args_sig}) -> ({return_sig})"
+            func_sig = f"{contract_name}.{name}({args_sig})->({return_sig})"
             if view:
                 func_sig = '[VIEW] ' + func_sig
             if skip:
@@ -247,7 +247,7 @@ class ContractRelationGraph(object):
         try:
             abi = json.loads(abi)
         except Exception as e:
-            print("[!]", e, abi)
+            print("[!] ABI not valid JSON", e, abi)
             return
 
         new_contacts = set()

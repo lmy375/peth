@@ -3,10 +3,10 @@ import json
 import os
 
 from eth.sigs import ERC20Signatures
-from eth.utils import get_4byte_sig
+from eth.utils import get_4byte_sig, sha3_256
 from eth.bytecode import Code
 from eth.opcodes import OpCode
-from eth.scan import ScanAPI
+from core.peth import Peth
 from util import diff
 
 from .config import config
@@ -16,13 +16,20 @@ class PethConsole(cmd.Cmd):
     intro = 'Welcome to the peth shell.   Type help or ? to list commands.\n'
     prompt = 'peth > '
 
-    def __init__(self, peth) -> None:
+    def __init__(self, peth: Peth) -> None:
         super().__init__()
         self.peth = peth
-        self.web3 = peth.web3
         self._debug = False
 
+    @property
+    def web3(self):
+        return self.peth.web3
+
+
     def do_debug(self, arg):
+        """
+        Toggle debug flag. Once on, the console will raise exceptions instead of catching them.
+        """
         self._debug = not self._debug
         print("debug set to", self._debug)
 
@@ -34,6 +41,20 @@ class PethConsole(cmd.Cmd):
                     v = v[:80] + ' ...'
             print(' ', k, ":\t", v)        
 
+    def do_chain(self, arg):
+        """
+        chain : Print chain information.
+        chain <chain> : Change chain.
+        """
+        print("Current:")
+
+        if arg in config:
+            self.peth.print_info()
+            self.peth = Peth.get_or_create(arg)
+            print("Changed:")
+        
+        self.peth.print_info()
+
     def onecmd(self, line):
         try:
             return super().onecmd(line)
@@ -42,6 +63,12 @@ class PethConsole(cmd.Cmd):
             if self._debug:
                 raise Exception from e
             return False # don't stop
+
+    def do_sha3(self, arg):
+        """
+        sha3 <string> : Calculate Keccak256 hash.
+        """
+        print(sha3_256(bytes(arg.strip(), "ascii", "ignore")).hex())
 
     def do_eth_call(self, arg):
         """
@@ -190,10 +217,10 @@ class PethConsole(cmd.Cmd):
         args = arg.split()
         if len(args) == 1:
             sigs = [
-                "totalSupply() -> (uint256)",
-                "name() -> (string)",
-                "symbol() -> (string)",
-                "decimals() -> (uint8)",
+                "totalSupply()->(uint256)",
+                "name()->(string)",
+                "symbol()->(string)",
+                "decimals()->(uint8)",
             ]
             for sig in sigs:
                 value = self.peth.eth_call(arg, sig)
@@ -230,6 +257,7 @@ class PethConsole(cmd.Cmd):
         diff <chain1> <addr1> <chain2> <addr2>
         
         diff uni <chain> <factory> <pair> <router>
+        diff sushi <masterchef>
 e
         # If address is unknown, use 0 as placeholder.
         # eg:
@@ -262,6 +290,12 @@ e
         Run system shell command.
         """
         os.system(arg)
+
+    def do_open(self, arg):
+        """
+        Open url or file. 
+        """
+        self.do_sh("open " + arg)
 
     def do_bye(self, arg):
         """
