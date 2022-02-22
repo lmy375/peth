@@ -1,39 +1,48 @@
 {
     "eth": [
         "https://rpc.ankr.com/eth",
-        "https://api.etherscan.io/api?"
+        "https://api.etherscan.io/api?",
+        "https://etherscan.io/address/"
     ],
     "bsc": [
         "https://rpc.ankr.com/bsc",
-        "https://api.bscscan.com/api?"
+        "https://api.bscscan.com/api?",
+        "https://bscscan.com/address/"
     ],
     "heco": [
         "https://http-mainnet.hecochain.com",
-        "https://api.hecoinfo.com/api?"
+        "https://api.hecoinfo.com/api?",
+        "https://hecoinfo.com/address/"
     ],
     "matic": [
         "https://rpc.ankr.com/polygon",
-        "https://api.polygonscan.com/api?"
+        "https://api.polygonscan.com/api?",
+        "https://polygonscan.com/address/"
     ],
     "avax": [
         "https://rpc.ankr.com/avalanche",
-        "https://api.snowtrace.io/api?"
+        "https://api.snowtrace.io/api?",
+        "https://snowtrace.io/address/"
     ],
     "ftm": [
         "https://rpc.ankr.com/fantom",
-        "https://api.ftmscan.com/api?"
+        "https://api.ftmscan.com/api?",
+        "https://ftmscan.com/address/"
     ],
     "metis": [
         "https://andromeda.metis.io/?owner=1088",
-        "https://andromeda-explorer.metis.io/api?"
+        "https://andromeda-explorer.metis.io/api?",
+        "https://andromeda-explorer.metis.io/address/"
     ],
     "arbi": [
         "https://arb1.arbitrum.io/rpc",
-        "https://api.arbiscan.io/api?"
+        "https://api.arbiscan.io/api?",
+        "https://arbiscan.io/address/"
     ],
     "boba": [
         "https://mainnet.boba.network/",
-        "https://blockexplorer.boba.network/api?"
+        "https://blockexplorer.boba.network/api?",
+        "https://blockexplorer.boba.network/address/"
     ]
 
 }

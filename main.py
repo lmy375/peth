@@ -59,7 +59,11 @@ def get_args():
     )
     parser.add_argument(
         "--scan-url",
-        help="Etherscan like blockchain explorer API url.",
+        help="Etherscan like blockchain explorer API URL.",
+    )
+    parser.add_argument(
+        "--address-url",
+        help="Etherscan like blockchain explorer address URL.",
     )
 
     parser.add_argument(
@@ -90,7 +94,7 @@ def main():
     args = get_args()
 
     if args.rpc_url:
-        peth = Peth(args.rpc_url, args.scan_url)
+        peth = Peth(args.rpc_url, args.api_url, args.address_url)
     else:
         peth = Peth.get_or_create(args.chain)
 

@@ -14,24 +14,30 @@ class Peth(object):
 
     cache = {}
 
-    def __init__(self, rpc_url, scan_url, chain="Custom") -> None:
+    def __init__(self, rpc_url, api_url, address_url, chain="Custom") -> None:
         self.chain = chain
         self.rpc_url = rpc_url
-        self.scan_url = scan_url
+        self.api_url = api_url
+        self.address_url = address_url
 
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
 
         # assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
         
-        if scan_url:
-            self.scan = ScanAPI.get_or_create(scan_url)
+        if api_url:
+            self.scan = ScanAPI.get_or_create(api_url)
         else:
             self.scan = None
     
     def print_info(self):
         print("Chain:", self.chain)
         print("RPC:", self.rpc_url)
-        print("API:", self.scan_url)
+        print("API:", self.api_url)
+        print("Address:", self.address_url)
+
+    def get_address_url(self, addr):
+        if self.address_url:
+            return self.address_url + addr
 
     def rpc_call_raw(self, method, args=[]):
         return self.web3.provider.make_request(method, args)
@@ -84,10 +90,10 @@ class Peth(object):
                 data = bytes.fromhex(data)
                 if sig.return_sig and sig.return_sig != "()":
                     ret_values = eth_abi.decode_single(sig.return_sig, data)
-                    if len(ret_values) == 0:
+                    if len(ret_values) == 1:
                         return ret_values[0]
                     else:
-                        return ','.join(str(i) for i in ret_values)
+                        return ret_values
                 else:
                     return r["result"]
             except Exception as e:
@@ -111,6 +117,8 @@ class Peth(object):
     def get_or_create(cls, chain):
         assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
         if chain not in cls.cache:
-            rpc_url, scan_url = config[chain]
-            cls.cache[chain] = cls(rpc_url, scan_url, chain)
+            rpc_url = config[chain][0]
+            api_url = config[chain][1]
+            address_url = config[chain][2]
+            cls.cache[chain] = cls(rpc_url, api_url, address_url, chain)
         return cls.cache[chain]

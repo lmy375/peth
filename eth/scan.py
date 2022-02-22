@@ -8,13 +8,13 @@ class ScanAPI(object):
 
     cache = {}
 
-    def __init__(self, scan_url) -> None:
+    def __init__(self, api_url) -> None:
         """
         Do NOT use this, use get_or_create instead to 
         bypass API rate.
         """
-        self.scan_url = scan_url
-        self.has_api_key = 'apikey' in scan_url
+        self.api_url = api_url
+        self.has_api_key = 'apikey' in api_url
         self._last_scan_call = 0
 
     def get(self, url):
@@ -42,7 +42,7 @@ class ScanAPI(object):
             return None      
 
     def get_contract_info(self, addr):
-        url = f"{self.scan_url}module=contract&action=getsourcecode&address={addr}"
+        url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
         return self.get(url)
 
     def get_abi(self, addr):
@@ -77,10 +77,10 @@ class ScanAPI(object):
         return ret
 
     @classmethod
-    def get_or_create(cls, scan_url):
-        if scan_url not in cls.cache:
-            cls.cache[scan_url] = cls(scan_url)
-        return cls.cache[scan_url]
+    def get_or_create(cls, api_url):
+        if api_url not in cls.cache:
+            cls.cache[api_url] = cls(api_url)
+        return cls.cache[api_url]
 
     @classmethod
     def get_source_by_chain(cls, chain, addr):

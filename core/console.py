@@ -3,6 +3,8 @@ import json
 import os
 import difflib
 
+from web3 import Web3
+
 from eth.sigs import ERC20Signatures
 from eth.utils import get_4byte_sig, sha3_256
 from eth.bytecode import Code
@@ -58,6 +60,13 @@ class PethConsole(cmd.Cmd):
 
     def onecmd(self, line):
         try:
+            # ! run system shell.
+            # ? eval python script.
+            if line.startswith('!'):
+                line = 'sh ' + line[1:]
+            elif line.startswith('?'):
+                line = 'py ' + line[1:]
+
             return super().onecmd(line)
         except Exception as e:
             print("Error: ", e)
@@ -271,6 +280,14 @@ class PethConsole(cmd.Cmd):
         print("Rollback", self.web3.eth.get_storage_at(addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
         print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
 
+    def do_timelock(self, arg):
+        """
+        timelock <address>: Print TimelockController min delay.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        secs = self.peth.eth_call(addr, "getMinDelay()->(uint)")
+        print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
+
     def do_graph(self, arg):
         """
         Print contract relation graph.
@@ -321,6 +338,12 @@ class PethConsole(cmd.Cmd):
         """
         os.system(arg)
 
+    def do_py(self, arg):
+        """
+        Eval python script.
+        """
+        print(eval(arg))
+
     def do_open(self, arg):
         """
         Open url or file. 
@@ -334,6 +357,18 @@ class PethConsole(cmd.Cmd):
 
         print('bye!')
         return True
+    
+    def do_url(self, addr):
+        """
+        url <addr> : Open blockchain explorer of the address.
+        """
+        if Web3.isAddress(addr):
+            url = self.peth.get_address_url(addr)
+            print(url)
+            self.do_open(url)
+        else:
+            print("%s is not valid address." % addr)
+
 
     do_exit = do_bye
     do_quit = do_bye
