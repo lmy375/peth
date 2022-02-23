@@ -2,6 +2,7 @@ import cmd
 import json
 import os
 import difflib
+from attr import Factory
 
 from web3 import Web3
 
@@ -288,6 +289,40 @@ class PethConsole(cmd.Cmd):
         secs = self.peth.eth_call(addr, "getMinDelay()->(uint)")
         print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
 
+    def do_tokenpair(self, arg):
+        """
+        tokenpair <addr1> <addr2> [factory]: Print token pair information.
+        """
+        args = arg.split()
+        factory = None
+        if len(args) == 3:
+            addr1, addr2, factory = args
+        else:
+            assert len(args) == 2
+            addr1, addr2 = args
+        if factory is None:
+            if self.peth.chain == 'eth':
+                factory = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f' # Uniswap Factory
+            elif self.peth.chain == 'bsc':
+                factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73' # Pancake Factory
+        
+        assert factory, "Factory address not specified."
+        pair_addr = self.peth.eth_call(factory, "getPair(address,address)->(address)", [addr1, addr2])
+        assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
+        print("TokenPair: %s" % pair_addr)
+
+        token0 = self.peth.eth_call(pair_addr, "token0()->(address)")
+        token0_name = self.peth.eth_call(token0, "symbol()->(string)")
+        token0_decimal = self.peth.eth_call(token0, "decimals()->(uint)")
+        token1 = self.peth.eth_call(pair_addr, "token1()->(address)")
+        token1_name = self.peth.eth_call(token1, "symbol()->(string)")
+        token1_decimal = self.peth.eth_call(token1, "decimals()->(uint)")
+        r0, r1, _ = self.peth.eth_call(pair_addr, "getReserves()->(uint112,uint112,uint32)")
+
+        print("Price:")
+        print("1 %s = %0.2f %s" % (token0_name, (r1/(10**token1_decimal)/(r0/(10**token0_decimal))), token1_name))
+        print("1 %s = %0.2f %s" % (token1_name, (r0/(10**token0_decimal)/(r1/(10**token1_decimal))), token0_name))
+
     def do_graph(self, arg):
         """
         Print contract relation graph.
@@ -369,6 +404,25 @@ class PethConsole(cmd.Cmd):
         else:
             print("%s is not valid address." % addr)
 
+
+    def do_common_addresses(self, arg):
+        """
+        common_addresses: Print some common addresses.
+        """
+
+        print("Uniswap ETH/USDT LP (UNI-V2) 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852 ETH")
+        print("UniswapV2Factory 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f ETH")
+        print("UniswapV2Router02 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ETH")
+        print("UNI token 0x1f9840a85d5af5bf1d1762f925bdaddc4201f984 ETH")
+        print("SushiSwap MasterChef 0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd ETH")
+        print("SushiSwap MasterChefV2 0xef0881ec094552b2e128cf945ef17a6752b4ec5d ETH")
+        print("Compound Unitroller 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B ETH")
+        print("Compound Comptroller 0xbafe01ff935c7305907c33bf824352ee5979b526 ETH")
+        print("Compound USDT (cUSDT) CErc20Delegator proxy 0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9 ETH")
+        print("CErc20Delegator 0xa035b9e130f2b1aedc733eefb1c67ba4c503491f ETH")
+        print("Synthetix: Staking Rewards (Balancer SNX) 0xFBaEdde70732540cE2B11A8AC58Eb2dC0D69dE10 ETH")
+        print("PancakeSwap MasterChef 0x73feaa1eE314F8c655E354234017bE2193C9E24E BSC")
+        print("PancakePair 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 BSC")
 
     do_exit = do_bye
     do_quit = do_bye
