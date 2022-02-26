@@ -2,7 +2,6 @@ import cmd
 import json
 import os
 import difflib
-from attr import Factory
 
 from web3 import Web3
 
@@ -291,37 +290,56 @@ class PethConsole(cmd.Cmd):
 
     def do_tokenpair(self, arg):
         """
-        tokenpair <addr1> <addr2> [factory]: Print token pair information.
+        tokenpair <addr1> <addr2> <factory>: Print token pair information.
+        tokenpair <addr1> <addr2> : default factory for eth/bsc
+        tokenpair <pair addr>
         """
         args = arg.split()
+        pair_addr = None
         factory = None
         if len(args) == 3:
             addr1, addr2, factory = args
-        else:
-            assert len(args) == 2
+        elif len(args) == 2:
             addr1, addr2 = args
-        if factory is None:
-            if self.peth.chain == 'eth':
-                factory = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f' # Uniswap Factory
-            elif self.peth.chain == 'bsc':
-                factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73' # Pancake Factory
+        elif len(args) == 1:
+            pair_addr = arg
+
+        if pair_addr:
+            addr1 = self.peth.eth_call(pair_addr, "token0(address)->(address)", [pair_addr])
+            addr2 = self.peth.eth_call(pair_addr, "token1(address)->(address)", [pair_addr])
+        else:
+            if factory is None:
+                if self.peth.chain == 'eth':
+                    factory = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f' # Uniswap Factory
+                elif self.peth.chain == 'bsc':
+                    factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73' # Pancake Factory
+            
+            assert factory, "Factory address not specified."
+            pair_addr = self.peth.eth_call(factory, "getPair(address,address)->(address)", [addr1, addr2])
+            assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
         
-        assert factory, "Factory address not specified."
-        pair_addr = self.peth.eth_call(factory, "getPair(address,address)->(address)", [addr1, addr2])
-        assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
         print("TokenPair: %s" % pair_addr)
 
         token0 = self.peth.eth_call(pair_addr, "token0()->(address)")
         token0_name = self.peth.eth_call(token0, "symbol()->(string)")
+
         token0_decimal = self.peth.eth_call(token0, "decimals()->(uint)")
         token1 = self.peth.eth_call(pair_addr, "token1()->(address)")
         token1_name = self.peth.eth_call(token1, "symbol()->(string)")
         token1_decimal = self.peth.eth_call(token1, "decimals()->(uint)")
+
         r0, r1, _ = self.peth.eth_call(pair_addr, "getReserves()->(uint112,uint112,uint32)")
 
+        r0 = r0/(10**token0_decimal)
+        r1 = r1/(10**token1_decimal)
+
+        print("%s %s %s" % (token0_name, token0, token0_decimal))
+        print("%s %s %s" % (token1_name, token1, token1_decimal))
+        print("Reseves: %0.4f %s, %0.4f %s" %(r0, token0_name, r1, token1_name))
+
         print("Price:")
-        print("1 %s = %0.2f %s" % (token0_name, (r1/(10**token1_decimal)/(r0/(10**token0_decimal))), token1_name))
-        print("1 %s = %0.2f %s" % (token1_name, (r0/(10**token0_decimal)/(r1/(10**token1_decimal))), token0_name))
+        print("1 %s = %0.4f %s" % (token0_name, r1/r0, token1_name))
+        print("1 %s = %0.4f %s" % (token1_name, r0/r1, token0_name))
 
     def do_graph(self, arg):
         """

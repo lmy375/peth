@@ -14,6 +14,7 @@ def diff_source(src1, src2, output=None):
     src1.compare(src2, output)
 
 def diff_chain_src(chain1, addr1, chain2, addr2, output=None):
+    print("[*] Diff %s-%s  %s-%s" % (chain1, addr1, chain2, addr2))
     src1 = ScanAPI.get_source_by_chain(chain1, addr1)
     src2 = ScanAPI.get_source_by_chain(chain2, addr2)
     diff_source(src1, src2, output)

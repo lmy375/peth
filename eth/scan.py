@@ -51,6 +51,7 @@ class ScanAPI(object):
     def get_source(self, addr):
         ret = ""
         info = self.get_contract_info(addr)
+        assert info, "ScanAPI.get_source: get_contract_info failed."
 
         if "SourceCode" in info:
             src = info["SourceCode"]
@@ -65,6 +66,8 @@ class ScanAPI(object):
                     for name in sources:
                         ret += "//%s\n" % name
                         ret += "%s\n" % sources[name]["content"]
+                else:
+                    ret += "%s\n" % src
 
             except Exception as e:
                 print('[!] get_source: SourceCode may be not properly handled.')
@@ -74,6 +77,8 @@ class ScanAPI(object):
             for item in info["AdditionalSources"]:
                 ret += "//%s\n" % item["Filename"]
                 ret += "%s\n" % item["SourceCode"] 
+        
+        assert ret, "ScanAPI.get_source: source not found in info: %s" % (list(info))
         return ret
 
     @classmethod

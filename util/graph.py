@@ -135,8 +135,11 @@ class ContractRelationGraph(object):
                 count += 1
 
         if count == 4:
-            self.erc20s[addr] = ERC20Contract(contract_name, contract)
-            print("ERC20 Found. ", self.erc20s[addr])
+            try:
+                self.erc20s[addr] = ERC20Contract(contract_name, contract)
+                print("ERC20 Found. ", self.erc20s[addr])
+            except Exception as e:
+                print(f"{addr} may be not valid ERC20.")
 
     def _do_visit(self, addr, abi, contract_name, new_contacts, include_view):
         contract = self.web3.eth.contract(address=addr, abi=abi)
