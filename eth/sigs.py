@@ -42,7 +42,7 @@ class Signature(object):
 
     @classmethod
     def from_abi(cls, item):
-        name = item["name"]
+        name = item.get("name") # Possible None.
         args_sig = ",".join(i["type"] for i in item["inputs"])
         return_sig = ",".join(i["type"] for i in item["outputs"])
         sig = f"{name}({args_sig})->({return_sig})"

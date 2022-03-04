@@ -43,6 +43,16 @@
         "https://mainnet.boba.network/",
         "https://blockexplorer.boba.network/api?",
         "https://blockexplorer.boba.network/address/"
+    ],
+    "one": [
+        "https://api.harmony.one",
+        null,
+        "https://explorer.harmony.one/address/"
+    ],
+    "cro": [
+        "https://evm.cronos.org",
+        "https://cronos.org/explorer/api?",
+        "https://cronos.org/explorer/address/"
     ]
 
 }

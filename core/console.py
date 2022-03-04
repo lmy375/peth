@@ -2,11 +2,12 @@ import cmd
 import json
 import os
 import difflib
+from select import select
 
 from web3 import Web3
 
-from eth.sigs import ERC20Signatures
-from eth.utils import get_4byte_sig, sha3_256
+from eth.sigs import ERC20Signatures, Signature
+from eth.utils import get_4byte_sig, sha3_256, func_selector
 from eth.bytecode import Code
 from eth.opcodes import OpCode
 from core.peth import Peth
@@ -49,14 +50,18 @@ class PethConsole(cmd.Cmd):
         chain : Print chain information.
         chain <chain> : Change chain.
         """
+
         print("Current:")
+        self.peth.print_info()
 
         if arg in config:
-            self.peth.print_info()
             self.peth = Peth.get_or_create(arg)
             print("Changed:")
+            self.peth.print_info()
+        else:
+            print("Support: %s" % ', '.join(config.keys()))
+            
         
-        self.peth.print_info()
 
     def onecmd(self, line):
         try:
@@ -89,7 +94,7 @@ class PethConsole(cmd.Cmd):
         to = args[0]
         sig_or_name = args[1]
         arg_list = args[2:]
-        print(self.peth.eth_call(to, sig_or_name, arg_list, sender))
+        print(self.peth.call_contract(to, sig_or_name, arg_list, sender))
 
     def do_rpc_call(self, arg):
         """
@@ -228,6 +233,7 @@ class PethConsole(cmd.Cmd):
                 name = abi.get("name", "")
                 mut = abi.get("stateMutability", "")
                 func_sig = f"{typ} {name}"
+                args_sig = ""
                 if "inputs" in abi:
                     args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
                     func_sig += f"({args_sig})"
@@ -239,7 +245,13 @@ class PethConsole(cmd.Cmd):
                     func_sig += f" returns({return_sig})"
                
                 func_sig += " " + mut
-                print(' ', func_sig)
+
+                if name:
+                    real_sig = "%s(%s)" % (name, ",".join(i["type"] for i in abi["inputs"]))
+                    selector = func_selector(real_sig).hex()
+                else:
+                    selector = ' ' * 10
+                print(' ', selector, func_sig)
 
         except Exception as e:
             print(e)
@@ -260,14 +272,14 @@ class PethConsole(cmd.Cmd):
                 "decimals()->(uint8)",
             ]
             for sig in sigs:
-                value = self.peth.eth_call(arg, sig)
+                value = self.peth.call_contract(arg, sig)
                 print(sig, '=>', value)
         else:
             addr = args[0]
             func = args[1]
             sig = ERC20Signatures.find_by_name(func)
             assert sig, "Unknown ERC20 view function"
-            value = self.peth.eth_call(addr, sig, args[2:])
+            value = self.peth.call_contract(addr, sig, args[2:])
             print(value)
 
     def do_proxy(self, arg):
@@ -285,14 +297,14 @@ class PethConsole(cmd.Cmd):
         timelock <address>: Print TimelockController min delay.
         """
         addr = self.web3.toChecksumAddress(arg)
-        secs = self.peth.eth_call(addr, "getMinDelay()->(uint)")
+        secs = self.peth.call_contract(addr, "getMinDelay()->(uint)")
         print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
 
-    def do_tokenpair(self, arg):
+    def do_pair(self, arg):
         """
-        tokenpair <addr1> <addr2> <factory>: Print token pair information.
-        tokenpair <addr1> <addr2> : default factory for eth/bsc
-        tokenpair <pair addr>
+        pair <addr1> <addr2> <factory>: Print token pair information.
+        pair <addr1> <addr2> : default factory for eth/bsc
+        pair <pair addr>
         """
         args = arg.split()
         pair_addr = None
@@ -305,8 +317,8 @@ class PethConsole(cmd.Cmd):
             pair_addr = arg
 
         if pair_addr:
-            addr1 = self.peth.eth_call(pair_addr, "token0(address)->(address)", [pair_addr])
-            addr2 = self.peth.eth_call(pair_addr, "token1(address)->(address)", [pair_addr])
+            addr1 = self.peth.call_contract(pair_addr, "token0(address)->(address)", [pair_addr])
+            addr2 = self.peth.call_contract(pair_addr, "token1(address)->(address)", [pair_addr])
         else:
             if factory is None:
                 if self.peth.chain == 'eth':
@@ -315,26 +327,26 @@ class PethConsole(cmd.Cmd):
                     factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73' # Pancake Factory
             
             assert factory, "Factory address not specified."
-            pair_addr = self.peth.eth_call(factory, "getPair(address,address)->(address)", [addr1, addr2])
+            pair_addr = self.peth.call_contract(factory, "getPair(address,address)->(address)", [addr1, addr2])
             assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
         
         print("TokenPair: %s" % pair_addr)
 
-        token0 = self.peth.eth_call(pair_addr, "token0()->(address)")
-        token0_name = self.peth.eth_call(token0, "symbol()->(string)")
+        token0 = self.peth.call_contract(pair_addr, "token0()->(address)")
+        token0_name = self.peth.call_contract(token0, "symbol()->(string)")
 
-        token0_decimal = self.peth.eth_call(token0, "decimals()->(uint)")
-        token1 = self.peth.eth_call(pair_addr, "token1()->(address)")
-        token1_name = self.peth.eth_call(token1, "symbol()->(string)")
-        token1_decimal = self.peth.eth_call(token1, "decimals()->(uint)")
-
-        r0, r1, _ = self.peth.eth_call(pair_addr, "getReserves()->(uint112,uint112,uint32)")
-
-        r0 = r0/(10**token0_decimal)
-        r1 = r1/(10**token1_decimal)
+        token0_decimal = self.peth.call_contract(token0, "decimals()->(uint)")
+        token1 = self.peth.call_contract(pair_addr, "token1()->(address)")
+        token1_name = self.peth.call_contract(token1, "symbol()->(string)")
+        token1_decimal = self.peth.call_contract(token1, "decimals()->(uint)")
 
         print("%s %s %s" % (token0_name, token0, token0_decimal))
         print("%s %s %s" % (token1_name, token1, token1_decimal))
+
+        r0, r1, _ = self.peth.call_contract(pair_addr, "getReserves()->(uint112,uint112,uint32)")
+
+        r0 = r0/(10**token0_decimal)
+        r1 = r1/(10**token1_decimal)
         print("Reseves: %0.4f %s, %0.4f %s" %(r0, token0_name, r1, token1_name))
 
         print("Price:")
@@ -355,9 +367,9 @@ class PethConsole(cmd.Cmd):
         diff <chain1> <addr1> <chain2> <addr2>
         
         diff uni <chain> <factory> <pair> <router>
-        diff sushi <masterchef>
-        diff comp <comptroller implementation>
-        diff ctoken <cERC20 implementation>
+        diff sushi <chain> <masterchef>
+        diff comp <chain> <comptroller implementation>
+        diff ctoken <chain> <cERC20 implementation>
 
         # If address is unknown, use 0 as placeholder.
         # eg:

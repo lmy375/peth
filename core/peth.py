@@ -103,6 +103,19 @@ class Peth(object):
                 return r
         return r
 
+    def call_contract(self, contract, sig_or_name, args=[], sender=None, value=None):
+        """
+        If revert, print error message and return None.
+        """
+        try:
+            if value:
+                return self.eth_call(contract, sig_or_name, args, sender, True, value=value)
+            else:
+                return self.eth_call(contract, sig_or_name, args, sender, True)
+        except Exception as e:
+            print('[*] Call %s %s %s' % (contract, sig_or_name, e))
+            return None
+
     def print_contract_graph(self, addr, include_view=False):
         addr = Web3.toChecksumAddress(addr)
         graph = ContractRelationGraph(addr, self)
