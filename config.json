@@ -51,8 +51,13 @@
     ],
     "cro": [
         "https://evm.cronos.org",
-        "https://cronos.org/explorer/api?",
-        "https://cronos.org/explorer/address/"
+        "https://api.cronoscan.com/api?",
+        "https://cronoscan.com/address/"
+    ],
+    "oasis": [
+        "https://emerald.oasis.dev",
+        "https://explorer.emerald.oasis.dev/api?",
+        "https://explorer.emerald.oasis.dev/address/"
     ]
 
 }

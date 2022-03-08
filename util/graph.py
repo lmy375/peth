@@ -1,5 +1,6 @@
 import json
 
+from eth.sigs import Signature
 
 class ERC20Contract(object):
 
@@ -149,28 +150,18 @@ class ContractRelationGraph(object):
         print('=' * 20)
         print(f"{contract_name}({addr}) ABI:")
 
+        uncalled_view_sigs = []
+        func_sigs = []
         for func in contract.all_functions():
             abi = func.abi
 
-            skip = False
-            view = True
-            if abi["type"] != "function":
-                skip = True
-            if abi["stateMutability"] != "view":
-                skip = True
-                view = False
-            if abi["inputs"]:  # We have no idea to generate valid inputs now.
-                skip = True
-            
+            sig = Signature.from_abi(func.abi)
 
-            name = abi["name"]
-            args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
-            return_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["outputs"])
-            func_sig = f"{contract_name}.{name}({args_sig})->({return_sig})"
-            if view:
-                func_sig = '[VIEW] ' + func_sig
-            if skip:
-                print(func_sig)
+            if not (sig.is_view and len(sig.inputs) == 0):
+                if sig.is_view:
+                    uncalled_view_sigs.append(sig)
+                else:
+                    func_sigs.append(sig)
                 continue
 
             try:
@@ -182,7 +173,7 @@ class ContractRelationGraph(object):
                 )
                 continue
 
-            print(f"{func_sig} = {ret}")
+            print(f"{sig} => {ret}")
 
             if len(abi["outputs"]) == 1:
                 if (
@@ -216,6 +207,13 @@ class ContractRelationGraph(object):
                                 f"{func.function_identifier}[{i}]",
                                 ret[i],
                             )
+        
+        print('-' * 20)
+        for i in uncalled_view_sigs:
+            print(i)
+        print('-' * 20)
+        for i in func_sigs:
+            print(i)
 
     def visit(self, addr, include_view=False):
         if addr in self._ids:

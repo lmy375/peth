@@ -14,10 +14,13 @@ def diff_source(src1, src2, output=None):
     src1.compare(src2, output)
 
 def diff_chain_src(chain1, addr1, chain2, addr2, output=None):
-    print("[*] Diff %s-%s  %s-%s" % (chain1, addr1, chain2, addr2))
-    src1 = ScanAPI.get_source_by_chain(chain1, addr1)
-    src2 = ScanAPI.get_source_by_chain(chain2, addr2)
-    diff_source(src1, src2, output)
+    try:
+        print("[*] Diff %s-%s  %s-%s" % (chain1, addr1, chain2, addr2))
+        src1 = ScanAPI.get_source_by_chain(chain1, addr1)
+        src2 = ScanAPI.get_source_by_chain(chain2, addr2)
+        diff_source(src1, src2, output)
+    except Exception as e:
+        print("[!] diff_chain_src: %s" % e)
 
 def diff_uniswap(chain, factory=None, pair=None, router=None):
     peth = Peth.get_or_create(chain)

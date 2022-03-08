@@ -1,3 +1,4 @@
+from string import hexdigits
 import requests
 from web3 import Web3
 
@@ -52,3 +53,7 @@ def process_args(args):
             r.append(arg)
     return r
     
+def hex2bytes(hex_data):
+    if hex_data.startswith('0x'):
+        hex_data = hex_data[2:]
+    return bytes.fromhex(hex_data)

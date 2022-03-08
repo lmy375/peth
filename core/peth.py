@@ -1,14 +1,14 @@
 
 from web3 import Web3
 import eth_abi
+import web3
 
 from core.config import config
 from eth.scan import ScanAPI
 from eth.sigs import Signature, Signatures
-from eth.utils import process_args
+from eth.utils import process_args, hex2bytes
 
 from util.graph import ContractRelationGraph
-
 
 class Peth(object):
 
@@ -50,6 +50,35 @@ class Peth(object):
             return "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
         return r
 
+    def decode_call(self, to_or_sig, data):
+        if type(data) is str:
+            data = hex2bytes(data)
+        selector = data[:4]
+
+        if Web3.isAddress(to_or_sig):
+            to = to_or_sig
+            sigs = Signatures(self.scan.get_abi(to))
+            sig = sigs.find_by_selector(selector)
+            assert sig, "No method match 0x%s" % selector.hex()
+        else:
+            sig = Signature.from_sig(to_or_sig)
+            assert sig.inputs, "Invalid sig: %s" % to_or_sig
+        
+        print("Method:")
+        print(' ', sig)
+        
+        args = sig.decode_args(data)
+        if args:
+            print("Arguments:")
+            i = 0
+            for name, typ in sig.inputs:
+                if name is None:
+                    name = 'arg%d' % (i+1)
+                print(' ', "%s %s = %s" %(typ, name, args[i]))
+                i += 1
+        else:
+            print("No args.")
+
     def eth_call(self, to, sig_or_name, args=[], sender=None, throw_on_revert=False, **kwargs):
         args = process_args(args)
         if type(sig_or_name) is str:
@@ -64,9 +93,7 @@ class Peth(object):
         else:
             assert False, f"Invalid sig_or_name {sig_or_name}"
 
-        data = sig.selector
-        if sig.args_sig and sig.args_sig != "()":
-            data += eth_abi.encode_single(sig.args_sig, args)
+        data = sig.encode_args(args)
         
         if not sender:
             sender = '0x0000000000000000000000000000000000000000'
@@ -86,16 +113,7 @@ class Peth(object):
 
         if "result" in r:
             try:
-                data = r["result"][2:] # skip 0x
-                data = bytes.fromhex(data)
-                if sig.return_sig and sig.return_sig != "()":
-                    ret_values = eth_abi.decode_single(sig.return_sig, data)
-                    if len(ret_values) == 1:
-                        return ret_values[0]
-                    else:
-                        return ret_values
-                else:
-                    return r["result"]
+                return sig.decode_ret(r["result"])
             except Exception as e:
                 print("Error in parse return data", e)
                 if throw_on_revert:

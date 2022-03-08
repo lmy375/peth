@@ -6,7 +6,7 @@ from select import select
 
 from web3 import Web3
 
-from eth.sigs import ERC20Signatures, Signature
+from eth.sigs import ERC20Signatures, Signature, Signatures
 from eth.utils import get_4byte_sig, sha3_256, func_selector
 from eth.bytecode import Code
 from eth.opcodes import OpCode
@@ -37,11 +37,13 @@ class PethConsole(cmd.Cmd):
         self._debug = not self._debug
         print("debug set to", self._debug)
 
-    def _print_json(self, d):
+    def __print_json(self, d, full=False):
         for k, v in d.items():
             if v:
+                if isinstance(v, bytes):
+                    v = v.hex()
                 v = str(v).splitlines()[0]
-                if len(v) > 80:
+                if not full and len(v) > 80:
                     v = v[:80] + ' ...'
             print(' ', k, ":\t", v)        
 
@@ -95,6 +97,28 @@ class PethConsole(cmd.Cmd):
         sig_or_name = args[1]
         arg_list = args[2:]
         print(self.peth.call_contract(to, sig_or_name, arg_list, sender))
+
+    def do_tx_call(self, arg):
+        """
+        tx_call <txid> : Decode call data.
+        tx_call <addr> <data>
+        tx_call <sig> <data>
+        """
+        args = arg.split()
+        if len(args) == 1:
+            txid = arg
+            info = self.web3.eth.get_transaction(txid)
+            sender = info["from"]
+            to = info["to"]
+            data = info["input"]
+            print("%s -> %s" %(sender, to))
+            if data:
+                self.peth.decode_call(to, data)
+        else:
+            assert len(args) == 2, "Invalid args number."
+            sig_or_addr = args[0]
+            data = args[1]
+            self.peth.decode_call(sig_or_addr,data)
 
     def do_rpc_call(self, arg):
         """
@@ -170,6 +194,17 @@ class PethConsole(cmd.Cmd):
         slot = int(slot)
         print(self.web3.eth.get_storage_at(addr, slot).hex())
 
+    def do_tx(self, arg):
+        """
+        tx <txid> : Print transaction information.
+        """
+        print("Transaction:")
+        tx = self.web3.eth.get_transaction(arg)
+        self.__print_json(tx, True)
+
+        print("Receipt:")
+        self.__print_json(self.web3.eth.get_transaction_receipt(arg), True)
+
     def do_number(self, arg):
         """
         number : Get the current block number.
@@ -221,37 +256,38 @@ class PethConsole(cmd.Cmd):
         """
         contract <address> : print contract information (from Etherscan).
         """
+        addr = self.web3.toChecksumAddress(arg)
         info = self.peth.scan.get_contract_info(arg)
-        self._print_json(info)
+        self.__print_json(info)
 
         abis = info["ABI"]
         try:
-            abis = json.loads(abis)
-            print(' ', "=== ABI ===")
-            for abi in abis:
-                typ = abi["type"]
-                name = abi.get("name", "")
-                mut = abi.get("stateMutability", "")
-                func_sig = f"{typ} {name}"
-                args_sig = ""
-                if "inputs" in abi:
-                    args_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["inputs"])
-                    func_sig += f"({args_sig})"
-                else:
-                    func_sig += "()"
+            abi_json = json.loads(abis)
+            print(' ', "=== VIEWS ===")
+            contract = self.web3.eth.contract(address=addr, abi=abi_json)
+            
+            others = []
+            for func in contract.all_functions():
+                sig = Signature.from_abi(func.abi)
 
-                if "outputs" in abi:
-                    return_sig = ",".join('%s %s' % (i["type"], i["name"]) for i in abi["outputs"])
-                    func_sig += f" returns({return_sig})"
-               
-                func_sig += " " + mut
-
-                if name:
-                    real_sig = "%s(%s)" % (name, ",".join(i["type"] for i in abi["inputs"]))
-                    selector = func_selector(real_sig).hex()
+                if sig.is_view and len(sig.inputs) == 0:
+                    try:
+                        ret = func().call()
+                    except Exception as e:
+                        print(
+                            " ",
+                            f"[*] Error in calling {sig}",
+                            e,
+                        )
+                        continue
+                    print(" ", f"{sig} => {ret}")
                 else:
-                    selector = ' ' * 10
-                print(' ', selector, func_sig)
+                    others.append(sig)
+            
+            print(' ', "=== OTHERS ===")
+            for s in others:
+                print(' ', s)
+
 
         except Exception as e:
             print(e)
@@ -297,8 +333,36 @@ class PethConsole(cmd.Cmd):
         timelock <address>: Print TimelockController min delay.
         """
         addr = self.web3.toChecksumAddress(arg)
-        secs = self.peth.call_contract(addr, "getMinDelay()->(uint)")
-        print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
+        try:
+            secs = self.peth.call_contract(addr, "getMinDelay()->(uint)")
+            print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
+        except Exception as e:
+            pass
+    
+        try:
+            secs = self.peth.call_contract(addr, "MINIMUM_DELAY()->(uint)")
+            print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
+        except Exception as e:
+            pass
+
+        try:
+            secs = self.peth.call_contract(addr, "MAXIMUM_DELAY()->(uint)")
+            print("Max Delay: %ds = %0.2fh" % (secs, secs/3600))
+        except Exception as e:
+            pass  
+
+        try:
+            secs = self.peth.call_contract(addr, "delay()->(uint)")
+            print("Current Delay: %ds = %0.2fh" % (secs, secs/3600))
+        except Exception as e:
+            pass        
+
+
+        try:
+            admin = self.peth.call_contract(addr, "admin()->(address)")
+            print("Admin: %s" % admin)
+        except Exception as e:
+            pass  
 
     def do_pair(self, arg):
         """
