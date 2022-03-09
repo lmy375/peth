@@ -118,11 +118,9 @@ def main():
 
     c = PethConsole(peth)
     if args.console:
-        c.cmdloop()
+        c.start_console()
     elif args.cmd:
-        cmd = ' '.join(args.cmd)
-        c._debug = True
-        c.onecmd(cmd)
+        c.single_command(args.cmd)
 
 if __name__ == "__main__":
     main()

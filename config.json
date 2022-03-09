@@ -58,6 +58,15 @@
         "https://emerald.oasis.dev",
         "https://explorer.emerald.oasis.dev/api?",
         "https://explorer.emerald.oasis.dev/address/"
+    ],
+    "aoa2": [
+        "https://mainnet.aurora.dev",
+        "https://explorer.mainnet.aurora.dev/api?",
+        "https://explorer.mainnet.aurora.dev/address/"
+    ],
+    "aoa": [
+        "https://mainnet.aurora.dev",
+        "https://api.aurorascan.dev/api?",
+        "https://aurorascan.dev/address/"
     ]
-
 }

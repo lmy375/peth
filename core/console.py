@@ -17,7 +17,7 @@ from .config import config
 
 class PethConsole(cmd.Cmd):
 
-    intro = 'Welcome to the peth shell.   Type help or ? to list commands.\n'
+
     prompt = 'peth > '
 
     def __init__(self, peth: Peth) -> None:
@@ -29,6 +29,29 @@ class PethConsole(cmd.Cmd):
     def web3(self):
         return self.peth.web3
 
+    def start_console(self):
+        """
+        Start a peth console. Catch Ctrl+C.
+        """
+        print('Welcome to the peth shell.   Type help or ? to list commands.\n')
+        while True:
+            try:
+                self.cmdloop()
+                return
+            except KeyboardInterrupt as e:
+                print() # new line.
+
+    def single_command(self, cmd, debug=True):
+        """
+        Run single command. This will not catch call exception by default.
+        """
+        if type(cmd) is list:
+            cmd = ' '.join(cmd)
+        else:
+            cmd = str(cmd)
+
+        self._debug = debug
+        self.onecmd(cmd)
 
     def do_debug(self, arg):
         """
@@ -63,7 +86,6 @@ class PethConsole(cmd.Cmd):
         else:
             print("Support: %s" % ', '.join(config.keys()))
             
-        
 
     def onecmd(self, line):
         try:
@@ -89,7 +111,7 @@ class PethConsole(cmd.Cmd):
 
     def do_eth_call(self, arg):
         """
-        eth_call <to> <sig_or_name> <arg1> <arg2> ... : call contract with 0x sender.
+        eth_call <to> <sig_or_name> <arg1> <arg2> ... : Call contract with 0x sender.
         """
         sender = '0x0000000000000000000000000000000000000000'
         args = arg.split()
@@ -97,6 +119,25 @@ class PethConsole(cmd.Cmd):
         sig_or_name = args[1]
         arg_list = args[2:]
         print(self.peth.call_contract(to, sig_or_name, arg_list, sender))
+
+    def do_get_prop(self, arg):
+        """
+        get_prop <contract> <name> [<type>] : Call property-like view method.
+        eg:
+        get_prop <contract> admin         => eth_call <contract> admin()
+        get_prop <contract> admin address => eth_call <contract> admin()=>(address)
+        get_prop <contract> name string => eth_call <contract> name()=>(string)
+        """
+        args = arg.split()
+        to = args[0]
+        key = args[1]
+        if len(args) == 3:
+            ret_type = args[2]
+            sig = f"{key}()->({ret_type})"
+        else:
+            sig = f"{key}()"
+        print(self.peth.call_contract(to, sig, []))
+
 
     def do_tx_call(self, arg):
         """
@@ -203,7 +244,7 @@ class PethConsole(cmd.Cmd):
         self.__print_json(tx, True)
 
         print("Receipt:")
-        self.__print_json(self.web3.eth.get_transaction_receipt(arg), True)
+        self.__print_json(self.web3.eth.get_transaction_eeeeeee(arg), True)
 
     def do_number(self, arg):
         """
@@ -327,6 +368,22 @@ class PethConsole(cmd.Cmd):
         print("Admin", self.web3.eth.get_storage_at(addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex())
         print("Rollback", self.web3.eth.get_storage_at(addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
         print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
+
+
+    def do_gnosis(self, arg):
+        """
+        gnosis <gnosis-proxy-address>: Print Gnosis information.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        try:
+            threshold = self.peth.call_contract(addr, "getThreshold()->(uint)")
+            users = self.peth.call_contract(addr, "getOwners()->(address[])")
+            print("Policy: %s/%s" %(threshold, len(users)))
+            print("Owners:")
+            for u in users:
+                print(" ", u)
+        except Exception as e:
+            print("Failed. Ensure your input is a GnosisProxy contract address.")
 
     def do_timelock(self, arg):
         """

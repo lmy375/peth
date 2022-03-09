@@ -113,7 +113,12 @@ class Peth(object):
 
         if "result" in r:
             try:
-                return sig.decode_ret(r["result"])
+                ret = sig.decode_ret(r["result"])
+                if ret is not None:
+                    return ret
+                else: 
+                    # If no output sig, return raw data.
+                    return r["result"]
             except Exception as e:
                 print("Error in parse return data", e)
                 if throw_on_revert:
