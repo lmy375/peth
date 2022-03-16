@@ -34,7 +34,8 @@ class ContractRelationGraph(object):
     def __init__(self, addr, peth) -> None:
 
         self.data = {
-            "rootId": addr,
+            # Remove root and let the options-tools determine automatically.
+            # "rootId": addr,
             "nodes": [
                 # {id, text}
             ],
@@ -114,7 +115,7 @@ class ContractRelationGraph(object):
                 print("- %0.2f %s (%0.2f %%)" % (
                     amount,
                     symbol,
-                    amount/total
+                    amount * 100/total
                 ))
 
     def _add_erc20(self, addr, contract_name, abi, contract):
@@ -226,7 +227,10 @@ class ContractRelationGraph(object):
 
         contract_name = info.get("ContractName", addr)
         if not contract_name:
-            contract_name = addr
+            if len(self.web3.eth.get_code(addr)) > 0:
+                contract_name = "Contract " + addr[:10]
+            else:
+                contract_name = "EOA " + addr[:10]
 
         abi = info.get("ABI", "Contract source code not verified")
 

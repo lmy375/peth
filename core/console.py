@@ -258,6 +258,13 @@ class PethConsole(cmd.Cmd):
         """
         addr = self.web3.toChecksumAddress(arg)
         print(self.web3.eth.get_code(addr).hex())
+    
+    def do_codesize(self, arg):
+        """
+        codesize <address> : Get code size of address.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        print("Size", len(self.web3.eth.get_code(addr)))
 
     def do_disasm(self, arg):
         """
@@ -368,6 +375,7 @@ class PethConsole(cmd.Cmd):
         print("Admin", self.web3.eth.get_storage_at(addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex())
         print("Rollback", self.web3.eth.get_storage_at(addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
         print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
+        print("Initialized", self.web3.eth.get_storage_at(addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
 
 
     def do_gnosis(self, arg):
@@ -473,6 +481,39 @@ class PethConsole(cmd.Cmd):
         print("Price:")
         print("1 %s = %0.4f %s" % (token0_name, r1/r0, token1_name))
         print("1 %s = %0.4f %s" % (token1_name, r0/r1, token0_name))
+
+
+    def do_oracle(self, arg):
+        """
+        oracle <EACAggregatorProxy> : Print ChainLink oracle aggregator information.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        try:
+            aggr = self.peth.call_contract(addr, "aggregator()->(address)")
+            print("Aggregator:", aggr)
+
+            print("Description:", self.peth.call_contract(aggr, "description()->(string)"))
+            print("Owner:", self.peth.call_contract(aggr, "owner()->(address)"))
+
+            dec = self.peth.call_contract(aggr, "decimals()->(uint8)")
+            print("Decimals:", dec)
+
+            latest = self.peth.call_contract(aggr, "latestAnswer()->(int256)")
+            print("Latest Answer: %d (%0.2f)" % (latest, latest/(10**dec)))
+
+            max = self.peth.call_contract(aggr, "maxAnswer()->(int192)")
+            print("Max Answer: %d (%0.2f)" % (max, max/(10**dec)))
+
+            min = self.peth.call_contract(aggr, "minAnswer()->(int192)")
+            print("Min Answer: %d (%0.2f)" % (min, min/(10**dec)))
+
+            transmitters = self.peth.call_contract(aggr, "transmitters()->(address[])")
+            print("%d Transmitters:" % len(transmitters))
+            for i in transmitters:
+                print(" ", i)
+
+        except Exception as e:
+            pass        
 
     def do_graph(self, arg):
         """
