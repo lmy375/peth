@@ -139,11 +139,11 @@ class PethConsole(cmd.Cmd):
         print(self.peth.call_contract(to, sig, []))
 
 
-    def do_tx_call(self, arg):
+    def do_tx_decode(self, arg):
         """
-        tx_call <txid> : Decode call data.
-        tx_call <addr> <data>
-        tx_call <sig> <data>
+        tx_decode <txid> : Decode call data.
+        tx_decode <addr> <data>
+        tx_decode <sig> <data>
         """
         args = arg.split()
         if len(args) == 1:
@@ -446,8 +446,8 @@ class PethConsole(cmd.Cmd):
             pair_addr = arg
 
         if pair_addr:
-            addr1 = self.peth.call_contract(pair_addr, "token0(address)->(address)", [pair_addr])
-            addr2 = self.peth.call_contract(pair_addr, "token1(address)->(address)", [pair_addr])
+            addr1 = self.peth.call_contract(pair_addr, "token0()->(address)")
+            addr2 = self.peth.call_contract(pair_addr, "token1()->(address)")
         else:
             if factory is None:
                 if self.peth.chain == 'eth':
@@ -459,18 +459,16 @@ class PethConsole(cmd.Cmd):
             pair_addr = self.peth.call_contract(factory, "getPair(address,address)->(address)", [addr1, addr2])
             assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
         
-        print("TokenPair: %s" % pair_addr)
+        print("TokenPair:", pair_addr)
 
-        token0 = self.peth.call_contract(pair_addr, "token0()->(address)")
-        token0_name = self.peth.call_contract(token0, "symbol()->(string)")
+        token0_name = self.peth.call_contract(addr1, "symbol()->(string)")
+        token0_decimal = self.peth.call_contract(addr1, "decimals()->(uint)")
+        
+        token1_name = self.peth.call_contract(addr2, "symbol()->(string)")
+        token1_decimal = self.peth.call_contract(addr2, "decimals()->(uint)")
 
-        token0_decimal = self.peth.call_contract(token0, "decimals()->(uint)")
-        token1 = self.peth.call_contract(pair_addr, "token1()->(address)")
-        token1_name = self.peth.call_contract(token1, "symbol()->(string)")
-        token1_decimal = self.peth.call_contract(token1, "decimals()->(uint)")
-
-        print("%s %s %s" % (token0_name, token0, token0_decimal))
-        print("%s %s %s" % (token1_name, token1, token1_decimal))
+        print("%s %s %s" % (token0_name, addr1, token0_decimal))
+        print("%s %s %s" % (token1_name, addr2, token1_decimal))
 
         r0, r1, _ = self.peth.call_contract(pair_addr, "getReserves()->(uint112,uint112,uint32)")
 

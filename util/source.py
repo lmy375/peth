@@ -73,7 +73,7 @@ class ContractSource(object):
         for name1, src1, in self.contracts.items():
             if name1 in to_comp:
                 src2 = to_comp[name1]
-                s = difflib.SequenceMatcher(None, src1, src2)
+                s = difflib.SequenceMatcher(None, src1.splitlines(), src2.splitlines())
                 similarity = s.ratio()
                 filename = "%s_SAMENAME_%0.2f" % (name1, similarity)
                 self.__diff_file(src1, src2, os.path.join(output, filename))
@@ -85,7 +85,7 @@ class ContractSource(object):
                 continue 
 
             for name2, src2 in to_comp.items():
-                s = difflib.SequenceMatcher(None, src1, src2)
+                s = difflib.SequenceMatcher(None, src1.splitlines(), src2.splitlines())
                 similarity = s.ratio()
                 filename = "%s_%s_%0.2f" % (name1, name2, similarity)
                 # print(filename)
