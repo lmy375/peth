@@ -594,6 +594,17 @@ class PethConsole(cmd.Cmd):
         else:
             print("%s is not valid address." % addr)
 
+    def do_timestamp(self, arg):
+        """
+        timestamp <timestamp> : Convert UNIX timestamp to local datetime.
+        """
+        try:
+            ts = int(arg)
+        except Exception as e:
+            print("[!] Invalid timestamp number. %s" % e)
+        
+        import datetime
+        print(datetime.datetime.fromtimestamp(ts))
 
     def do_common_addresses(self, arg):
         """
