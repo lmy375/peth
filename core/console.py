@@ -1,5 +1,6 @@
 import cmd
 import json
+from multiprocessing import set_forkserver_preload
 import os
 import difflib
 from select import select
@@ -13,10 +14,10 @@ from eth.opcodes import OpCode
 from core.peth import Peth
 from util import diff
 
-from .config import config
+from . import config
+from .config import chain_config
 
 class PethConsole(cmd.Cmd):
-
 
     prompt = 'peth > '
 
@@ -60,15 +61,28 @@ class PethConsole(cmd.Cmd):
         self._debug = not self._debug
         print("debug set to", self._debug)
 
-    def __print_json(self, d, full=False):
-        for k, v in d.items():
-            if v:
-                if isinstance(v, bytes):
-                    v = v.hex()
-                v = str(v).splitlines()[0]
-                if not full and len(v) > 80:
-                    v = v[:80] + ' ...'
-            print(' ', k, ":\t", v)        
+    def __normal_str(self, v, full=False):
+        if isinstance(v, bytes):
+            v = v.hex()
+        v = str(v).splitlines()[0]
+        if not full and len(v) > 80:
+            v = v[:80] + ' ...'
+        return v
+
+    def __print_json(self, data, full=False):
+        if isinstance(data, list):
+            i = 1
+            for item in data:
+                print("---- [%d] ----" % i)
+                self.__print_json(item, full)
+                i += 1
+        elif getattr(data, "items", None): # dict like object.e
+            for k, v in data.items():
+                if v:
+                    v = self.__normal_str(v, full)
+                print(' ', k, ":\t", v)
+        else:
+            print(self.__normal_str(data, full))   
 
     def do_chain(self, arg):
         """
@@ -79,13 +93,20 @@ class PethConsole(cmd.Cmd):
         print("Current:")
         self.peth.print_info()
 
-        if arg in config:
+        if arg in chain_config:
             self.peth = Peth.get_or_create(arg)
             print("Changed:")
             self.peth.print_info()
         else:
-            print("Support: %s" % ', '.join(config.keys()))
-            
+            print("Support: %s" % ', '.join(chain_config.keys()))
+
+
+    def do_config(self, arg):
+        """
+        config: Print current config settings.
+        """
+        config.print_config()
+        print("Use ? exec('config.xxx = xxx') to change.")
 
     def onecmd(self, line):
         try:
@@ -139,6 +160,20 @@ class PethConsole(cmd.Cmd):
         print(self.peth.call_contract(to, sig, []))
 
 
+    # def _decode_tx(self, tx)e
+
+    def do_tx(self, arg):
+        """
+        tx <txid> : Print transaction information.
+        """
+        print("Transaction:")
+        tx = self.web3.eth.get_transaction(arg)
+        self.__print_json(tx, True)
+
+        print("Receipt:")
+        self.__print_json(self.web3.eth.get_transaction_receipt(arg), True)
+
+
     def do_tx_decode(self, arg):
         """
         tx_decode <txid> : Decode call data.
@@ -152,6 +187,11 @@ class PethConsole(cmd.Cmd):
             sender = info["from"]
             to = info["to"]
             data = info["input"]
+            if to is None:
+                r = self.web3.eth.get_transaction_receipt(txid)
+                contract_address = r["contractAddress"]
+                print("%s creates contract %s" % (sender, contract_address))
+                return
             print("%s -> %s" %(sender, to))
             if data:
                 self.peth.decode_call(to, data)
@@ -160,6 +200,56 @@ class PethConsole(cmd.Cmd):
             sig_or_addr = args[0]
             data = args[1]
             self.peth.decode_call(sig_or_addr,data)
+
+    def do_txs(self, arg):
+        """
+        txs <addr>  : Print the first 10 txs of the account.
+        txs <addr> <count>  : Print the first n txs of the account.
+        txs <addr> <count> <asc/desc>  : Print the last n txs of the account.
+        txs <addr> <count> <asc/desc> <startblock> <endblock> : Print txs between specified blocks.
+        """
+        args = arg.split()
+        assert len(args) >= 1
+        addr = args[0]
+        count = 10
+        startblock = None
+        endblock = None
+        reverse = False
+
+        if len(args) >= 2: count = int(args[1])
+        if len(args) >= 3: reverse = args[2] == 'desc'
+        if len(args) >= 5: 
+            startblock = int(args[3])
+            endblock = int(args[4])
+           
+        txs = self.peth.scan.get_txs_by_account(addr, startblock, endblock, count, reverse)
+        
+        i = 0
+        for tx in txs:
+            i += 1
+            print("---- [%d] %s %s ----" % (i, tx["hash"], tx["blockNumber"]))
+
+            sender = tx["from"]
+            to = tx["to"]
+            data = tx["input"]
+            contract = tx["contractAddress"]
+            value = tx["value"]
+
+            if contract:
+                print("%s creates contract %s" % (sender, contract))
+                continue
+
+            if value:
+                print("%s -> %s value %s" %(sender, to, value))
+            else:
+                print("%s -> %s" %(sender, to))
+
+            if data and data != "0x":
+                try:
+                    self.peth.decode_call(to,data)
+                except Exception as e:
+                    print("Error:", e)
+
 
     def do_rpc_call(self, arg):
         """
@@ -234,17 +324,6 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(addr)
         slot = int(slot)
         print(self.web3.eth.get_storage_at(addr, slot).hex())
-
-    def do_tx(self, arg):
-        """
-        tx <txid> : Print transaction information.
-        """
-        print("Transaction:")
-        tx = self.web3.eth.get_transaction(arg)
-        self.__print_json(tx, True)
-
-        print("Receipt:")
-        self.__print_json(self.web3.eth.get_transaction_eeeeeee(arg), True)
 
     def do_number(self, arg):
         """
@@ -515,11 +594,10 @@ class PethConsole(cmd.Cmd):
 
     def do_graph(self, arg):
         """
-        Print contract relation graph.
+        graph <addr1> [<addr2> <addr3> ... ]: Print contract relation graph.
         """
         if arg:
-            self.peth.print_contract_graph(arg)
-
+            self.peth.print_contract_graph(arg.split())
 
     def do_diff(self, arg):
         """
@@ -567,7 +645,7 @@ class PethConsole(cmd.Cmd):
         """
         Eval python script.
         """
-        print(eval(arg))
+        print(eval(arg.strip()))
 
     def do_open(self, arg):
         """
@@ -594,6 +672,26 @@ class PethConsole(cmd.Cmd):
         else:
             print("%s is not valid address." % addr)
 
+    def do_decompile(self, addr):
+        """
+        decompile <addr> : Open online decompiler.
+        """
+        addr = addr.strip()
+        if not Web3.isAddress(addr):
+            print("%s is not valid address." % addr)
+            return 
+
+        if "eth" in self.peth.chain:
+            url = "https://library.dedaub.com/contracts/Ethereum/" + addr
+        elif "matic" in self.peth.chain:
+            url = "https://library.dedaub.com/contracts/Polygon/" + addr
+        else:
+            url = self.peth.address_url.replace("address/", "bytecode-decompiler?a=") + addr
+        
+        print(url)
+        self.do_open(url) 
+
+
     def do_timestamp(self, arg):
         """
         timestamp <timestamp> : Convert UNIX timestamp to local datetime.
@@ -605,6 +703,13 @@ class PethConsole(cmd.Cmd):
         
         import datetime
         print(datetime.datetime.fromtimestamp(ts))
+
+    def do_aml(self, arg):
+        """
+        aml <address> : Print funding chain related to the address.
+        """
+        addr = Web3.toChecksumAddress(arg)
+        self.peth.print_funding_chain(addr)
 
     def do_common_addresses(self, arg):
         """

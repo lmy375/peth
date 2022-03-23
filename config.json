@@ -4,6 +4,11 @@
         "https://api.etherscan.io/api?",
         "https://etherscan.io/address/"
     ],
+    "ethcn":[
+        "https://rpc.ankr.com/eth",
+        "https://api-cn.etherscan.com/api?",
+        "https://cn.etherscan.com/address/"
+    ],
     "bsc": [
         "https://rpc.ankr.com/bsc",
         "https://api.bscscan.com/api?",

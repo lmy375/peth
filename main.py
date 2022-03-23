@@ -1,7 +1,7 @@
 import json
 from argparse import ArgumentParser
 
-from core.config import config
+from core.config import chain_config
 from core.peth import Peth
 from core.console import PethConsole
 
@@ -14,7 +14,7 @@ def get_args():
     parser.add_argument(
         "-c",
         "--chain",
-        choices=list(config.keys()),
+        choices=list(chain_config.keys()),
         default='eth',
         help="Chain of the contract.",
     )

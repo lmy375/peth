@@ -1,9 +1,7 @@
 
 from web3 import Web3
-import eth_abi
-import web3
 
-from core.config import config
+from core.config import chain_config
 from eth.scan import ScanAPI
 from eth.sigs import Signature, Signatures
 from eth.utils import process_args, hex2bytes
@@ -25,10 +23,22 @@ class Peth(object):
         # assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
         
         if api_url:
-            self.scan = ScanAPI.get_or_create(api_url)
+            self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
         else:
             self.scan = None
-    
+
+
+    @classmethod
+    def get_or_create(cls, chain) -> 'Peth':
+        assert chain in chain_config.keys(), f"Invalid chain {chain}. See config.json."
+        if chain not in cls.cache:
+            rpc_url = chain_config[chain][0]
+            api_url = chain_config[chain][1]
+            address_url = chain_config[chain][2]
+            cls.cache[chain] = cls(rpc_url, api_url, address_url, chain)
+        return cls.cache[chain]
+
+
     def print_info(self):
         print("Chain:", self.chain)
         print("RPC:", self.rpc_url)
@@ -139,22 +149,89 @@ class Peth(object):
             print('[*] Call %s %s %s' % (contract, sig_or_name, e))
             return None
 
-    def print_contract_graph(self, addr, include_view=False):
-        addr = Web3.toChecksumAddress(addr)
-        graph = ContractRelationGraph(addr, self)
-        graph.visit(addr, include_view)
+    def print_contract_graph(self, addrOrList, include_view=False):
+        if type(addrOrList) is list:
+            assert len(addrOrList) > 0, "peth.print_contract_graph: addrs is empty."
+            root = addrOrList[0]
+            addrs = addrOrList
+        else:
+            root = addrOrList
+            addrs = [addrOrList]
+        
+        graph = ContractRelationGraph(Web3.toChecksumAddress(root), self)
+        for addr in addrs:
+            addr = Web3.toChecksumAddress(addr)
+            graph.visit(addr, include_view)
         graph.print_assets()
         print("=====================")
         print(graph.dump())
         print("=====================")
         print("Open http://relation-graph.com/#/options-tools and paste the json.")
 
-    @classmethod
-    def get_or_create(cls, chain):
-        assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
-        if chain not in cls.cache:
-            rpc_url = config[chain][0]
-            api_url = config[chain][1]
-            address_url = config[chain][2]
-            cls.cache[chain] = cls(rpc_url, api_url, address_url, chain)
-        return cls.cache[chain]
+
+    def _find_first_tx(self, addr):
+        addr = addr.lower()
+        try:
+            txs = self.scan.get_txs_by_account(addr, count=1, internal=False)
+            first_tx = txs[0]
+
+            # First tx sent to me.
+            if first_tx["to"] == addr and first_tx["from"] != addr:
+                return False, first_tx
+        except Exception:
+            first_tx = None
+
+        # Search internal tx.
+        try:
+            txs = self.scan.get_txs_by_account(addr, count=1, internal=True)
+            tx = txs[0]
+
+            if first_tx is None:
+                return True, tx
+
+            if int(tx["blockNumber"]) <= int(first_tx["blockNumber"]) and tx["from"] != addr:
+                return True, tx
+        except Exception:
+            pass 
+
+        return None, None
+
+    def print_funding_chain(self, addr):
+        print("Start", addr)
+        i = 1
+        while True:
+            if not Web3.isAddress(addr):
+                break
+
+            is_int_tx, tx = self._find_first_tx(addr)
+            if tx is None:
+                break
+        
+            
+
+            if is_int_tx:
+                txid = tx["hash"]
+                tx = self.web3.eth.get_transaction(txid)
+                sender = tx["from"]
+                to = tx["to"]
+                name = self.scan.get_contract_name(to)
+
+                print(f"[{i}] {sender} calls contract {name}({to}) in {txid}")
+
+                if 'Tornado' in name: 
+                    # Tornado.cash found, no sense to continue searching.
+                    break
+            else:
+                sender = tx["from"]
+                to = tx["to"]
+                value = int(tx["value"])
+                ethers = "%0.5f" % Web3.fromWei(value, "ether")
+                print(f"[{i}] {sender} sends {to} {ethers} ETH")
+
+            addr = sender
+            i += 1
+
+        print("End")
+
+
+    

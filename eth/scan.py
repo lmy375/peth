@@ -1,8 +1,11 @@
 import time
 import requests
 import json
+import os
 
-from core.config import config, DEFAULT_API_INTERVAL
+from web3 import Web3
+
+from core.config import chain_config, DEFAULT_API_INTERVAL, CACHE_PATH
 
 class ScanAPI(object):
 
@@ -16,6 +19,20 @@ class ScanAPI(object):
         self.api_url = api_url
         self.has_api_key = 'apikey' in api_url
         self._last_scan_call = 0
+
+        if not os.path.exists(CACHE_PATH):
+            os.makedirs(CACHE_PATH)
+
+    def _cache_get(self, id: str):
+        path = os.path.join(CACHE_PATH, id)
+        if os.path.exists(path):
+            return open(path).read()
+        else:
+            return None
+
+    def _cache_set(self, id: str, data: str):
+        path = os.path.join(CACHE_PATH, id)
+        open(path, 'w').write(data)
 
     def get(self, url):
         # print(url)
@@ -36,17 +53,40 @@ class ScanAPI(object):
 
             assert d["status"] == "1", d
             assert type(d["result"]) is list, d["result"]
-            return d["result"][0]
+            return d["result"]
         except Exception as e:
-            print("[!] Etherscan API fail.", e, url)
+            # print("[!] Etherscan API fail.", e, url)
             return None      
 
-    def get_contract_info(self, addr):
-        url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
-        return self.get(url)
+    def get_contract_info(self, addr, auto_proxy=True):
+        addr = addr.lower()
+
+        # Try cache load.
+        d = self._cache_get(addr + ".json")
+        if d:
+            d = json.loads(d)
+        else:
+            url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
+            d = self.get(url)[0] # The first.
+            if d: 
+                self._cache_set(addr + ".json", json.dumps(d))
+
+        # Handle proxy
+        if d:
+            impl = d["Implementation"]
+            if auto_proxy and Web3.isAddress(impl): # Proxy found.
+                return self.get_contract_info(impl)
+        return d
 
     def get_abi(self, addr):
-        return self.get_contract_info(addr)["ABI"]
+        abi = self.get_contract_info(addr)["ABI"]
+        if abi == "Contract source code not verified":
+            return None
+        else:
+            return abi
+
+    def get_contract_name(self, addr):
+        return self.get_contract_info(addr)["ContractName"]
 
     def get_source(self, addr):
         ret = ""
@@ -81,6 +121,31 @@ class ScanAPI(object):
         assert ret, "ScanAPI.get_source: source not found in info: %s" % (list(info))
         return ret
 
+    def get_txs_by_account(self, sender, startblock=None, endblock=None, count=10, reverse=False, internal=False):
+        url = f"{self.api_url}module=account"
+        
+        if internal:
+            url += "&action=txlistinternal"
+        else:
+            url += "&action=txlist"
+        
+        url += f"&address={sender}"
+        
+        if startblock is not None:
+            url += f"&startblock={startblock}"
+        if endblock is not None:
+            url += f"&endblock={endblock}"
+        
+        url += f"&page=1&offset={count}"
+        
+        if reverse:
+            url += "&sort=desc"
+        else:
+            url += "&sort=asc"
+        
+        txs = self.get(url)
+        return txs
+
     @classmethod
     def get_or_create(cls, api_url):
         if api_url not in cls.cache:
@@ -89,5 +154,5 @@ class ScanAPI(object):
 
     @classmethod
     def get_source_by_chain(cls, chain, addr):
-        assert chain in config.keys(), f"Invalid chain {chain}. See config.json."
-        return ScanAPI.get_or_create(config[chain][1]).get_source(addr)    
+        assert chain in chain_config.keys(), f"Invalid chain {chain}. See config.json."
+        return ScanAPI.get_or_create(chain_config[chain][1]).get_source(addr)    

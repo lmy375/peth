@@ -1,7 +1,7 @@
-import json
 import difflib
 import os
 
+from core import config
 
 class ContractSource(object):
 
@@ -89,7 +89,7 @@ class ContractSource(object):
                 similarity = s.ratio()
                 filename = "%s_%s_%0.2f" % (name1, name2, similarity)
                 # print(filename)
-                if similarity > 0.1:
+                if similarity > config.DIFF_MIN_SIMILARITY:
                     self.__diff_file(src1, src2, os.path.join(output, filename))
                     src_left[name1] = None
                     dst_left[name2] = None

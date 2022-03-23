@@ -248,7 +248,6 @@ class Signatures(object):
     def find_by_selector(self, selector):
         return self.selector_map.get(bytes(selector))
 
-
 ERC20Signatures = Signatures(
     [
         "totalSupply() -> (uint256)",
