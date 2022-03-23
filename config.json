@@ -73,5 +73,15 @@
         "https://mainnet.aurora.dev",
         "https://api.aurorascan.dev/api?",
         "https://aurorascan.dev/address/"
+    ],
+    "moonriver": [
+        "https://rpc.moonriver.moonbeam.network",
+        "https://api-moonriver.moonscan.io/api?",
+        "https://moonriver.moonscan.io/address/"
+    ],
+    "moonbeam": [
+        "https://rpc.api.moonbeam.network",
+        "https://api-moonbeam.moonscan.io/api?",
+        "https://moonbeam.moonscan.io/address/"
     ]
 }
