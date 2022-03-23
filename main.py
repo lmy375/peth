@@ -115,12 +115,14 @@ def main():
     elif args.graph:
         addr = args.to
         peth.print_contract_graph(addr)
-
-    c = PethConsole(peth)
-    if args.console:
-        c.start_console()
     elif args.cmd:
-        c.single_command(args.cmd)
+        c = PethConsole(peth)
+        c.single_command(args.cmd) 
+    else:
+        # Default: Open console.
+        c = PethConsole(peth)
+        c.start_console()
+    
 
 if __name__ == "__main__":
     main()
