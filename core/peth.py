@@ -25,9 +25,9 @@ class Peth(object):
         # assert self.web3.isConnected(), "Fail to connect HTTPProvider %s." % rpc_url
         
         if api_url:
-            self.scan = ScanAPI.get_or_create(api_url)
+            self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
         else:
-            self.scan = None
+            self.scan: ScanAPI = None
     
     def print_info(self):
         print("Chain:", self.chain)

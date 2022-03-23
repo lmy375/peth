@@ -22,7 +22,7 @@ class PethConsole(cmd.Cmd):
 
     def __init__(self, peth: Peth) -> None:
         super().__init__()
-        self.peth = peth
+        self.peth: Peth = peth
         self._debug = False
 
     @property
@@ -377,6 +377,16 @@ class PethConsole(cmd.Cmd):
         print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
         print("Initialized", self.web3.eth.get_storage_at(addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
 
+    def do_owner(self, arg):
+        """
+        owner <ownable-contract-address>: Print contract owner.
+        """
+        addr = self.web3.toChecksumAddress(arg)
+        try:
+            owner = self.peth.call_contract(addr, "owner()->(address)")
+            print("Owner: %s" %(owner))
+        except Exception as e:
+            print("Failed. Ensure your input is a Ownable contract address.")
 
     def do_gnosis(self, arg):
         """
