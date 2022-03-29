@@ -294,6 +294,8 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         bytes_code = bytes(self.web3.eth.get_code(addr))
         code = Code(bytes_code)
+
+        handled = set()
         
         while True:
             ins = code.next_instruction()
@@ -309,9 +311,12 @@ class PethConsole(cmd.Cmd):
                     continue
 
                 sig = hex(ins.opnd)
-                sigs = get_4byte_sig(sig)
-                sigs = sigs[::-1]
-                print(sig, ', '.join(sigs))
+
+                if sig not in handled:
+                    handled.add(sig)
+                    sigs = get_4byte_sig(sig)
+                    sigs = sigs[::-1]
+                    print(sig, ', '.join(sigs))
 
 
     def do_balance(self, arg):
