@@ -96,7 +96,8 @@ class Signature(object):
         buf = b''
         if with_selector:
             buf += self.selector
-        buf += eth_abi.encode_single(self.inputs_sig, args)
+        if self.inputs:
+            buf += eth_abi.encode_single(self.inputs_sig, args)
         return buf
 
     def decode_args(self, data, has_selector=True):

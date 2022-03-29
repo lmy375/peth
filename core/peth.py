@@ -84,7 +84,14 @@ class Peth(object):
             for name, typ in sig.inputs:
                 if name is None:
                     name = 'arg%d' % (i+1)
-                print(' ', "%s %s = %s" %(typ, name, args[i]))
+                value = args[i]
+
+                if isinstance(value, bytes):
+                    value = value.hex()
+                elif Web3.isAddress(value):
+                    value = self.scan.get_address_name(value)
+
+                print(' ', "%s %s = %s" %(typ, name, value))
                 i += 1
         else:
             print("No args.")
@@ -104,7 +111,6 @@ class Peth(object):
             assert False, f"Invalid sig_or_name {sig_or_name}"
 
         data = sig.encode_args(args)
-        
         if not sender:
             sender = '0x0000000000000000000000000000000000000000'
         

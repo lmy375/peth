@@ -224,6 +224,10 @@ class PethConsole(cmd.Cmd):
            
         txs = self.peth.scan.get_txs_by_account(addr, startblock, endblock, count, reverse)
         
+        if not txs:
+            print("No txs.")
+            return
+
         i = 0
         for tx in txs:
             i += 1
@@ -235,14 +239,23 @@ class PethConsole(cmd.Cmd):
             contract = tx["contractAddress"]
             value = tx["value"]
 
+
+            if Web3.isAddress(to):
+                to_name = self.peth.scan.get_address_name(to)
+            else:
+                to_name = to
+
+            if Web3.isAddress(contract):
+                contract = self.peth.scan.get_address_name(contract)
+
             if contract:
                 print("%s creates contract %s" % (sender, contract))
                 continue
 
             if value:
-                print("%s -> %s value %s" %(sender, to, value))
+                print("%s -> %s value %s" %(sender, to_name, value))
             else:
-                print("%s -> %s" %(sender, to))
+                print("%s -> %s" %(sender, to_name))
 
             if data and data != "0x":
                 try:
@@ -378,6 +391,25 @@ class PethConsole(cmd.Cmd):
         output_filename = os.path.join('diff', output_filename)
         open(output_filename + '.html', 'w').write(buf)
         print("Written to " + output_filename+'.html')
+
+    def do_name(self, arg):
+        """
+        name <address> : the contract name.
+        """
+        if self.web3.isAddress(arg):
+            addr = self.web3.toChecksumAddress(arg)
+            name = self.peth.scan.get_contract_name(addr)
+            if name:
+                print(name)
+            else:
+                codesize = len(self.web3.eth.get_code(addr))
+                if codesize:
+                    print("Unverified contract size %s" % codesize)
+                else:
+                    print("EOA")
+        else:
+            print("Invalid address format.")
+
 
     def do_contract(self, arg):
         """

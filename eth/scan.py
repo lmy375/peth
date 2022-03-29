@@ -2,6 +2,7 @@ import time
 import requests
 import json
 import os
+import re
 
 from web3 import Web3
 
@@ -20,18 +21,19 @@ class ScanAPI(object):
         self.has_api_key = 'apikey' in api_url
         self._last_scan_call = 0
 
-        if not os.path.exists(CACHE_PATH):
-            os.makedirs(CACHE_PATH)
+        self._cache_path = os.path.join(CACHE_PATH, re.findall('//(.*)?/', api_url)[0])
+        if not os.path.exists(self._cache_path):
+            os.makedirs(self._cache_path)
 
     def _cache_get(self, id: str):
-        path = os.path.join(CACHE_PATH, id)
+        path = os.path.join(self._cache_path, id)
         if os.path.exists(path):
             return open(path).read()
         else:
             return None
 
     def _cache_set(self, id: str, data: str):
-        path = os.path.join(CACHE_PATH, id)
+        path = os.path.join(self._cache_path, id)
         open(path, 'w').write(data)
 
     def get(self, url):
@@ -55,7 +57,7 @@ class ScanAPI(object):
             assert type(d["result"]) is list, d["result"]
             return d["result"]
         except Exception as e:
-            # print("[!] Etherscan API fail.", e, url)
+            print("[!] Etherscan API fail.", e, url)
             return None      
 
     def get_contract_info(self, addr, auto_proxy=True):
@@ -79,14 +81,32 @@ class ScanAPI(object):
         return d
 
     def get_abi(self, addr):
-        abi = self.get_contract_info(addr)["ABI"]
+        info = self.get_contract_info(addr)
+        if info is None:
+            return None
+
+        abi = info["ABI"]
         if abi == "Contract source code not verified":
             return None
         else:
             return abi
 
     def get_contract_name(self, addr):
-        return self.get_contract_info(addr)["ContractName"]
+        if not Web3.isAddress(addr):
+            return None 
+            
+        info = self.get_contract_info(addr)
+        if info is None:
+            return None
+
+        return info.get("ContractName", None)
+
+    def get_address_name(self, addr):
+        name = self.get_contract_name(addr)
+        if name:
+            return f"{name}({addr})"
+        else:
+            return addr
 
     def get_source(self, addr):
         ret = ""
