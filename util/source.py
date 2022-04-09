@@ -21,9 +21,13 @@ class ContractSource(object):
 
             # Find the line which starts with "contract"
 
-            # TODO: library, abstract contract, interface ?
-            if not code.startswith('contract'):
+            # TODO: abstract contract, interface ?
+            if not code.startswith('contract') and not code.startswith('library'):
                 i = code.find('\ncontract')
+                i2 = code.find('\nlibrary')
+                if i != -1 and i2 != -1 and i2 < i: # Search the nearest one.
+                    i = i2
+
                 if i == -1:
                     # Not contract here.
                     break
@@ -75,7 +79,7 @@ class ContractSource(object):
                 src2 = to_comp[name1]
                 s = difflib.SequenceMatcher(None, src1.splitlines(), src2.splitlines())
                 similarity = s.ratio()
-                filename = "%s_SAMENAME_%0.2f" % (name1, similarity)
+                filename = "SAMENAME_%s_%0.2f" % (name1, similarity)
                 self.__diff_file(src1, src2, os.path.join(output, filename))
                 src_left[name1] = None
                 dst_left[name1] = None

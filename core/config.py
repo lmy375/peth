@@ -7,9 +7,11 @@ CACHE_PATH = os.path.join(BASE_PATH, '.contract_info_cache')
 
 DEFAULT_API_INTERVAL = 6
 
-chain_config = json.load(open(CHAIN_CONFIG_PATH))
+user_config = json.load(open(CHAIN_CONFIG_PATH))
+chain_config = user_config["chains"]
+contracts_config = user_config["contracts"]
 
-DIFF_MIN_SIMILARITY = 0.1
+DIFF_MIN_SIMILARITY = 0.5
 
 def print_config():
     print("DIFF_MIN_SIMILARITY", DIFF_MIN_SIMILARITY)

@@ -15,16 +15,21 @@ from core.peth import Peth
 from util import diff
 
 from . import config
-from .config import chain_config
+from .config import chain_config, contracts_config
 
 class PethConsole(cmd.Cmd):
 
     prompt = 'peth > '
 
-    def __init__(self, peth: Peth) -> None:
+    def __init__(self, peth: Peth, sender=None) -> None:
         super().__init__()
         self.peth: Peth = peth
         self._debug = False
+
+        if sender:
+            self.sender = sender
+        else:
+            self.sender = "0x0000000000000000000000000000000000000000"
 
     @property
     def web3(self):
@@ -130,11 +135,22 @@ class PethConsole(cmd.Cmd):
         """
         print(sha3_256(bytes(arg.strip(), "ascii", "ignore")).hex())
 
+
+    def do_sender(self, arg):
+        """
+        sender <addr> : Set default sender in eth_call.
+        """
+        print("Old:", self.sender)
+        if Web3.isAddress(arg):
+            self.sender = arg
+            print("New:", self.sender)
+
+
     def do_eth_call(self, arg):
         """
         eth_call <to> <sig_or_name> <arg1> <arg2> ... : Call contract with 0x sender.
         """
-        sender = '0x0000000000000000000000000000000000000000'
+        sender = self.sender
         args = arg.split()
         to = args[0]
         sig_or_name = args[1]
@@ -157,14 +173,12 @@ class PethConsole(cmd.Cmd):
             sig = f"{key}()->({ret_type})"
         else:
             sig = f"{key}()"
-        print(self.peth.call_contract(to, sig, []))
+        print(self.peth.call_contract(to, sig, [], self.sender))
 
 
-    # def _decode_tx(self, tx)e
-
-    def do_tx(self, arg):
+    def do_tx_raw(self, arg):
         """
-        tx <txid> : Print transaction information.
+        tx_raw <txid> : Print transaction information.
         """
         print("Transaction:")
         tx = self.web3.eth.get_transaction(arg)
@@ -174,11 +188,11 @@ class PethConsole(cmd.Cmd):
         self.__print_json(self.web3.eth.get_transaction_receipt(arg), True)
 
 
-    def do_tx_decode(self, arg):
+    def do_tx(self, arg):
         """
-        tx_decode <txid> : Decode call data.
-        tx_decode <addr> <data>
-        tx_decode <sig> <data>
+        tx <txid> : Decode call data.
+        tx <addr> <data>
+        tx <sig> <data>
         """
         args = arg.split()
         if len(args) == 1:
@@ -492,6 +506,10 @@ class PethConsole(cmd.Cmd):
         print("Rollback", self.web3.eth.get_storage_at(addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
         print("Beacon", self.web3.eth.get_storage_at(addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
         print("Initialized", self.web3.eth.get_storage_at(addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
+        print("Slot[0]", self.web3.eth.get_storage_at(addr, 0).hex())
+        print("Slot[1]", self.web3.eth.get_storage_at(addr, 1).hex())
+        print("Slot[2]", self.web3.eth.get_storage_at(addr, 2).hex())
+        print("Slot[3]", self.web3.eth.get_storage_at(addr, 3).hex())
 
     def do_owner(self, arg):
         """
@@ -501,6 +519,7 @@ class PethConsole(cmd.Cmd):
         try:
             owner = self.peth.call_contract(addr, "owner()->(address)")
             print("Owner: %s" %(owner))
+            self.do_name(owner)
         except Exception as e:
             print("Failed. Ensure your input is a Ownable contract address.")
 
@@ -609,35 +628,43 @@ class PethConsole(cmd.Cmd):
 
     def do_oracle(self, arg):
         """
-        oracle <EACAggregatorProxy> : Print ChainLink oracle aggregator information.
+        oracle <EACAggregatorProxy>[,<EACAggregatorProxy>] : Print ChainLink oracle aggregator information.
         """
-        addr = self.web3.toChecksumAddress(arg)
-        try:
-            aggr = self.peth.call_contract(addr, "aggregator()->(address)")
-            print("Aggregator:", aggr)
+        i = 1
+        cnt = len(arg.split(','))
+        for addr in arg.split(','):
+            addr = addr.strip()
+            addr = self.web3.toChecksumAddress(addr)
+            try:
+                if cnt > 1:
+                    print('---- [%s] ----' % i)
+                    i += 1
 
-            print("Description:", self.peth.call_contract(aggr, "description()->(string)"))
-            print("Owner:", self.peth.call_contract(aggr, "owner()->(address)"))
+                aggr = self.peth.call_contract(addr, "aggregator()->(address)")
+                print("Aggregator:", aggr)
 
-            dec = self.peth.call_contract(aggr, "decimals()->(uint8)")
-            print("Decimals:", dec)
+                print("Description:", self.peth.call_contract(aggr, "description()->(string)"))
+                print("Owner:", self.peth.call_contract(aggr, "owner()->(address)"))
 
-            latest = self.peth.call_contract(aggr, "latestAnswer()->(int256)")
-            print("Latest Answer: %d (%0.2f)" % (latest, latest/(10**dec)))
+                dec = self.peth.call_contract(aggr, "decimals()->(uint8)")
+                print("Decimals:", dec)
 
-            max = self.peth.call_contract(aggr, "maxAnswer()->(int192)")
-            print("Max Answer: %d (%0.2f)" % (max, max/(10**dec)))
+                latest = self.peth.call_contract(aggr, "latestAnswer()->(int256)")
+                print("Latest Answer: %d (%0.2f)" % (latest, latest/(10**dec)))
 
-            min = self.peth.call_contract(aggr, "minAnswer()->(int192)")
-            print("Min Answer: %d (%0.2f)" % (min, min/(10**dec)))
+                max = self.peth.call_contract(aggr, "maxAnswer()->(int192)")
+                print("Max Answer: %d (%0.2f)" % (max, max/(10**dec)))
 
-            transmitters = self.peth.call_contract(aggr, "transmitters()->(address[])")
-            print("%d Transmitters:" % len(transmitters))
-            for i in transmitters:
-                print(" ", i)
+                min = self.peth.call_contract(aggr, "minAnswer()->(int192)")
+                print("Min Answer: %d (%0.2f)" % (min, min/(10**dec)))
 
-        except Exception as e:
-            pass        
+                transmitters = self.peth.call_contract(aggr, "transmitters()->(address[])")
+                print("%d Transmitters:" % len(transmitters))
+                for addr in transmitters:
+                    print(" ", addr)
+
+            except Exception as e:
+                pass        
 
     def do_graph(self, arg):
         """
@@ -646,9 +673,16 @@ class PethConsole(cmd.Cmd):
         if arg:
             self.peth.print_contract_graph(arg.split())
 
+
+    def __check_alias(self, alias):
+        if alias in contracts_config:
+            return contracts_config[alias]
+        else:
+            return self.peth.chain, alias
+
     def do_diff(self, arg):
         """
-        diff <addr1> <addr2>
+        diff <addr1/alias> <addr2/alias>
         diff <chain1> <addr1> <chain2> <addr2>
         
         diff uni <chain> <factory> <pair> <router>
@@ -667,11 +701,9 @@ class PethConsole(cmd.Cmd):
             return
 
         if len(args) == 2:
-            addr1 = args[0]
-            addr2 = args[1]
-            src1 = self.peth.scan.get_source(addr1)
-            src2 = self.peth.scan.get_source(addr2)
-            diff.diff_source(src1, src2)
+            chain1, addr1 = self.__check_alias(args[0])
+            chain2, addr2 = self.__check_alias(args[1])
+            diff.diff_chain_src(chain1, addr1, chain2, addr2)
         elif len(args) == 4:
             chain1 = args[0]
             addr1 = args[1]
@@ -763,19 +795,10 @@ class PethConsole(cmd.Cmd):
         common_addresses: Print some common addresses.
         """
 
-        print("Uniswap ETH/USDT LP (UNI-V2) 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852 ETH")
-        print("UniswapV2Factory 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f ETH")
-        print("UniswapV2Router02 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D ETH")
-        print("UNI token 0x1f9840a85d5af5bf1d1762f925bdaddc4201f984 ETH")
-        print("SushiSwap MasterChef 0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd ETH")
-        print("SushiSwap MasterChefV2 0xef0881ec094552b2e128cf945ef17a6752b4ec5d ETH")
-        print("Compound Unitroller 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B ETH")
-        print("Compound Comptroller 0xbafe01ff935c7305907c33bf824352ee5979b526 ETH")
-        print("Compound USDT (cUSDT) CErc20Delegator proxy 0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9 ETH")
-        print("CErc20Delegator 0xa035b9e130f2b1aedc733eefb1c67ba4c503491f ETH")
-        print("Synthetix: Staking Rewards (Balancer SNX) 0xFBaEdde70732540cE2B11A8AC58Eb2dC0D69dE10 ETH")
-        print("PancakeSwap MasterChef 0x73feaa1eE314F8c655E354234017bE2193C9E24E BSC")
-        print("PancakePair 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 BSC")
+        print("%-40s %-10s %s" % ("Name","Chain","Address"))
+        for name in contracts_config:
+            chain, addr = contracts_config[name]
+            print("%-40s %-10s %s" % (name, chain, addr))
 
     do_exit = do_bye
     do_quit = do_bye

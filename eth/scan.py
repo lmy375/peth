@@ -70,6 +70,16 @@ class ScanAPI(object):
         else:
             url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
             d = self.get(url)[0] # The first.
+
+            # https://api.cronoscan.com/api?module=contract&action=getsourcecode&address=0x3eB63cff72f8687f8DE64b2f0e40a5B950000000
+            # ! cronoscan bug !
+            if d["ContractName"] == "CrowToken":
+                return None
+            
+            # Un-verified.
+            if d["ContractName"] == "":
+                return None
+
             if d: 
                 self._cache_set(addr + ".json", json.dumps(d))
 
@@ -94,7 +104,7 @@ class ScanAPI(object):
     def get_contract_name(self, addr):
         if not Web3.isAddress(addr):
             return None 
-            
+
         info = self.get_contract_info(addr)
         if info is None:
             return None
