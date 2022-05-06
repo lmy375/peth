@@ -50,6 +50,9 @@ class Signature(object):
         self.payable = None
         self.anonymous = None  # For event.
 
+        # For analysis.
+        self.modifiers = []
+
     @property
     def is_function(self) -> bool:
         return self.type in [

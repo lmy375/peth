@@ -1,9 +1,11 @@
 import json
+import logging
 from argparse import ArgumentParser
 
 from core.config import chain_config
 from core.peth import Peth
 from core.console import PethConsole
+from core.log import logger
 
 def get_args():
     parser = ArgumentParser(
@@ -84,6 +86,12 @@ def get_args():
         help="Generate contract graph.",
     )
 
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Print debug logs.",
+    )
+
     args = parser.parse_args()
     return args
 
@@ -97,6 +105,9 @@ def main():
         peth = Peth(args.rpc_url, args.api_url, args.address_url)
     else:
         peth = Peth.get_or_create(args.chain)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
 
     if args.rpc_call_raw:
         method = args.rpc_call_raw[0]

@@ -6,4 +6,7 @@ __pycache__/
 
 
 # Peth generated.
+output/
 diff/
+report/
+crytic-export/

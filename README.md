@@ -1,184 +1,415 @@
-# peth-cli
+# Peth
 
 A python Ethereum utilities command-line tool.
 
-After wasting the all day trying to install [seth](https://github.com/dapphub/dapptools/tree/master/src/seth) and failed, I took another day to write this. :(
+`Peth`, pronounced like `Peace`, wishes to become the *Swiss Army Knife* guarding the Ethereum space.
 
-Ugly code but works :)
+`Peth` 发音与和平（`Peace`）相近，是一款以太坊命令行工具。愿景是成为以太坊世界的瑞士军刀。
 
-Wish the ~~meta~~ universe ~~peth~~ peace !
+# Install 安装  
 
-# Usage
-
-## [Optional] Use your own config.json. 
+1. Clone the repo. 克隆本仓库。
 
 ```
+git clone https://github.com/lmy375/peth
+```
+2. (Optional) Edit `config.json` with new EVM network RPC endpoints and your Etherscan API keys. （可选的）编辑根目录下的 `config.json` 文件，添加自定义的 RPC 地址。添加 API Key 可以提高执行速度（否则限频时会自动等待）。
+
+```json
 {
-    "eth": [ // Network name
-        "https://rpc.ankr.com/eth",      // RPC endpoint URL.
-        "https://api.etherscan.io/api?"  // Etherscan-style API URL.
+    "chains": {
+        "eth": [
+            // RPC endpoint URL.
+            "https://rpc.ankr.com/eth",  
 
-    // Get better experience if you have an API key.
-    // https://api.etherscan.io/api?apikey=<Your API Key>&
-    
-    // Do NOT forget the '?' or '&' in the URL.
-    ],
+            // Etherscan-style API URL.
+            // Get better experience if you have an API key.
+            // https://api.etherscan.io/api?apikey=<Your API Key>&
+            // Do NOT forget the '?' or '&' in the URL.
+            "https://api.etherscan.io/api?",
+            
+            // Etherscan address page URL.
+            "https://etherscan.io/address/"
+        ],
 
-    ...
-
+      ...
+    }
 }
 ```
 
-## RPC
-```
-# Basic RPC call.
-➜  peth-cli python peth.py  -r eth_blockNumber
-0xd80830
+3. Run `main.py`. 执行 `main.py`。
 
-# -c to change network.
-➜  peth-cli python peth.py  -r eth_blockNumber -c bsc
-0xe58858
+```sh
+$ python main.py
+Welcome to the peth shell. Type `help` to list commands.
 
-# RPC call with arguments.
-➜  peth-cli python peth.py  -r eth_getBalance 0x0000000000000000000000000000000000000000 latest 
-0x2679ce59cfe4a16dd4e
-
-# Raw style.
-➜  peth-cli python peth.py  --rpc-call-raw eth_getBlockByNumber '["0x0", false]'                             
-{'jsonrpc': '2.0', 'id': 1, 'result': {'difficulty': '0x400000000', 'extraData': '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa', 'gasLimit': '0x1388', 'gasUsed': '0x0', 'hash': '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x0000000000000000000000000000000000000000', 'mixHash': '0x0000000000000000000000000000000000000000000000000000000000000000', 'nonce': '0x0000000000000042', 'number': '0x0', 'parentHash': '0x0000000000000000000000000000000000000000000000000000000000000000', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'size': '0x21c', 'stateRoot': '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544', 'timestamp': '0x0', 'totalDifficulty': '0x400000000', 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}}
-```
-
-## Contract call
-
-Human-readable ABI in peth is like:
-- `function name` (`argment type`, [...]) -> (`return value type`, [...])
-```
-# Call name() of USDT contract.
-➜  peth-cli python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e "name()->(string)"
-Tether USD
-
-# Without return type, we get raw hex data.
-➜  peth-cli python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e "name()"
-0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a5465746865722055534400000000000000000000000000000000000000000000
-
-# When only function name provided, peth will try to auto-extract ABI via the Etherscan API.
-➜  peth-cli python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e name                                                
-Tether USD
-➜  peth-cli python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e decimals                                            
-6
-
-# Call with arguments
-➜  peth-cli python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e balanceOf 0xdAC17F958D2ee523a2206206994597C13d831ec7
-644096679570
-```
-
-## console
-
-```
-➜  peth-cli python main.py --console
-Welcome to the peth shell.   Type help or ? to list commands.
- 
-peth > ?
+peth > help
 
 Documented commands (type help <topic>):
 ========================================
-balance  bye  contract  erc20  exit  help  nonce  number  quit  storage
+4byte     common_addresses  download_json    help    pair      storage
+abi4byte  config            download_source  int     proxy     timelock
+aml       contract          erc20            name    py        timestamp
+balance   debug             eth_call         nonce   quit      tx
+bye       decompile         exit             number  rpc_call  tx_raw
+chain     diff              get_prop         open    sender    txs
+code      diffasm           gnosis           oracle  sh        url
+codesize  disasm            graph            owner   sha3
 
+peth >
+```
+
+# Usage 使用说明 
+
+## Command-line options 命令行参数 
+
+```sh
+# Basic RPC call.
+# 执行基本的 RPC call
+# 参考 https://eth.wiki/json-rpc/API
+$ python main.py -r eth_blockNumber
+0xe0aabb
+
+# -c to change network.
+# 使用 -c 指定使用的区块链网络。支持的网络见 config.json
+$ python main.py  -r eth_blockNumber -c bsc
+0x10c158f
+
+# RPC call with arguments.
+# 带参数的 RPC 调用
+$ python main.py  -r eth_getBalance 0x0000000000000000000000000000000000000000 latest
+0x268fd6968816d5aaeb0
+
+# Raw style.
+# 直接指定参数 JSON 字符串
+$ python main.py  --rpc-call-raw eth_getBlockByNumber '["0x0", false]'
+{'jsonrpc': '2.0', 'id': 0, 'result': {'difficulty': '0x400000000', 'extraData': '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa', 'gasLimit': '0x1388', 'gasUsed': '0x0', 'hash': '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'logsBloom': '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'miner': '0x0000000000000000000000000000000000000000', 'mixHash': '0x0000000000000000000000000000000000000000000000000000000000000000', 'nonce': '0x0000000000000042', 'number': '0x0', 'parentHash': '0x0000000000000000000000000000000000000000000000000000000000000000', 'receiptsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'sha3Uncles': '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347', 'size': '0x21c', 'stateRoot': '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544', 'timestamp': '0x0', 'totalDifficulty': '0x400000000', 'transactions': [], 'transactionsRoot': '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', 'uncles': []}}
+
+# Call name() of USDT contract.
+# 调用 USDT 合约的 name 方法
+$ python main.py --to 0xdac17f958d2ee523a2206206994597c13d831ec7 -e "name()->(string)"
+Tether USD
+
+# Run peth command.
+# 执行 peth 内置命令。
+$ python main.py --cmd number
+14723791
+```
+
+## Peth console 控制台
+
+The recommanded way to use `peth` is the interactive console mode.
+
+相比上面的单条命令行方式，更推荐的使用方式是使用交互式的 peth console。
+
+```sh
+$ python main.py
+Welcome to the peth shell. Type `help` to list commands.
+
+peth >
+```
+
+### Config 配置类命令
+
+```sh
+# Change network to BSC.
+# 切换网络。
+peth > chain bsc
+Current:
+Chain: eth
+RPC: https://rpc.ankr.com/eth
+API: https://api.etherscan.io/api?
+Address: https://etherscan.io/address/
+Changed:
+Chain: bsc
+RPC: https://rpc.ankr.com/bsc
+API: https://api.bscscan.com/api?
+Address: https://bscscan.com/address/
+
+# Change sender in eth_call
+# 切换合约调用时的使用的 msg.sender
+peth > sender 0xdac17f958d2ee523a2206206994597c13d831ec7
+Old: 0x0000000000000000000000000000000000000000
+New: 0xdac17f958d2ee523a2206206994597c13d831ec7
+
+# Exit console.
+# 退出。
+peth > exit
+```
+
+### Utilities 工具类命令
+
+```sh
+# Execute shell commands.
+# 执行原生 bash 命令。
+peth > sh ls
+README.md		__pycache__		config.json		core			eth			main.py			output			requirements.txt	tests			util
+peth > ! ls
+README.md		__pycache__		config.json		core			eth			main.py			output			requirements.txt	tests			util
+
+# Evaluate python expressions.
+# 解析 python 表达式（常用于当计算器）
+peth > py int(1e18)*100
+100000000000000000000
+peth > ? int(1e18)*100
+100000000000000000000
+
+# Open URL or file.
+# 打开链接或者文件。
+peth > open https://www.google.com/
+peth > open README.md	
+
+# List some contract address
+# 打印出一些常见地址
+peth > common_addresses
+Name                                     Chain      Address
+PancakeMasterChef                        bsc        0x73feaa1eE314F8c655E354234017bE2193C9E24E
+PancakePair                              bsc        0x0eD7e52944161450477ee417DE9Cd3a859b14fD0
+
+# Calculate SHA3 hash.
+# 计算 SHA3 哈希
+peth > sha3 balanceOf()
+722713f7196651d0fe4592d1dc3ef527a8f2d47259e18fa8ec48288f351a83eb
+
+# Query the selector in https://www.4byte.directory/
+# 根据 selector 反查函数签名
+peth > 4byte 722713f7
+balanceOf()
+
+# Print number.
+# 打印 int 数（方便 Token 余额转换）
+peth > int 100000000000000000000
+Value: 100000000000000000000
+Value/1e18: 100.0
+Value/1e6: 100000000000000.0
+
+# Convert UNIX timestamp to local datetime, or convert seconds to hours / days.
+# 时间戳转化（时长大于10年，则认为是时间段，而不是时间戳）
+peth > timestamp 1651845252
+2022-05-06 21:54:12
+peth > timestamp 3600
+3600 secs
+= 1.0 hours
+= 0.0 days
+```
+
+### ETH basic 以太坊基础命令
+
+```sh
 # print current block number
+# 打印当前区块数
 peth > number
-14158806
+17569820
 
 # print balance
+# 打印地址当前余额
 peth > balance 0xdAC17F958D2ee523a2206206994597C13D831ec7
 1 Wei( 0.0000 Ether)
 
 # print nonce
+# 打印地址 nonce
 peth > nonce 0xdAC17F958D2ee523a2206206994597C13D831ec7
 1
 
 # print specified slot of storage
+# 获取合约地址中 storage 指定 slot 的值
 peth > storage 0xdAC17F958D2ee523a2206206994597C13D831ec7 1
 0x000000000000000000000000000000000000000000000000008d7b18430396d4
 
-# print contract information of Etherscan.
-peth > contract 0xdAC17F958D2ee523a2206206994597C13D831ec7
-  SourceCode :   pragma solidity ^0.4.17;
-  ABI :  [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string ...
-  ContractName :         TetherToken
-  CompilerVersion :      v0.4.18+commit.9cf6e910
-  OptimizationUsed :     0
-  Runs :         0
-  ConstructorArguments :         000000000000000000000000000000000000000000000000000000174876e8000000000000000000 ...
-  EVMVersion :   Default
-  Library :      
-  LicenseType :  
-  Proxy :        0
-  Implementation :       
-  SwarmSource :  bzzr://645ee12d73db47fd78ba77fa1f824c3c8f9184061b3b10386beb4dc9236abb28
-  === ABI ===
-  function name() returns(string ) view
-  function deprecate(address _upgradedAddress) returns() nonpayable
-  function approve(address _spender,uint256 _value) returns() nonpayable
-  function deprecated() returns(bool ) view
-  function addBlackList(address _evilUser) returns() nonpayable
-  function totalSupply() returns(uint256 ) view
-  function transferFrom(address _from,address _to,uint256 _value) returns() nonpayable
-  function upgradedAddress() returns(address ) view
-  function balances(address ) returns(uint256 ) view
-  function decimals() returns(uint256 ) view
-  function maximumFee() returns(uint256 ) view
-  function _totalSupply() returns(uint256 ) view
-  function unpause() returns() nonpayable
-  function getBlackListStatus(address _maker) returns(bool ) view
-  function allowed(address ,address ) returns(uint256 ) view
-  function paused() returns(bool ) view
-  function balanceOf(address who) returns(uint256 ) view
-  function pause() returns() nonpayable
-  function getOwner() returns(address ) view
-  function owner() returns(address ) view
-  function symbol() returns(string ) view
-  function transfer(address _to,uint256 _value) returns() nonpayable
-  function setParams(uint256 newBasisPoints,uint256 newMaxFee) returns() nonpayable
-  function issue(uint256 amount) returns() nonpayable
-  function redeem(uint256 amount) returns() nonpayable
-  function allowance(address _owner,address _spender) returns(uint256 remaining) view
-  function basisPointsRate() returns(uint256 ) view
-  function isBlackListed(address ) returns(bool ) view
-  function removeBlackList(address _clearedUser) returns() nonpayable
-  function MAX_UINT() returns(uint256 ) view
-  function transferOwnership(address newOwner) returns() nonpayable
-  function destroyBlackFunds(address _blackListedUser) returns() nonpayable
-  constructor (uint256 _initialSupply,string _name,string _symbol,uint256 _decimals) nonpayable
-  event Issue(uint256 amount) 
-  event Redeem(uint256 amount) 
-  event Deprecate(address newAddress) 
-  event Params(uint256 feeBasisPoints,uint256 maxFee) 
-  event DestroyedBlackFunds(address _blackListedUser,uint256 _balance) 
-  event AddedBlackList(address _user) 
-  event RemovedBlackList(address _user) 
-  event Approval(address owner,address spender,uint256 value) 
-  event Transfer(address from,address to,uint256 value) 
-  event Pause() 
-  event Unpause() 
+# Get code of contract
+# 打印合约字节码
+peth > code 0xdAC17F958D2ee523a2206206994597C13D831ec7
+0x606060405260043610610196576000357c01000 ...
 
-# print ERC20 information (Call ERC20 view methods)
-peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7
-totalSupply() -> (uint256) => 39823315849942740
-name() -> (string) => Tether USD
-symbol() -> (string) => USDT
-decimals() -> (uint8) => 6
+# Get size of contract
+# 打印合约字节码长度（可用于判断账户是否是合约）
+peth > codesize 0xdAC17F958D2ee523a2206206994597C13D831ec7
+Size 11075
+peth > codesize 0x0000000000000000000000000000000000000000
+Size 0
 
-# Call ERC20 method
-peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 balanceOf 0xdAC17F958D2ee523a2206206994597C13D831ec7
-644096679570
+# Call contract view function. 
+# 调用合约的 view 函数。
+peth > eth_call 0xdac17f958d2ee523a2206206994597c13d831ec7 name()->(string)
+Tether USD
 
-# Query 4byte database.
-peth > 4byte 0x70a08231
-passphrase_calculate_transfer(uint64,address)
-branch_passphrase_public(uint256,bytes8)
-balanceOf(address)
+# If full ABI is not provided, peth fetch the ABI from Etherscan.
+# 也可以只提供函数名，peth 会自动通过 Etherscan 获取 ABI 信息。
+peth > eth_call 0xdac17f958d2ee523a2206206994597c13d831ec7 name
+Tether USD
+```
+
+### Contract 合约特殊命令
+
+```sh
+# Get property value of the contract.
+# 获取合约某个属性值（调用无参 View 方法，可指定类型）
+peth > get_prop 0xdac17f958d2ee523a2206206994597c13d831ec7 name
+0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a5465746865722055534400000000000000000000000000000000000000000000
+peth > get_prop 0xdac17f958d2ee523a2206206994597c13d831ec7 name string
+Tether USD
+
+# Print ERC20 information
+# 打印 ERC20 信息
+peth > erc20 0xdac17f958d2ee523a2206206994597c13d831ec7
+totalSupply()->(uint256) => 39815550064061448
+name()->(string) => Tether USD
+symbol()->(string) => USDT
+decimals()->(uint8) => 6
+
+# Print proxy information
+# 打印代理信息
+peth > proxy 0xdD4051c3571C143b989C3227E8eB50983974835C
+Implementation 0x7d0c7372f38958d9cf5ae6da2b0794337045559b
+Admin 0x0e1dde6cd48758482528b718ef8d27a7e69eae62
+Rollback 0x0000000000000000000000000000000000000000
+Beacon 0x0000000000000000000000000000000000000000
+Initialized 0x0000000000000000000000000000000000000000
+Slot[0] 0x0000000000000000000000000000000000000000000000000000000000000000
+Slot[1] 0x0000000000000000000000000000000000000000000000000000000000000015
+Slot[2] 0x5c7ca7fab99db3519042713201658e964bf814053cc1d2062dbd7b8197a0271d
+Slot[3] 0x0000000000000000000000000000000000000000000000000000000000000006
+
+# Print owner information of Ownable contract.
+# 打印合约的 owner 信息
+peth > owner 0x0e1dDE6CD48758482528B718EF8d27a7E69EAE62
+Owner: 0xf8e5227add01b2b8f36981a2566c160e5e4136e4
+EOA
+
+# Print Gnosis information.
+# 打印 Gnosis 多签信息
+peth > gnosis 0xF6Bc2E3b1F939C435D9769D078a6e5048AaBD463
+Policy: 5/8
+Owners:
+  0x01bb2320faea7f514b790a04812461112687bb19
+  0x4cc02225a3d7636af61d3903b2cba838a6f54ac2
+  0x587b28fad1132fd3ac50cb38342e2c6ca7dc670a
+  0x30e7c016fc702cde9a50720a469d418490b7b652
+  0x76adf688f4bd5b15e882428cae8df4d1d0831f87
+  0x6cee7a18072c5d26e99d186ead6feb9f17d5ac9e
+  0x64dcf80aa31f40d094cfb2d578019bcb2eccf58b
+  0x1f2d4431a415d3065a95810449f21c8e391065ee
+
+# Print timelock information
+# 打印时间锁合约信息
+peth > timelock 0x574703381d4cb4eeb474e43eee97e3d9986e48a7
+Min Delay: 0s = 0.00h
+Max Delay: 2592000s = 720.00h
+Current Delay: 0s = 0.00h
+Admin: 0xabb55d166bb028d0d73c9aa31e294c88cfe29579
+
+# Print Uniswap pair information.
+# 打印 Uniswap 类型交易对信息
+peth > pair 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852
+TokenPair: 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852
+WETH 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 18
+USDT 0xdac17f958d2ee523a2206206994597c13d831ec7 6
+Reseves: 24821.6555 WETH, 66468321.6535 USDT
+Price:
+1 WETH = 2677.8360 USDT
+1 USDT = 0.0004 WETH
+
+# Print ChainLink Oracle information.
+# 打印 ChainLink 预言机信息
+peth > oracle 0xdeb288f737066589598e9214e782fa5a8ed689e8
+Aggregator: 0x81076d6ff2620ea9dd7ba9c1015f0d09a3a732e6
+Description: BTC / ETH
+Owner: 0x21f73d42eb58ba49ddb685dc29d3bf5c0f0373ca
+Decimals: 18
+Latest Answer: 13297486710000000000 (13.30)
+Max Answer: 10000000000000000000000 (10000.00)
+Min Answer: 100000000000000000 (0.10)
+16 Transmitters:
+  0x57cd4848b12469618b689163f507817940acca02
+  0xcc29be4ca92d4ecc43c8451fba94c200b83991f6
+  0x64c735d72eab90c04da523b6b9895773acb60f5d
+  0xa938d77590af1d98bab7dc4a0bde594fc3f9c403
+  0x2a4a7afa40a9d03b425752fb4cfd5f0ff5b3964c
+  0x9cfab1513ffa293e7023159b3c7a4c984b6a3480
+  0xf42336e35d5c1d1d0db3140e174bcfc3945f6822
+  0xf16e77a989529aa4c58318acee8a1548df3fccc1
+  0x8b1d49a93a84b5da0917a1ed42d8a3e191c28524
+  0x7bfb89db2d7217c57c3ad3d4b55826efd17dc2e9
+  0xbbf078a8849d74623e36e6dbbdc8e0a35e657c26
+  0x43793ee58e0a3d920e3e4a115a9fa07dc4b09715
+  0x0312ea121df0a323ff535b753172736cc9d53d13
+  0xc4b732fd121f2f3783a9ac2a6c62fd535fd13fda
+  0x5a6fcc02d8c50ea58a22115a7c4608b723030016
+  0xe3e0596ac55ae6044b757bab27426f7dc9e018d4
+```
+
+
+### Transaction 交易类命令
+
+```sh
+# Print decoded transaction information with txid.
+# 打印解码后的合约调用信息。
+peth > tx 0x1f26956899a5d6754b1b765794bf8b5daef994357a817209a6d84498da026922
+0x17F96db7cf1D3964F3Cd32E98AFE9Eb43A15fe24 -> 0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852
+Method:
+  0x022c0d9f function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data)
+Arguments:
+  uint256 amount0Out = 21829054100743363759
+  uint256 amount1Out = 0
+  address to = 0x0302c1e37200005183c900a30000aa005eaf710c
+  bytes data = 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
+
+# Print decoded transaction information with address and calldata.
+# 也可以直接指定合约地址及数据（解析多签或者时间锁交易时常用）
+peth > tx 0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852 0x022c0d9f0000000000000000000000000000000000000000000000012ef0610ca1979caf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000302c1e37200005183c900a30000aa005eaf710c0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000006911b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d4537380953010000000000000000000000000000000000000000000000
+Method:
+  0x022c0d9f function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data)
+Arguments:
+  uint256 amount0Out = 21829054100743363759
+  uint256 amount1Out = 0
+  address to = 0x0302c1e37200005183c900a30000aa005eaf710c
+  bytes data = 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
+
+# Print transaction history of address.
+# 打印某个地址多条的交易信息
+peth > txs 0xf8E5227aDD01b2b8f36981a2566c160E5E4136e4
+---- [1] 0x83ad34dde3cf458b904110747b0390d3cbd34cfe7038d1b996b2be7219ac9f06 14484519 ----
+0x2ed297968850f81144adca7aed34fac375643e46 -> 0xf8e5227add01b2b8f36981a2566c160e5e4136e4 value 5044300830232571940
+---- [2] 0xbe906287eaacbcbc25a9ab9528faf4fdd23fa8ffb512836bab18720b46a50716 14484670 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract SpoolOwner(0x4f03f70a99e5c3b49d733ddd7458f80fa9b5a5b5)
+---- [3] 0x022716d5bc20790246d2e08e7f24dd0c42a5840231f537a58fb658cb5c0c8531 14486465 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract AaveStrategy(0x854db91e371e42818936e646361452c3060ec9dd)
+---- [4] 0x129459268bf44c2837fa04af38c386c0266fc1c3b03b4fb0ac56ddb49f2f4941 14486467 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract AaveStrategy(0x21d24ad1a66bd35447365d5adaa3530ae3695781)
+---- [5] 0x44314234de5e43de33a52710c1a6e97ad2a87075ea7f79f1612ac481ba3cbbf0 14486468 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract AaveStrategy(0x6f4dad966d7ea29f1e2f106da547c66f4df0e8e5)
+---- [6] 0xc7a825f8d24365def18a3c7c4395a29adc4cc81c7d8a81e90d595d60aa8a5487 14486469 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract Curve3poolStrategy(0x55fc10a40f0056c28b953b5da3dc53679e70bf70)
+---- [7] 0xae00264f3a2533b4189451b4996b6a24b2f702916a340cdf540fb1db77b57018 14486470 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract Curve3poolStrategy(0xa249f52f8ea0048c9d6e55eb0a8de06b67affe67)
+---- [8] 0x7d5a44387d06c1b15472c86615f47bf0d7988fcb65cda017d789370fd9594288 14486472 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract Curve3poolStrategy(0x9ab6f67285151563f7675cf365e42841c243455e)
+---- [9] 0xd0658a9e55f90f634a904e14da37dfda8e9218d6c73cd9ebf5a7a9fb74b2af44 14486475 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract HarvestStrategy(0xa97a5fea16c9881254be77e4f3adf8e23c3f5bd4)
+---- [10] 0x38031a9798683c78136dc23e38cc51dde4001482d0f12701ee84fc32398fb8c7 14486476 ----
+0xf8e5227add01b2b8f36981a2566c160e5e4136e4 creates contract HarvestStrategy(0xb84cd9b5548ee1538ca50b947fa99adf5fd85e78)
+```
+### Bytecode 字节码类工具
+
+```sh
+# Print assembly code of address.
+# 打印反汇编后的合约字节码
+peth > disasm 0xdD4051c3571C143b989C3227E8eB50983974835C
+PUSH1 0x80
+PUSH1 0x40
+MSTORE
+PUSH1 0x4
+CALLDATASIZE
+LT
+PUSH2 0x5e
+JUMPI
+PUSH1 0x0
+CALLDATALOAD
+PUSH1 0xe0
+...
 
 # Extract selector dispatching code and print signatures.
+# 获取合约可能的 selector （根据 PUSH4 指令提取，会有误报），分析闭源合约常用。
 peth > abi4byte 0xdAC17F958D2ee523a2206206994597C13D831ec7
 0x6fdde03 name(), message_hour(uint256,int8,uint16,bytes32)
 0x753c30c deprecate(address)
@@ -212,180 +443,114 @@ peth > abi4byte 0xdAC17F958D2ee523a2206206994597C13D831ec7
 0xe5b5019a MAX_UINT()
 0xf2fde38b transferOwnership(address)
 0xf3bdc228 destroyBlackFunds(address)
+```
 
-# ERC1967 Proxy
-peth > ERC1967 0xC93408bFBEa0Bf3E53bEdBce7D5C1e64db826702
-Implementation 0x522808d93ac229cefc17c4be0408520f7e27d26d
-Admin 0xedc3be991a29d094ca802b1c92ae6b7f74b53a19
-Rollback 0x0000000000000000000000000000000000000000
-Beacon 0x0000000000000000000000000000000000000000
+### Source 源码类工具
 
-# Get code of contract
-peth > code 0x4A4651B31d747D1DdbDDADCF1b1E24a5f6dcc7b0
-0x608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033
+```sh
+# Print contract information of Etherscan.
+# 打印合约信息（会自动调用所有无参 View 方法）
+peth > contract 0xdAC17F958D2ee523a2206206994597C13D831ec7
+  SourceCode :	 pragma solidity ^0.4.17;
+  ABI :	  ...
+  ContractName :	 TetherToken
+  CompilerVersion :	 v0.4.18+commit.9cf6e910
+  OptimizationUsed :	 0
+  Runs :	 0
+  ConstructorArguments :	 000000000000000000000000000000000000000000000000000000174876e8000000000000000000 ...
+  EVMVersion :	 Default
+  Library :
+  LicenseType :
+  Proxy :	 0
+  Implementation :
+  SwarmSource :	 bzzr://645ee12d73db47fd78ba77fa1f824c3c8f9184061b3b10386beb4dc9236abb28
+  === VIEWS ===
+  0x06fdde03 function name() view returns (string) => Tether USD
+  0x0e136b19 function deprecated() view returns (bool) => False
+  0x18160ddd function totalSupply() view returns (uint256) => 39815550064061448
+  0x26976e3f function upgradedAddress() view returns (address) => 0x0000000000000000000000000000000000000000
+  0x313ce567 function decimals() view returns (uint256) => 6
+  0x35390714 function maximumFee() view returns (uint256) => 0
+  0x3eaaf86b function _totalSupply() view returns (uint256) => 39815550064061448
+  0x5c975abb function paused() view returns (bool) => False
+  0x893d20e8 function getOwner() view returns (address) => 0xC6CDE7C39eB2f0F0095F41570af89eFC2C1Ea828
+  0x8da5cb5b function owner() view returns (address) => 0xC6CDE7C39eB2f0F0095F41570af89eFC2C1Ea828
+  0x95d89b41 function symbol() view returns (string) => USDT
+  0xdd644f72 function basisPointsRate() view returns (uint256) => 0
+  0xe5b5019a function MAX_UINT() view returns (uint256) => 115792089237316195423570985008687907853269984665640564039457584007913129639935
+  === OTHERS ===
+  0x0753c30c function deprecate(address _upgradedAddress)
+  0x095ea7b3 function approve(address _spender, uint256 _value)
+  0x0ecb93c0 function addBlackList(address _evilUser)
+  0x23b872dd function transferFrom(address _from, address _to, uint256 _value)
+  0x27e235e3 function balances(address) view returns (uint256)
+  0x3f4ba83a function unpause()
+  0x59bf1abe function getBlackListStatus(address _maker) view returns (bool)
+  0x5c658165 function allowed(address, address) view returns (uint256)
+  0x70a08231 function balanceOf(address who) view returns (uint256)
+  0x8456cb59 function pause()
+  0xa9059cbb function transfer(address _to, uint256 _value)
+  0xc0324c77 function setParams(uint256 newBasisPoints, uint256 newMaxFee)
+  0xcc872b66 function issue(uint256 amount)
+  0xdb006a75 function redeem(uint256 amount)
+  0xdd62ed3e function allowance(address _owner, address _spender) view returns (uint256)
+  0xe47d6060 function isBlackListed(address) view returns (bool)
+  0xe4997dc5 function removeBlackList(address _clearedUser)
+  0xf2fde38b function transferOwnership(address newOwner)
+  0xf3bdc228 function destroyBlackFunds(address _blackListedUser)
 
-# Print disassembly of contract
-peth > disasm 0x4A4651B31d747D1DdbDDADCF1b1E24a5f6dcc7b0
-PUSH1 0x80
-PUSH1 0x40
-MSTORE
-PUSH20 0xffffffffffffffffffffffffffffffffffffffff
-PUSH1 0x0
-SLOAD
-AND
-PUSH32 0xa619486e00000000000000000000000000000000000000000000000000000000
-PUSH1 0x0
-CALLDATALOAD
-EQ
-ISZERO
-PUSH1 0x50
-JUMPI
-....
+# Print contract name.
+# 打印合约名（或 EOA)
+peth > name 0xdAC17F958D2ee523a2206206994597C13D831ec7
+TetherToken
+peth > name 0x0000000000000000000000000000000000000000
+EOA
 
-# Diff contract source.
+# Diff contract source code.
+# 对比合约源码差异。
 peth > diff bsc 0x73feaa1eE314F8c655E354234017bE2193C9E24E ftm 0xa71f52aee8311c22b6329EF7715A5B8aBF1c6588
-Written to diff/Ownable_ProtonToken_0.16.html
-Written to diff/BEP20_ProtofiERC20_0.68.html
-Written to diff/CakeToken_ElectronToken_0.62.html
-Written to diff/SyrupBar_ElectronToken_0.62.html
-Written to diff/MasterChef_ProtofiMasterChef_0.28.html
-peth > sh open diff/BEP20_ProtofiERC20_0.68.html
-peth > sh open diff/MasterChef_ProtofiMasterChef_0.28.html
-
-# Diff with UniswapV2 factory, pair, router. 
-peth > diff uni bsc 0 0x0eD7e52944161450477ee417DE9Cd3a859b14fD0 0
-Written to diff/uni_factory/UniswapV2ERC20_PancakeERC20_0.99.html
-Written to diff/uni_factory/UniswapV2Pair_PancakePair_0.98.html
-Written to diff/uni_factory/UniswapV2Factory_PancakeFactory_0.92.html
-Written to diff/uni_pair/UniswapV2ERC20_PancakeERC20_0.99.html
-Written to diff/uni_pair/UniswapV2Pair_PancakePair_0.98.html
-
-# Print transcation and receipt.
-peth > tx 0xa59c122ee610b8159c669a356cb810d8b6709899ae7f2d906a4e35e2ad4c977d
-Transaction:
-  blockHash :	 0x9a66081d0dbc10879c27a5a316a0935e52994363f4c20fd557f954cf9c04e93f
-  blockNumber :	 15877357
-  from :	 0xD0cFE162ef17986ec9Df29C0851F4820a0Bf93C1
-  gas :	 58962
-  gasPrice :	 5000000000
-  hash :	 0xa59c122ee610b8159c669a356cb810d8b6709899ae7f2d906a4e35e2ad4c977d
-  input :	 0xa9059cbb000000000000000000000000de21f5bf6d9665934c34491264eefd6b5491c9520000000000000000000000000000000000000000000000000000000b5d43dda8
-  nonce :	 14
-  to :	 0x40C0Ba4E74D9B95f2647526ee35D6E756FA8BF09
-  transactionIndex :	 365
-  value :	 0
-  type :	 0x0
-  v :	 148
-  r :	 0xc19e508b9f8f7e0b5e2e7f3213849d0df0d70020f611574f43d375c2988dae12
-  s :	 0x1cc66bc14f8cab8322bfaa5fd1ce150a679c2b7d3e15b73c0ba3725a56bee0d7
-Receipt:
-  blockHash :	 0x9a66081d0dbc10879c27a5a316a0935e52994363f4c20fd557f954cf9c04e93f
-  blockNumber :	 15877357
-  contractAddress :	 None
-  cumulativeGasUsed :	 52296989
-  from :	 0xD0cFE162ef17986ec9Df29C0851F4820a0Bf93C1
-  gasUsed :	 24308
-  logs :	 [AttributeDict({'address': '0x40C0Ba4E74D9B95f2647526ee35D6E756FA8BF09', 'topics': [HexBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'), HexBytes('0x000000000000000000000000d0cfe162ef17986ec9df29c0851f4820a0bf93c1'), HexBytes('0x000000000000000000000000de21f5bf6d9665934c34491264eefd6b5491c952')], 'data': '0x0000000000000000000000000000000000000000000000000000000b5d43dda8', 'blockNumber': 15877357, 'transactionHash': HexBytes('0xa59c122ee610b8159c669a356cb810d8b6709899ae7f2d906a4e35e2ad4c977d'), 'transactionIndex': 365, 'blockHash': HexBytes('0x9a66081d0dbc10879c27a5a316a0935e52994363f4c20fd557f954cf9c04e93f'), 'logIndex': 1585, 'removed': False})]
-  logsBloom :	 0x00000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000100100000000000000000008000000000010000000000000000000000000040000000000000000000000000000000000000001000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000002000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000
-  status :	 1
-  to :	 0x40C0Ba4E74D9B95f2647526ee35D6E756FA8BF09
-  transactionHash :	 0xa59c122ee610b8159c669a356cb810d8b6709899ae7f2d906a4e35e2ad4c977d
-  transactionIndex :	 365
-  type :	 0x0
-
-# Decode calldata by ABI.
-peth > tx_decode 0xa59c122ee610b8159c669a356cb810d8b6709899ae7f2d906a4e35e2ad4c977d
-0xD0cFE162ef17986ec9Df29C0851F4820a0Bf93C1 -> 0x40C0Ba4E74D9B95f2647526ee35D6E756FA8BF09
-Method:
-  0xa9059cbb function transfer(address _receiver, uint256 _amount) returns (bool)
-Arguments:
-  address _receiver = 0xde21f5bf6d9665934c34491264eefd6b5491c952
-  uint256 _amount = 48809369000
-peth > tx_decode 0x40C0Ba4E74D9B95f2647526ee35D6E756FA8BF09 0xa9059cbb000000000000000000000000de21f5bf6d9665934c34491264eefd6b5491c9520000000000000000000000000000000000000000000000000000000b5d43dda8
-Method:
-  0xa9059cbb function transfer(address _receiver, uint256 _amount) returns (bool)
-Arguments:
-  address _receiver = 0xde21f5bf6d9665934c34491264eefd6b5491c952
-  uint256 _amount = 48809369000
-
-# Decode calldata by sig.
-peth > tx_decode transfer(address,uint256)->(bool) 0xa9059cbb000000000000000000000000de21f5bf6d9665934c34491264eefd6b5491c9520000000000000000000000000000000000000000000000000000000b5d43dda8
-Method:
-  0xa9059cbb function transfer(address, uint256) returns (bool)
-Arguments:
-  address arg1 = 0xde21f5bf6d9665934c34491264eefd6b5491c952
-  uint256 arg2 = 48809369000
-
-# Print and decode transactions of specified account.
-peth > txs 0x9F403140Bc0574D7d36eA472b82DAa1Bbd4eF327
----- [1] 0xe2c3c86d5f8c14c4a296d6fb3d9e25b84900aa7e0941fd2078b84aa9beb9adc0 14386011 ----
-0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 -> 0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 value 219500000000000000
----- [2] 0x40e13c538d9a2cb44573b8580016c2228333a5bee9ac5ded1e7f3d5d2b6b177c 14386127 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 -> 0x4dbd4fc535ac27206064b68ffcf827b0a60bab3f value 100000000000000000
-Method:
-  0x0f4d14e9 function depositEth(uint256 maxSubmissionCost) payable returns (uint256)
-Arguments:
-  uint256 maxSubmissionCost = 130102310835
----- [3] 0xfb0cd9b0f81cfee621adea1205eb5c8b4626c1449304bc0142be42c5cb1f9b38 14386138 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 -> 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 value 100000000000000000
-Method:
-  0xb1a1a882 function depositETH(uint32 _l2Gas, bytes _data) payable
-Arguments:
-  uint32 _l2Gas = 1300000
-  bytes _data = b''
----- [4] 0x7e4626c81a490a37b64548ad2264af6e2938a66182ab58d46755b2d801fa9436 14386277 ----
-0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 -> 0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 value 9999000000000000000
----- [5] 0x620fa3ac2575abef7b4988c0d65820b672cca09ed38ed8caeef0aa7c2535a7fd 14386427 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 -> 0x4dbd4fc535ac27206064b68ffcf827b0a60bab3f value 1500000000000000000
-Method:
-  0x0f4d14e9 function depositEth(uint256 maxSubmissionCost) payable returns (uint256)
-Arguments:
-  uint256 maxSubmissionCost = 130102310835
----- [6] 0xcd464b0010144adc20cfbcd70dddf86b8af5154b426662b86f82876d986b2dc4 14386436 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 -> 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 value 1500000000000000000
-Method:
-  0xb1a1a882 function depositETH(uint32 _l2Gas, bytes _data) payable
-Arguments:
-  uint32 _l2Gas = 1300000
-  bytes _data = b''
----- [7] 0x0e3c1807419ee4fe5ce94bea9ab3e7bf62b9b7986f22e0789eb9d8dfa94e4360 14388877 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 creates contract 0xc1b15d3b262beec0e3565c11c9e0f6134bdacb36
----- [8] 0x10f2f53b4b705a3a80737736a6135b0a7b643be3032c50b33adaedee4d4bbc18 14388878 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 creates contract 0x2d61dcdd36f10b22176e0433b86f74567d529aaa
----- [9] 0xc033a597ee6bc246a9425608c5c1440a4b4d38cdf6cb3021974134fead219a60 14388880 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 creates contract 0x66a71dcef29a0ffbdbe3c6a460a3b5bc225cd675
----- [10] 0x69063bd79dd8dac031689848a45905264f360bb25052daf1790a87265b078d23 14388899 ----
-0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 creates contract 0x38de71124f7a447a01d67945a51edce9ff491251
+[*] Diff bsc-0x73feaa1eE314F8c655E354234017bE2193C9E24E  ftm-0xa71f52aee8311c22b6329EF7715A5B8aBF1c6588
+Written to output/diff/SAMENAME_SafeMath_0.85.html
+Written to output/diff/SAMENAME_Address_0.72.html
+Written to output/diff/SafeBEP20_SafeERC20_0.62.html
+Written to output/diff/BEP20_ProtofiERC20_0.85.html
+Written to output/diff/CakeToken_ElectronToken_0.59.html
+Written to output/diff/SyrupBar_ElectronToken_0.57.html
+Non-matched contracts:
+Context,Ownable,MasterChef
+----------
+ProtofiMasterChef,ProtonToken
+peth > open output/diff/SAMENAME_SafeMath_0.85.html
 
 
-# Simple AML command.
-peth > aml 0x9F403140Bc0574D7d36eA472b82DAa1Bbd4eF327
-Start 0x9F403140Bc0574D7d36eA472b82DAa1Bbd4eF327
-[1] 0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 sends 0x9f403140bc0574d7d36ea472b82daa1bbd4ef327 0.21950 ETH
-[2] 0x366064cc2baa69ff0bb0dd7dd07cb266e5105759 sends 0xc098b2a3aa256d2140208c3de6543aaef5cd3a94 0.09924 ETH
-[3] 0xfa453aec042a837e4aebbadab9d4e25b15fad69d sends 0x366064cc2baa69ff0bb0dd7dd07cb266e5105759 0.10000 ETH
-[4] 0x0c7719f1d7ed41271cbba92ec153afa6610228f8 sends 0xfa453aec042a837e4aebbadab9d4e25b15fad69d 9.99389 ETH
-[5] 0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98 sends 0x0c7719f1d7ed41271cbba92ec153afa6610228f8 9.99400 ETH
-[6] 0x32be343b94f860124dc4fee278fdcbd38c102d88 sends 0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98 4.99000 ETH
-[7] 0x543807d0af2c58b49d7f25659d0472d4d8b8e8da sends 0x32be343b94f860124dc4fee278fdcbd38c102d88 105.98950 ETH
-[8] 0xaf880fc7567d5595cacce15c3fc14c8742c26c9e sends 0x543807d0af2c58b49d7f25659d0472d4d8b8e8da 1.00000 ETH
-[9] GENESIS sends 0xaf880fc7567d5595cacce15c3fc14c8742c26c9e 133.70000 ETH
-End
+# Open blockchain explorer of the address.
+# 打开区块链浏览器对应地址（会自动唤起浏览器）
+peth > url 0xdAC17F958D2ee523a2206206994597C13D831ec7
+https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7
 
-peth > aml 0x629e7Da20197a5429d30da36E77d06CdF796b71A
-Start 0x629e7Da20197a5429d30da36E77d06CdF796b71A
-[1] 0xD6187b4a0f51355A36764558D39b2C21aC12393D calls contract TornadoProxy(0x722122dF12D4e14e13Ac3b6895a86e84145b6967) in 0xb3283c7c82faa1b6b0d3b8104e87a5239f909ea6d8eeb4026a6d5b671a672f66
-End
+# Download solc standard input json, which can be compile with `solc --standard-json`
+# 下载 solidity 的标准 JSON 格式源码，可以直接使用 solc --standard-json 进行编译。
+peth > download_json 0xdAC17F958D2ee523a2206206994597C13D831ec7
+Downloaded as output/json/api.etherscan.io/TetherToken_0.4.18_0xdAC17F958D2ee523a2206206994597C13D831ec7.json
 
-# Happy end.
-peth > exit
-bye!
+# Download source.
+# 下载源码（多文件时会创建对应的文件目录结构）
+peth > download_source 0xe140bB5F424A53e0687bfC10F6845a5672D7e242
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/Spool.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/external/@openzeppelin/token/ERC20/IERC20.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/external/@openzeppelin/token/ERC20/utils/SafeERC20.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/external/@openzeppelin/utils/Address.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/external/@openzeppelin/utils/SafeCast.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/interfaces/IBaseStrategy.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/interfaces/IController.sol
+Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/interfaces/ISpoolOwner.sol
+...
 ```
 
-All commands in the console can be executed via `--cmd`. 
-```
-➜  peth-cli git:(master) ✗ python main.py --cmd number
-14210380
-➜  peth-cli git:(master) ✗ python main.py --cmd balance 0xdAC17F958D2ee523a2206206994597C13D831ec7
-1 Wei( 0.0000 Ether)
-```
+###  Others 其他
+
+Read the code.
+
+参考源码。
+
+

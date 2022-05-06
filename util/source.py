@@ -65,7 +65,7 @@ class ContractSource(object):
     def compare(self, other, output=None):
 
         if output is None:
-            output = 'diff'
+            output = config.DIFF_PATH
 
         if not os.path.isdir(output):
             os.makedirs(output)

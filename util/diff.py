@@ -2,6 +2,7 @@ import os
 from web3 import Web3
 
 from core.peth import Peth
+from core.config import DIFF_PATH
 from eth.scan import ScanAPI
 
 from .source import ContractSource
@@ -10,7 +11,7 @@ def diff_source(src1, src2, output=None):
     src1 = ContractSource(src1)
     src2 = ContractSource(src2)
     if output:
-        output = os.path.join('diff', output)
+        output = os.path.join(DIFF_PATH, output)
     src1.compare(src2, output)
 
 def diff_chain_src(chain1, addr1, chain2, addr2, output=None):

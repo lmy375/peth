@@ -3,7 +3,12 @@ import json
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 CHAIN_CONFIG_PATH = os.path.join(BASE_PATH, 'config.json')
-CACHE_PATH = os.path.join(BASE_PATH, '.contract_info_cache')
+
+OUTPUT_PATH = 'output' # Current work dir.
+CACHE_PATH = os.path.join(OUTPUT_PATH, 'contract_info_cache')
+DIFF_PATH = os.path.join(OUTPUT_PATH, 'diff')
+REPORT_PATH = os.path.join(OUTPUT_PATH, 'report')
+SOURCE_PATH = os.path.join(OUTPUT_PATH, 'sources')
 
 DEFAULT_API_INTERVAL = 6
 
