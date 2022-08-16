@@ -3,6 +3,8 @@ import json
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 CHAIN_CONFIG_PATH = os.path.join(BASE_PATH, 'config.json')
+SIG_DB_PATH = os.path.join(BASE_PATH, '4byte.json')
+SIG_DB_URL = "https://raw.githubusercontent.com/ethereum/go-ethereum/master/signer/fourbyte/4byte.json"
 
 OUTPUT_PATH = 'output' # Current work dir.
 CACHE_PATH = os.path.join(OUTPUT_PATH, 'contract_info_cache')

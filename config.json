@@ -84,6 +84,11 @@
             "https://rpc.api.moonbeam.network",
             "https://api-moonbeam.moonscan.io/api?",
             "https://moonbeam.moonscan.io/address/"
+        ],
+        "op": [
+            "https://optimism-mainnet.public.blastapi.io",
+            "https://api-optimistic.etherscan.io/api?",
+            "https://optimistic.etherscan.io/address/"
         ]
     },
     "contracts": {

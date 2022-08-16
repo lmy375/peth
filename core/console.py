@@ -97,7 +97,7 @@ class PethConsole(cmd.Cmd):
                 print("---- [%d] ----" % i)
                 self.__print_json(item, full)
                 i += 1
-        elif getattr(data, "items", None):  # dict like object.e
+        elif getattr(data, "items", None):  # dict-like object.
             for k, v in data.items():
                 if v:
                     v = self.__normal_str(v, full)
@@ -176,8 +176,9 @@ class PethConsole(cmd.Cmd):
         else:
             value = int(arg)
         print("Value: %s" % value)
-        print("Value/1e18: %s" % (value/1e18))
+        print("Value: %e" % (value/1.0))
         print("Value/1e6: %s" % (value/1e6))
+        print("Value/1e18: %s" % (value/1e18))
 
 
     def do_4byte(self, arg):
@@ -274,7 +275,7 @@ class PethConsole(cmd.Cmd):
         args = arg.split()
         method = args[0]
         arg_list = args[1:]
-        print(self.peth.rpc_call(method, arg_list))
+        print(json.dumps(self.peth.rpc_call(method, arg_list), indent=2))
 
     def do_tx_raw(self, arg):
         """
@@ -377,25 +378,46 @@ class PethConsole(cmd.Cmd):
             value = self.peth.call_contract(addr, sig, args[2:])
             print(value)
 
-    def do_proxy(self, arg):
+    def do_proxy(self, args):
         """
-        proxy <address>: Print ERC1967 proxy information
+        proxy <address> [<address>]: Print ERC1967 proxy information
         """
-        addr = self.web3.toChecksumAddress(arg)
-        print("Implementation", self.web3.eth.get_storage_at(
-            addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex())
-        print("Admin", self.web3.eth.get_storage_at(
-            addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex())
-        print("Rollback", self.web3.eth.get_storage_at(
-            addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
-        print("Beacon", self.web3.eth.get_storage_at(
-            addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
-        print("Initialized", self.web3.eth.get_storage_at(
-            addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
-        print("Slot[0]", self.web3.eth.get_storage_at(addr, 0).hex())
-        print("Slot[1]", self.web3.eth.get_storage_at(addr, 1).hex())
-        print("Slot[2]", self.web3.eth.get_storage_at(addr, 2).hex())
-        print("Slot[3]", self.web3.eth.get_storage_at(addr, 3).hex())
+        for arg in args.split():
+            addr = self.web3.toChecksumAddress(arg)
+            impl = self.web3.eth.get_storage_at(addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
+            admin = self.web3.eth.get_storage_at(addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
+            
+            if int(impl, 16) == 0:
+                print(f"{addr} may be not a ERC1967 Proxy")
+                print("Implementation", impl)
+                print("Admin", admin)
+                # Print first slots, may be used as customized proxy.
+                print("Slot[0]", self.web3.eth.get_storage_at(addr, 0).hex())
+                print("Slot[1]", self.web3.eth.get_storage_at(addr, 1).hex())
+                print("Slot[2]", self.web3.eth.get_storage_at(addr, 2).hex())
+                print("Slot[3]", self.web3.eth.get_storage_at(addr, 3).hex())
+            else:
+                print(f"{addr} is a ERC1967 Proxy")
+                print("Implementation", impl)
+                print("Admin", admin)
+                print("Rollback", self.web3.eth.get_storage_at(
+                    addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
+                print("Beacon", self.web3.eth.get_storage_at(
+                    addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
+                print("Initialized", self.web3.eth.get_storage_at(
+                    addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
+
+    def do_proxy_all(self, args):
+        """
+        proxy_all <address> [<address>]: Only print proxy addresses.
+        """
+        for arg in args.split():
+            addr = self.web3.toChecksumAddress(arg)
+            impl = self.web3.eth.get_storage_at(addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
+            if int(impl, 16) != 0:
+                name = self.peth.scan.get_contract_name(addr)
+                if not name: name = ""
+                print(f"Proxy {name} {addr} impl {impl}")
 
     def do_owner(self, arg):
         """

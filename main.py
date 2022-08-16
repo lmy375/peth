@@ -1,6 +1,7 @@
 import json
 import logging
 from argparse import ArgumentParser
+from pickle import LONG_BINGET
 
 from core.config import chain_config
 from core.peth import Peth
@@ -60,7 +61,7 @@ def get_args():
         help="RPC endpoint.",
     )
     parser.add_argument(
-        "--scan-url",
+        "--api-url",
         help="Etherscan like blockchain explorer API URL.",
     )
     parser.add_argument(
@@ -84,6 +85,13 @@ def get_args():
         "--graph",
         action="store_true",
         help="Generate contract graph.",
+    )
+
+    parser.add_argument(
+        "-a",
+        "--analyze",
+        nargs="+",
+        help="Analyze address.",
     )
 
     parser.add_argument(
@@ -126,6 +134,9 @@ def main():
     elif args.graph:
         addr = args.to
         peth.print_contract_graph(addr)
+    elif args.analyze:
+        project = peth.analyze_addresses(args.analyze)
+        project.save()
     elif args.cmd:
         c = PethConsole(peth)
         c.single_command(args.cmd) 

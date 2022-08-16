@@ -5,6 +5,8 @@ from eth.bytecode import Code
 from eth.opcodes import OpCode
 
 from core.config import chain_config
+from core.analysis import AccountAnalysis, Project
+
 
 class Peth(EthCall):
     """
@@ -111,3 +113,14 @@ class Peth(EthCall):
     def is_contract(self, addr):
         addr = self.web3.toChecksumAddress(addr)
         return len(self.web3.eth.get_code(addr)) != 0
+
+
+    def analyze_address(self, addr):
+        account = AccountAnalysis(self, addr)
+        account.analyze()
+        return account
+
+    def analyze_addresses(self, addresses):
+        project = Project(self, addresses)
+        project.analyze_all()
+        return project
