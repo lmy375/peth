@@ -5,6 +5,7 @@ import difflib
 import re
 
 from web3 import Web3
+import requests
 
 from eth.sigs import ERC20Signatures, Signature
 from eth.utils import get_4byte_sig, sha3_256
@@ -951,5 +952,39 @@ class PethConsole(cmd.Cmd):
         url = self.peth.get_decompile_url(addr)
         print(url)
         self.do_open(url)
+
+    def do_debank(self, addr):
+        """
+        debank <addr> : DeBank API to get assets balance (All chains).
+        """
+        addr = addr.strip().lower()
+        if not Web3.isAddress(addr):
+            print("%s is not valid address." % addr)
+            return
+
+        r = requests.get("https://api.debank.com/user/addr?addr=%s" % addr)
+        d = r.json()
+        assert d["error_code"] == 0, "DeBank addr API Error. %s" % d
+        chains = d["data"]["used_chains"]
+
+
+        r = requests.get("https://api.debank.com/user/total_balance?addr=%s" % addr)
+        d = r.json()
+        assert d["error_code"] == 0, "DeBank total_balance API Error. %s" % d
+        print("Total USD Value: $ %0.2f" % d["data"]["total_usd_value"])
+
+        for chain in chains:
+            r = requests.get("https://api.debank.com/token/balance_list?user_addr=%s&chain=%s" % (addr, chain))
+            d = r.json()
+            assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
+            print(chain)
+            for token in d["data"]:
+                name = token["name"]
+                symbol = token["symbol"]
+                decimals = token["decimals"]
+                price = token["price"]
+                balance = token["balance"]/(10**decimals)
+                print(f"\t%-5s %-20s\t%-10.2f\t$ %-10.2f" %(symbol, name, balance, balance*price))
+
 
 
