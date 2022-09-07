@@ -8,7 +8,7 @@ setup(
     description="A python Ethereum utilities command-line tool.",
     url="https://github.com/lmy375/peth",
     author="Moon",
-    version="0.1.0",
+    version="0.1.1",
     packages=find_packages(exclude=['tests']),
     package_data={'peth': ['*.json'] },
     python_requires=">=3.8",
