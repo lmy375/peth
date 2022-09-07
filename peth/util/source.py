@@ -1,7 +1,7 @@
 import difflib
 import os
 
-from core import config
+from peth.core import config
 
 class ContractSource(object):
 

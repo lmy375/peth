@@ -6,7 +6,7 @@ import re
 
 from web3 import Web3
 
-from core.config import chain_config, DEFAULT_API_INTERVAL, CACHE_PATH, OUTPUT_PATH
+from peth.core.config import chain_config, DEFAULT_API_INTERVAL, CACHE_PATH, OUTPUT_PATH
 
 class ScanAPI(object):
 

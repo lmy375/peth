@@ -1,6 +1,6 @@
 import json
 
-from eth.sigs import Signatures, Signature
+from peth.eth.sigs import Signatures, Signature
 
 
 def test_human_abi():

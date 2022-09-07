@@ -4,14 +4,14 @@ import os
 
 from web3 import Web3
 
-from eth.bytecode import Code
-from eth.sigs import Signatures, Signature
-from eth import utils
-from core.config import REPORT_PATH
-from core.log import logger
-from util.graph import ContractRelationGraph
-from util.markdown import make_attr_table, make_table
-from util.slither import slither_from_chain_addr
+from peth.eth.bytecode import Code
+from peth.eth.sigs import Signatures, Signature
+from peth.eth import utils
+from peth.core.config import REPORT_PATH
+from peth.core.log import logger
+from peth.util.graph import ContractRelationGraph
+from peth.util.markdown import make_attr_table, make_table
+from peth.util.slither import slither_from_chain_addr
 
 class AccountAnalysis(object):
 

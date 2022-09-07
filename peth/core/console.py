@@ -7,13 +7,13 @@ import re
 from web3 import Web3
 import requests
 
-from eth.sigs import ERC20Signatures, Signature
-from eth.utils import get_4byte_sig, sha3_256
-from eth.bytecode import Code
-from eth.opcodes import OpCode
-from core.peth import Peth
-from util import diff
-from util.graph import ContractRelationGraph
+from peth.eth.sigs import ERC20Signatures, Signature
+from peth.eth.utils import get_4byte_sig, sha3_256
+from peth.eth.bytecode import Code
+from peth.eth.opcodes import OpCode
+from peth.core.peth import Peth
+from peth.util import diff
+from peth.util.graph import ContractRelationGraph
 
 from . import config
 from .config import chain_config, contracts_config, OUTPUT_PATH
@@ -977,7 +977,7 @@ class PethConsole(cmd.Cmd):
             r = requests.get("https://api.debank.com/token/balance_list?user_addr=%s&chain=%s" % (addr, chain))
             d = r.json()
             assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
-            print(chain)
+            print('-', chain.upper())
             for token in d["data"]:
                 name = token["name"]
                 symbol = token["symbol"]

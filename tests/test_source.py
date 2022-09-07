@@ -1,4 +1,4 @@
-from core.peth import Peth
+from peth.core.peth import Peth
 
 import solcx
 

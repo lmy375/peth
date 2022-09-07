@@ -12,8 +12,8 @@ from crytic_compile.platform.etherscan import Etherscan, _convert_version, _hand
 from crytic_compile.platform.exceptions import InvalidCompilation
 from slither.slither import Slither
 
-from eth.scan import ScanAPI
-from core.config import OUTPUT_PATH
+from peth.eth.scan import ScanAPI
+from peth.core.config import OUTPUT_PATH
 
 class Uniscan(Etherscan):
 

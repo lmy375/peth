@@ -10,3 +10,8 @@ output/
 diff/
 report/
 crytic-export/
+
+# setup
+build/
+dist/
+peth.egg-info/

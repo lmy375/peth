@@ -5,8 +5,8 @@ import atexit
 import requests
 from web3 import Web3
 
-from core.config import SIG_DB_PATH, SIG_DB_URL
-from core.log import logger
+from peth.core.config import SIG_DB_PATH, SIG_DB_URL
+from peth.core.log import logger
 
 ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 

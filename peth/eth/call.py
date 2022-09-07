@@ -4,7 +4,7 @@ from web3 import Web3
 from .scan import ScanAPI
 from .sigs import Signature, Signatures
 from . import utils
-from core.log import logger
+from peth.core.log import logger
 
 class EthCall(object):
     """

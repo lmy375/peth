@@ -1,6 +1,6 @@
 import json
 
-from eth.sigs import Signature
+from peth.eth.sigs import Signature
 
 class ERC20Contract(object):
 

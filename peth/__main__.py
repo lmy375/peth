@@ -1,12 +1,11 @@
 import json
 import logging
 from argparse import ArgumentParser
-from pickle import LONG_BINGET
 
-from core.config import chain_config
-from core.peth import Peth
-from core.console import PethConsole
-from core.log import logger
+from peth.core.config import chain_config, CHAIN_CONFIG_PATH, OUTPUT_PATH
+from peth.core.peth import Peth
+from peth.core.console import PethConsole
+from peth.core.log import logger
 
 def get_args():
     parser = ArgumentParser(
@@ -141,6 +140,9 @@ def main():
         c = PethConsole(peth)
         c.single_command(args.cmd) 
     else:
+        logger.info("Config file: %s" % CHAIN_CONFIG_PATH)
+        logger.info("Output path: %s" % OUTPUT_PATH)
+        
         # Default: Open console.
         c = PethConsole(peth)
         c.start_console()

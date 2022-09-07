@@ -1,9 +1,9 @@
 import os
 from web3 import Web3
 
-from core.peth import Peth
-from core.config import DIFF_PATH
-from eth.scan import ScanAPI
+from peth.core.peth import Peth
+from peth.core.config import DIFF_PATH
+from peth.eth.scan import ScanAPI
 
 from .source import ContractSource
 

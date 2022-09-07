@@ -1,11 +1,11 @@
 from web3 import Web3
 
-from eth.call import EthCall
-from eth.bytecode import Code
-from eth.opcodes import OpCode
+from peth.eth.call import EthCall
+from peth.eth.bytecode import Code
+from peth.eth.opcodes import OpCode
 
-from core.config import chain_config
-from core.analysis import AccountAnalysis, Project
+from peth.core.config import chain_config
+from peth.core.analysis import AccountAnalysis, Project
 
 
 class Peth(EthCall):
