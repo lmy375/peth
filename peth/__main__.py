@@ -140,8 +140,8 @@ def main():
         c = PethConsole(peth)
         c.single_command(args.cmd) 
     else:
-        logger.info("Config file: %s" % CHAIN_CONFIG_PATH)
-        logger.info("Output path: %s" % OUTPUT_PATH)
+        logger.debug("Config file: %s" % CHAIN_CONFIG_PATH)
+        logger.debug("Output path: %s" % OUTPUT_PATH)
         
         # Default: Open console.
         c = PethConsole(peth)

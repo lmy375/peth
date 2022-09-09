@@ -30,5 +30,6 @@ contracts_config = user_config["contracts"]
 DIFF_MIN_SIMILARITY = 0.5
 
 def print_config():
-    print("DIFF_MIN_SIMILARITY = ", DIFF_MIN_SIMILARITY)
-    print("DEFAULT_API_INTERVAL = ", DEFAULT_API_INTERVAL)
+    for key, value in globals().items():
+        if key.isupper():
+            print("%s = %s" % (key, repr(value)))

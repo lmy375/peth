@@ -27,6 +27,8 @@ def func_selector(func_sig: str):
 
 class SelectorDatabase(object):
 
+    single_instance = None
+
     def __init__(self) -> None:
         self.db = {}
 
@@ -99,10 +101,16 @@ class SelectorDatabase(object):
         json.dump(self.db, open(SIG_DB_PATH, "w"))
         logger.debug("Save sig db to %s" % SIG_DB_PATH)
 
-sig_db = SelectorDatabase()
+    @staticmethod
+    def get():
+        if SelectorDatabase.single_instance is None:
+            # This can be a little slow as it downloads data from github.
+            SelectorDatabase.single_instance = SelectorDatabase()
+        return SelectorDatabase.single_instance
 
 def get_4byte_sig(sig, only_one=False):
-    return sig_db.get_sig(sig, only_one)
+    db = SelectorDatabase.get()
+    return db.get_sig(sig, only_one)
 
 def process_args(args):
     """
