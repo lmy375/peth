@@ -18,8 +18,18 @@ class EthCall(object):
         self.address_url = address_url
         self.sender = sender
 
-        self.web3 = Web3(Web3.HTTPProvider(rpc_url))
+        if rpc_url.startswith('http'):
+            self.provider = Web3.HTTPProvider(rpc_url)
+        elif rpc_url.startswith('ws'):
+            self.provider = Web3.WebsocketProvider(rpc_url)
+        elif rpc_url.endswith('ipc'):
+            self.provider = Web3.IPCProvider(rpc_url)
+        else:
+            raise NotImplementedError("Unknown url type. HTTP/IPC/WS required. %s" % rpc_url)
+
+        self.web3 = Web3(self.provider)
  
+
         if api_url:
             self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
         else:

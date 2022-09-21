@@ -193,6 +193,18 @@ peth > sha3 balanceOf()
 peth > 4byte 722713f7
 balanceOf()
 
+peth > 4byte transferFrom(address,address,uint256)
+0x030e30df super_transferFrom(address,address,uint256)
+0x09d6796f our_transferFrom(address,address,uint256)
+0x23b872dd transferFrom(address,address,uint256)
+0x3642e004 lexDAOtransferFrom(address,address,uint256)
+0x3c1008bb internal_transferFrom(address,address,uint256)
+0x5ec7b353 safetransferFrom(address,address,uint256)
+0xcb712535 _transferFrom(address,address,uint256)
+0xd05391d2 admin_transferFrom(address,address,uint256)
+8 item(s) found in 4byte.json.
+Full match: 0x23b872dd transferFrom(address,address,uint256)
+
 # Print number.
 # 打印 int 数（方便 Token 余额转换）
 peth > int 100000000000000000000

@@ -56,3 +56,13 @@ def test_enc_dec():
     s = Signature.from_sig("balanceOf(address)->(uint256)")
     assert s.encode_args([ADDRESS]).hex() == CALL_DATA
     assert s.decode_args(CALL_DATA) == (ADDRESS.lower(),)
+
+
+def test_tuple():
+    types = Signature.split_sig("(uint256,(uint256,uint256)[], (string, string))") 
+    assert types == ['uint256', '(uint256,uint256)[]', '(string,string)']
+
+    s = Signature.from_sig("func(uint256,(uint256,uint256))->(uint256[])")
+    assert s.inputs_sig == '(uint256,(uint256,uint256))'
+    assert s.outputs_sig == '(uint256[])'
+    assert str(s) == '0xd5cd2bfd function func(uint256, (uint256,uint256)) returns (uint256[])'

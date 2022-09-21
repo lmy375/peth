@@ -1,11 +1,10 @@
 import json
 import re
-from select import select
-from typing import Optional
+from typing import Optional, Dict
 
 import eth_abi
 
-from .utils import func_selector, hex2bytes
+from .utils import func_selector, hex2bytes, collapse_if_tuple
 
 
 class Signature(object):
@@ -35,6 +34,7 @@ class Signature(object):
 
         # Maybe None.
         self.name = None
+        self.full_abi = None
 
         # stateMutability:
         # view, pure, nonpayable, payable
@@ -153,14 +153,45 @@ class Signature(object):
             buf += " " + self.mode
 
         if self.outputs:
-            buf += " returns ("
-            buf += ", ".join(i[1] for i in self.outputs)  # ignore name.
+            buf += " returns ("   
+            buf += ", ".join("%s%s" % (typ, ' ' + name if name else "")
+                         for name, typ in self.outputs)
             buf += ")"
 
         return buf
 
     @classmethod
-    def from_sig(cls, sig):
+    def split_sig(cls, sig: str) -> list:
+        sig = re.sub(r"\s", "", sig)  # remove blank chars.
+        if sig.startswith('(') and sig.endswith(')'):
+            sig = sig[1:-1] # Remove ()
+
+        types = []
+        left = 0
+
+        type_str = ''
+        for c in sig:
+            if c == ',' and left == 0:
+                types.append(type_str)
+                type_str = ''
+                continue
+
+            elif c == '(':
+                left += 1
+
+            elif c == ')':
+                left -= 1
+                assert left >= 0, "Invalid sig: %s" % sig
+            
+            type_str += c
+
+        if type_str:
+            types.append(type_str) # Append the last one.
+
+        return types
+
+    @classmethod
+    def from_sig(cls, sig: str) -> "Signature":
         """
         Function like: name(typ1,typ2)->(typ3)
         """
@@ -179,19 +210,20 @@ class Signature(object):
         s.name = func_sig[:idx]  # Function name.
 
         args_sig = func_sig[idx:]
-        for i in args_sig.strip('()').split(','):
+        for i in cls.split_sig(args_sig):
             s.inputs.append((None, i))
 
         if len(sigs) == 2:
             return_sig = sigs[1]
-            for i in return_sig.strip('()').split(','):
+            for i in cls.split_sig(return_sig):
                 s.outputs.append((None, i))
         return s
 
     @classmethod
-    def from_abi(cls, item):
+    def from_abi(cls, item: Dict) -> "Signature":
 
         sig = cls()
+        sig.full_abi = item
         sig.type = item["type"]
 
         # Use .get as value can be None
@@ -201,13 +233,12 @@ class Signature(object):
         sig.anonymous = item.get("anonymous")
         sig.mode = item.get("stateMutability")
 
-        if "inputs" in item:
-            for arg in item["inputs"]:
-                sig.inputs.append((arg["name"], arg["type"]))
+        for arg in item.get("inputs", []):
+            sig.inputs.append((arg["name"], collapse_if_tuple(arg)))
 
-        if "outputs" in item:
-            for arg in item["outputs"]:
-                sig.outputs.append((arg["name"], arg["type"]))
+       
+        for arg in item.get("outputs", []):
+            sig.outputs.append((arg["name"], collapse_if_tuple(arg)))
 
         if sig.type == Signature.FUNCTION:
             sig.selector = func_selector(sig.func_sig)

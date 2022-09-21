@@ -391,7 +391,7 @@ class AccountAnalysis(object):
                 txt += "从 bytecode 分析出的 Selectors 如下:\n"
                 for selector in self.selectors:
                     sig = '0x' + selector.hex()
-                    sigs = utils.get_4byte_sig(sig)
+                    sigs = utils.selector_to_sigs(sig)
                     sigs = sigs[::-1]
                     txt += f"- {sig} {', '.join(sigs)}\n"
 

@@ -1,5 +1,10 @@
 {
     "chains": {
+        "local": [
+            "/Users/moon/Desktop/Ethereum/geth.ipc",
+            "https://api.etherscan.io/api?",
+            "https://etherscan.io/address/"
+        ],
         "eth": [
             "https://rpc.ankr.com/eth",
             "https://api.etherscan.io/api?",
@@ -9,6 +14,16 @@
             "https://rpc.ankr.com/eth",
             "https://api-cn.etherscan.com/api?",
             "https://cn.etherscan.com/address/"
+        ],
+        "ethw": [
+            "https://mainnet.ethereumpow.org",
+            null,
+            "https://www.oklink.com/en/ethw/address/"
+        ],
+        "etf":[
+            "https://rpc.etherfair.org",
+            "https://explorer.etherfair.org/api?",
+            "https://explorer.etherfair.org/"
         ],
         "bsc": [
             "https://rpc.ankr.com/bsc",

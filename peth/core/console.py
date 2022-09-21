@@ -8,7 +8,7 @@ from web3 import Web3
 import requests
 
 from peth.eth.sigs import ERC20Signatures, Signature
-from peth.eth.utils import get_4byte_sig, sha3_256
+from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase
 from peth.eth.bytecode import Code
 from peth.eth.opcodes import OpCode
 from peth.core.peth import Peth
@@ -184,17 +184,35 @@ class PethConsole(cmd.Cmd):
 
     def do_4byte(self, arg):
         """
-        4byte <hex_sig> : query text signature in 4byte database.
+        4byte <selector> : query text signature in 4byte database.
+        4byte <text> : query text signature which includes such text in local database.
         """
         if not arg:
             print("4byte <hex_sig> :query text signature in 4byte database.")
             return
 
-        sigs = get_4byte_sig(arg)
-        if sigs:
-            print('\n'.join(sigs))
+        db = SelectorDatabase.get()
+
+        if re.match('^[0-9A-Fa-fXx]$', arg): # selector
+            sigs = db.get_sig_from_selector(arg)
+            if sigs:
+                print('\n'.join(sigs))
+            else:
+                print("Selector not found in 4byte.directory.")
         else:
-            print("Not found in 4byte.directory.")
+            ret = db.get_sig_from_text(arg)
+            full_match = None
+            if ret:
+                for selector, sigs in ret:
+                    if arg in sigs:
+                        full_match = (selector, ', '.join(sigs))
+                    print("0x%s %s" % (selector, ', '.join(sigs)))
+
+            print("%d item(s) found in 4byte.json." % len(ret))
+            if full_match:
+                print("Full match: 0x%s %s" % full_match)
+
+
 
     def do_common_addresses(self, arg):
         """
@@ -536,6 +554,23 @@ class PethConsole(cmd.Cmd):
         print("1 %s = %0.4f %s" % (token0_name, r1/r0, token1_name))
         print("1 %s = %0.4f %s" % (token1_name, r0/r1, token0_name))
 
+
+    def do_factory(self, arg):
+        """
+        factory <factory address>
+        """
+        factory = self.web3.toChecksumAddress(arg)
+        size = self.peth.call_contract(factory, "allPairsLength()->(uint256)")
+        print("%d pairs found." % size)
+        for i in range(size):
+            try:
+                pair = self.peth.call_contract(factory, "allPairs(uint256)->(address)", [i])
+                print("[%d] %s" % (i, pair))
+                self.do_pair(pair)
+            except Exception as e:
+                print('[*] %s' % e)
+
+
     def do_oracle(self, arg):
         """
         oracle <EACAggregatorProxy>[,<EACAggregatorProxy>] : Print ChainLink oracle aggregator information.
@@ -725,7 +760,7 @@ class PethConsole(cmd.Cmd):
         selectors = self.peth.get_selectors(addr)
         for selector in selectors:
             sig = '0x' + selector.hex()
-            sigs = get_4byte_sig(sig)
+            sigs = selector_to_sigs(sig)
             sigs = sigs[::-1]
             print(sig, ', '.join(sigs))
 
