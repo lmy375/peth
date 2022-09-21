@@ -574,6 +574,23 @@ Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7
 Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/interfaces/IController.sol
 Downloaded output/source/api.etherscan.io/0xe140bB5F424A53e0687bfC10F6845a5672D7e242/contracts/interfaces/ISpoolOwner.sol
 ...
+
+
+# Run solidity file through eth_call.
+# 利用 eth_call 执行 solidity 代码。
+peth > ! cat ethcall_executor.sol
+pragma solidity ^0.8.13;
+interface ERC20{
+    function balanceOf(address a) external returns (uint);
+}
+contract Executor {
+    function run() external returns(uint){
+        return ERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7).balanceOf(0x5754284f345afc66a98fbB0a0Afe71e0F007B949);
+    }
+}
+
+peth > run ethcall_executor.sol
+972099416751514
 ```
 
 ###  Others 其他

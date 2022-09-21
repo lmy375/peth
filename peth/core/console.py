@@ -355,6 +355,34 @@ class PethConsole(cmd.Cmd):
     ##################################################################
     # Common used eth_call alias command.
 
+    def do_run(self, arg: str):
+        """
+        run <your_path>.sol : Run the code with eth_call.
+
+        pragma solidity ^0.8.13;
+
+        contract Executor {
+            constructor() public payable {}
+
+            function run() external returns(address, address, address){
+                //////////////////////
+                // ADD YOUR CODE HERE.
+                // It's OK to change the return type or add more functions
+                // or contract. 
+                // But the `Executor` contract and `run()` function must be 
+                // reserved. 
+                //////////////////////
+                return (msg.sender, tx.origin, address(this));
+            }
+        }
+        """
+        assert arg.endswith('.sol'), ".sol file needed but get %s." % arg
+        assert os.path.exists(arg), "File %s not exists." % arg
+        code = open(arg).read()
+        r = self.peth.run_solidity(code)
+        print(r)
+        
+
     def do_get_prop(self, arg):
         """
         get_prop <contract> <name> [<type>] : Call property-like view method.

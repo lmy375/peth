@@ -5,6 +5,7 @@ from .scan import ScanAPI
 from .sigs import Signature, Signatures
 from . import utils
 from peth.core.log import logger
+from peth.util.solc import compile_with_eth_call
 
 class EthCall(object):
     """
@@ -155,3 +156,46 @@ class EthCall(object):
             if not silent:
                 logger.warning('EthCall.call_contract Call %s %s %s' % (contract, sig_or_name, e))
             return None
+    
+    def run_solidity(self, code):
+        """
+        Compile and run the Executor.run() code with EthCall contract constructor.
+        """
+
+        assert "Executor" in code and "run" in code, "Executor.run() is not defined in such code."
+
+        output = compile_with_eth_call(code)
+        calldata = output['<stdin>:EthCall']['bin']
+        abi = None
+        for abi in output['<stdin>:Executor']['abi']:
+            if abi['type'] == 'function' and abi['name'] == 'run':
+                break
+        
+        if abi is None:
+            raise Exception("Executor.run() not found in the code")
+
+        s = Signature.from_abi(abi)
+        
+        tx = {
+            # "from": utils.ZERO_ADDRESS,
+            # "to": utils.ZERO_ADDRESS, # run the data.
+            "data": "0x" + calldata
+        }
+
+        # print(tx)
+        r = self.rpc_call_raw('eth_call', [tx, 'latest'])
+        # print(r)
+        if "error" in r:
+            return r
+
+        if "result" in r:
+            try:
+                ret = s.decode_ret(r["result"])
+                if ret is not None:
+                    return ret
+                else: 
+                    # If no output sig, return raw data.
+                    return r["result"]
+            except Exception as e:
+                return r
+        return r
