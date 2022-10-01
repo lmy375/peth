@@ -69,6 +69,9 @@ class Peth(EthCall):
             if ins is None:
                 break
 
+            # TODO: opt this. 
+            # DUP1 PUSH4 0x2E64CEC1 EQ PUSH1 0x37 JUMPI --> DEST
+            # https://github.com/shazow/whatsabi/blob/main/src.ts/index.ts
             if ins.op is OpCode.PUSH4:
                 if ins.opnd == 0xffffffff or ins.opnd < 0xffff:
                     # Skip -1 and small value.

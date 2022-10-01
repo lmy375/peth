@@ -37,6 +37,8 @@ contract EthCall {
 
 def compile(code):
     return solcx.compile_source(code, output_values=["abi", "bin"])
+    # return solcx.compile_source(code, output_values=["abi", "bin"], optimize=True)
+    # return solcx.main._compile_combined_json(stdin=code, output_values=["abi", "bin"], optimize=True, via_ir=True)
 
 def compile_with_eth_call(code):
     code += ETHCALL_CONTRACT

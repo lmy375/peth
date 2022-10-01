@@ -3,6 +3,7 @@ import json
 import os
 import difflib
 import re
+import codecs
 
 from web3 import Web3
 import requests
@@ -193,7 +194,7 @@ class PethConsole(cmd.Cmd):
 
         db = SelectorDatabase.get()
 
-        if re.match('^[0-9A-Fa-fXx]$', arg): # selector
+        if re.match('^[0-9A-Fa-fXx]*$', arg): # selector
             sigs = db.get_sig_from_selector(arg)
             if sigs:
                 print('\n'.join(sigs))
@@ -262,6 +263,7 @@ class PethConsole(cmd.Cmd):
             ts = int(arg)
         except Exception as e:
             print("[!] Invalid timestamp number. %s" % e)
+            return
 
         if ts > 3600 * 24 * 365 * 10: 
             # If ts > 10 yrs, it's a timestamp.
@@ -612,14 +614,22 @@ class PethConsole(cmd.Cmd):
                 if cnt > 1:
                     print('---- [%s] ----' % i)
                     i += 1
-
+                
                 aggr = self.peth.call_contract(addr, "aggregator()->(address)")
-                print("Aggregator:", aggr)
+                if aggr is None:
+                    aggr = addr
+                else:
+                    print("Aggregator:", aggr)
+                    print("Proxy Owner:", self.peth.call_contract(
+                    addr, "owner()->(address)"))
+                    
+                print("Aggregator Owner:", self.peth.call_contract(
+                    aggr, "owner()->(address)"))
 
+                print("Version:", self.peth.call_contract(
+                    aggr, "typeAndVersion()->(string)"))
                 print("Description:", self.peth.call_contract(
                     aggr, "description()->(string)"))
-                print("Owner:", self.peth.call_contract(
-                    aggr, "owner()->(address)"))
 
                 dec = self.peth.call_contract(aggr, "decimals()->(uint8)")
                 print("Decimals:", dec)
@@ -672,6 +682,63 @@ class PethConsole(cmd.Cmd):
             sig_or_addr = args[0]
             data = args[1]
             self.peth.decode_call(sig_or_addr, data)
+
+    def do_idm(self, arg):
+        """
+        idm <addr>  : Print the first 10 IDM messages related to the account.
+        idm <addr> <count>  : Print the first n IDM messages
+        idm <addr> <count> <asc/desc>  : Print the last n IDM messages
+        idm <addr> <count> <asc/desc> <startblock> <endblock> : Print IDM messages between specified blocks.
+        """       
+        args = arg.split()
+        assert len(args) >= 1
+        addr = args[0]
+        count = 10
+        startblock = None
+        endblock = None
+        reverse = False
+
+        if len(args) >= 2:
+            count = int(args[1])
+        if len(args) >= 3:
+            reverse = args[2] == 'desc'
+        if len(args) >= 5:
+            startblock = int(args[3])
+            endblock = int(args[4])
+
+        txs = self.peth.scan.get_txs_by_account(
+            addr, startblock, endblock, count, reverse)
+
+        if not txs:
+            print("No txs.")
+            return
+
+        i = 0
+        for tx in txs:
+
+            sender = tx["from"]
+            to = tx["to"]
+            data = tx["input"]
+            value = int(tx["value"])
+
+            data = data[2:] # remove 0x
+            if len(data) <= 8 or '00' in data:
+                continue
+
+            if sender == addr:
+                sender = "Hacker"
+            if to == addr:
+                to = "Hacker"
+
+            i += 1
+            print("---- [%d] %s to %s (%0.4f)----" % (i, sender, to, value/1e18))
+
+            try:
+                msg = codecs.decode(data, 'hex').decode('utf-8')
+                print(msg)
+            except:
+                print("Decode failed.")
+            
 
     def do_txs(self, arg):
         """
