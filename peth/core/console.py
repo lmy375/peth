@@ -18,6 +18,7 @@ from peth.util.graph import ContractRelationGraph
 
 from . import config
 from .config import chain_config, contracts_config, OUTPUT_PATH
+from .log import logger, logging
 
 
 class PethConsole(cmd.Cmd):
@@ -115,6 +116,11 @@ class PethConsole(cmd.Cmd):
         Toggle debug flag. Once on, the console will raise exceptions instead of catching them.
         """
         self._debug = not self._debug
+        if self._debug:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+            
         print("debug set to", self._debug)
 
     def do_chain(self, arg):
@@ -185,21 +191,21 @@ class PethConsole(cmd.Cmd):
 
     def do_4byte(self, arg):
         """
-        4byte <selector> : query text signature in 4byte database.
+        4byte <selector> : query text signature in https://sig.eth.samczsun.com/.
         4byte <text> : query text signature which includes such text in local database.
         """
         if not arg:
-            print("4byte <hex_sig> :query text signature in 4byte database.")
+            print("4byte <hex_sig> :query text signature in https://sig.eth.samczsun.com/.")
             return
 
         db = SelectorDatabase.get()
 
         if re.match('^[0-9A-Fa-fXx]*$', arg): # selector
-            sigs = db.get_sig_from_selector(arg)
+            sigs = db.get_sig_from_selector(arg, False, True)
             if sigs:
                 print('\n'.join(sigs))
             else:
-                print("Selector not found in 4byte.directory.")
+                print("Selector not found in https://sig.eth.samczsun.com/.")
         else:
             ret = db.get_sig_from_text(arg)
             full_match = None
@@ -1059,16 +1065,18 @@ class PethConsole(cmd.Cmd):
         else:
             print("Nothing downloaded. Check `url {addr}`")
 
-    def do_url(self, addr):
+    def do_url(self, arg):
         """
         url <addr> : Open blockchain explorer of the address.
+        url <tx> : Open blockchain explorer of the tx.
         """
-        if Web3.isAddress(addr):
-            url = self.peth.get_address_url(addr)
-            print(url)
-            self.do_open(url)
+        if Web3.isAddress(arg):
+            url = self.peth.get_address_url(arg)       
         else:
-            print("%s is not a valid address." % addr)
+            if self.peth.address_url:
+                url = self.peth.address_url.replace("address/", "search?f=0&q=") + arg
+        print(url)
+        self.do_open('"%s"' % url)
 
     def do_decompile(self, addr):
         """

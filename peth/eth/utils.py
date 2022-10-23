@@ -126,20 +126,43 @@ class SelectorDatabase(object):
                 selector = '%08x' % selector
             else:
                 selector = str(selector).lower()
-            if selector.startswith('0x'):
-                selector = selector[2:]
 
-            url = 'https://www.4byte.directory/api/v1/signatures/?hex_signature=%s' % selector
-            r = requests.get(url)
-            results = r.json()["results"]
+            # Get sig from sam's db.
+
+            # https://sig.eth.samczsun.com/api/v1/signatures\?function\=0xa9059cbb
+            # {"ok":true,"result":{"event":{},"function":{"0xa9059cbb":[{"name":"transfer(address,uint256)","filtered":false}]}}}
+
+            if not selector.startswith('0x'):
+                selector = '0x' + selector
+            
+            url = 'https://sig.eth.samczsun.com/api/v1/signatures?function=%s' % selector
+            res = requests.get(url).json()
+            results = res["result"]["function"][selector]
             
             if only_one:
                 if results:
-                    return results[0]["text_signature"]
+                    return results[0]['name']
                 else:
                     return None
             else:
-                return [i["text_signature"] for i in results]
+                return [i["name"] for i in results]
+
+            
+            # Get sig from 4byte.directory
+            # if selector.startswith('0x'):
+            #     selector = selector[2:]
+
+            # url = 'https://www.4byte.directory/api/v1/signatures/?hex_signature=%s' % selector
+            # r = requests.get(url)
+            # results = r.json()["results"]
+            
+            # if only_one:
+            #     if results:
+            #         return results[0]["text_signature"]
+            #     else:
+            #         return None
+            # else:
+            #     return [i["text_signature"] for i in results]
         
         except Exception:
             if only_one:

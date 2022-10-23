@@ -23,7 +23,7 @@
         "etf":[
             "https://rpc.etherfair.org",
             "https://explorer.etherfair.org/api?",
-            "https://explorer.etherfair.org/"
+            "https://explorer.etherfair.org/address/"
         ],
         "bsc": [
             "https://rpc.ankr.com/bsc",

@@ -1,4 +1,5 @@
 
+import json
 from web3 import Web3
 
 from .scan import ScanAPI
@@ -41,7 +42,10 @@ class EthCall(object):
             return self.address_url + addr
 
     def rpc_call_raw(self, method, args=[]):
-        return self.web3.provider.make_request(method, args)
+        logger.debug("PRC request: method=%s args=%s" %(method, args))
+        r = self.web3.provider.make_request(method, args)
+        logger.debug("PRC result: %s " % r)
+        return r
 
     def rpc_call(self, method, args=[]):
         r = self.rpc_call_raw(method, args)

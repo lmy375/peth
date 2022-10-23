@@ -11,6 +11,9 @@ diff/
 report/
 crytic-export/
 
+# Downloaded resource.
+4byte.json
+
 # setup
 build/
 dist/
