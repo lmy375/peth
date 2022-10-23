@@ -64,7 +64,9 @@ class EthCall(object):
             to = to_or_sig
             sigs = Signatures(self.scan.get_abi(to))
             sig = sigs.find_by_selector(selector)
-            assert sig, "No method match 0x%s" % selector.hex()
+            print("No method match 0x%s" % selector.hex())
+            assert(False)
+
         else:
             sig = Signature.from_sig(to_or_sig)
             assert sig.inputs, "Invalid sig: %s" % to_or_sig

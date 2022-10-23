@@ -258,8 +258,8 @@ class PethConsole(cmd.Cmd):
                     return
                 print("Guessing types ...")
                 i = 0
-                for typ, value in guess_calldata_types(calldata):
-                    print("[%d]   %s   %s" % (i, typ, value))
+                for offset, typ, value in guess_calldata_types(calldata):
+                    print("[%d] +%s   %s   %s" % (i, offset, typ, value))
                     i += 1
                 return
             else:

@@ -3,6 +3,7 @@ import os
 import atexit
 import re
 from typing import Any, Dict
+from pytest import skip
 
 import requests
 from web3 import Web3
@@ -244,33 +245,37 @@ def guess_calldata_types(data):
         buf += b"\x00" * (32 - (len(buf) % 32))
     
     results = []
-    end = len(buf)
     for i in range(len(buf)//32):
-        if i * 32 >= end:
-            break
 
         value = buf[i*32: (i+1)*32]
         uint256 = int.from_bytes(value, 'big')
 
-        if uint256 < len(buf) - 32:
+        if uint256 < len(buf) - 32 and uint256 > i * 32:
             offset = uint256
             length_bytes = buf[offset: offset + 32]
             length = int.from_bytes(length_bytes, 'big')
             if offset + 32 + length <= len(buf):
                 bytes_data = buf[offset + 32: offset + 32 + length]
                 if '\\' not in repr(bytes_data): # Printable.
-                    results.append(("string", bytes_data.decode('utf-8')))
+                    results.append((
+                        "%#x" % (i*32), 
+                        "string",
+                        bytes_data.decode('utf-8') + '\t' + "// offset %#x length %d" % (offset, length)
+                    ))
                 else:
-                    results.append(("bytes", str(bytes_data)))
+                    results.append((
+                        "%#x" % (i*32), 
+                        "bytes",  
+                        str(bytes_data) + '\t' + "// offset %#x length %d" % (offset, length)
+                    ))
 
-                end = min(offset, end) # Skip data
-                continue # This is an offset for bytes/string, just continue.
+                continue # This is an offset for bytes/string, just end processing. .
 
         if uint256 < 2**112: # Small value as uint
-            results.append(("uint256", "%d(%#x)" %(uint256, uint256)))
+            results.append(("%#x" % (i*32), "uint256", "%d (%#x)" %(uint256, uint256)))
         elif len('%x' % uint256) in range(29, 41): # 12-18 Prefix zero as address.
-            results.append(("address", '%0#42x' % uint256))
+            results.append(("%#x" % (i*32), "address", '%0#42x' % uint256))
         else:
-            results.append(("unknown", value.hex()))
-    
+            results.append(("%#x" % (i*32), "unknown", value.hex()))
+
     return results
