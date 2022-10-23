@@ -9,7 +9,7 @@ from web3 import Web3
 import requests
 
 from peth.eth.sigs import ERC20Signatures, Signature
-from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase
+from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, guess_calldata_types
 from peth.eth.bytecode import Code
 from peth.eth.opcodes import OpCode
 from peth.core.peth import Peth
@@ -219,7 +219,57 @@ class PethConsole(cmd.Cmd):
             if full_match:
                 print("Full match: 0x%s %s" % full_match)
 
+    def do_abi_encode(self, arg):
+        """
+        abi_encode <sig> <args1> <args2> ...
+        eg: abi_encode func(uint256,address) 1 0xEEEEE...
+        """
+        args = arg.split()
+        sig = args[0]
+        s = Signature.from_sig(sig)
 
+        if len(args) == 1: # Only selector.
+            print('0x' + s.selector.hex())
+            return
+
+        args = args[1:]
+        args = list(map(convert_value, args))
+        print('0x' + s.encode_args(args, True).hex())
+
+    def do_abi_decode(self, arg):
+        """
+        abi_encode <hex>
+        abi_encode <hex> <sig>
+        """
+        args = arg.split()
+        hexdata = args[0]
+        assert re.match('^[0-9A-Fa-fXx]+$', hexdata), "Invalid hex data. %s" % hexdata
+        data = hex2bytes(hexdata)
+
+        if len(args) == 2:
+            sigs = [args[1]]
+        else:
+            selector = hexdata[:10]
+            sigs = selector_to_sigs(selector, False)
+            if not sigs:
+                print("No selector found for %s." % selector)
+                calldata = hexdata[10:]
+                if not calldata: # No data.
+                    return
+                print("Guessing types ...")
+                i = 0
+                for typ, value in guess_calldata_types(calldata):
+                    print("[%d]   %s   %s" % (i, typ, value))
+                    i += 1
+                return
+            else:
+                print("%s selectors found." % len(sigs))
+        
+        for sig in sigs:
+            if(len(sigs) > 1):
+                print('-----')
+            self.peth.decode_call(sig, data)
+            
 
     def do_common_addresses(self, arg):
         """

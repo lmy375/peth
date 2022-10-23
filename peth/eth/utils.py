@@ -1,6 +1,7 @@
 import json
 import os
 import atexit
+import re
 from typing import Any, Dict
 
 import requests
@@ -68,8 +69,10 @@ class SelectorDatabase(object):
 
         if not os.path.exists(SIG_DB_PATH):
             try:
+                logger.info("Downloading SelectorDatabase from %s ..." % SIG_DB_URL)
                 r = requests.get(SIG_DB_URL)
                 self.db = r.json()
+                logger.info("OK")
             except Exception as e:
                 logger.warn("SelectorDatabase init failed. %s" % e)
             logger.debug("Load sig db from %s" % SIG_DB_URL)
@@ -211,3 +214,63 @@ def hex2bytes(hex_data):
     if hex_data.startswith('0x'):
         hex_data = hex_data[2:]
     return bytes.fromhex(hex_data)
+
+def convert_value(value):
+    """
+    Guess value type and convert.
+    """
+    STR_PATTERN = '^[\'"](.*)[\'"]$'
+    DEC_PATTERN = '^\d+$'
+    HEX_PATTERN = '^[0-9A-Fa-fXx]+$'
+    
+    if Web3.isAddress(value): # address
+        return value
+    elif re.match(STR_PATTERN, value): # string.
+        return re.findall(STR_PATTERN, value)[0]
+    elif re.match(DEC_PATTERN, value): # decimal
+        return int(value)
+    elif re.match(HEX_PATTERN, value): # hexcimal
+        return int(value, 16)
+    else:
+        raise NotImplementedError("Can not convert value: %s" % value)
+
+def guess_calldata_types(data):
+    """
+    data: hex data without selector.
+    return [(type, value),..]
+    """
+    buf = hex2bytes(data)
+    if len(buf) % 32 != 0:
+        buf += b"\x00" * (32 - (len(buf) % 32))
+    
+    results = []
+    end = len(buf)
+    for i in range(len(buf)//32):
+        if i * 32 >= end:
+            break
+
+        value = buf[i*32: (i+1)*32]
+        uint256 = int.from_bytes(value, 'big')
+
+        if uint256 < len(buf) - 32:
+            offset = uint256
+            length_bytes = buf[offset: offset + 32]
+            length = int.from_bytes(length_bytes, 'big')
+            if offset + 32 + length <= len(buf):
+                bytes_data = buf[offset + 32: offset + 32 + length]
+                if '\\' not in repr(bytes_data): # Printable.
+                    results.append(("string", bytes_data.decode('utf-8')))
+                else:
+                    results.append(("bytes", str(bytes_data)))
+
+                end = min(offset, end) # Skip data
+                continue # This is an offset for bytes/string, just continue.
+
+        if uint256 < 2**112: # Small value as uint
+            results.append(("uint256", "%d(%#x)" %(uint256, uint256)))
+        elif len('%x' % uint256) in range(29, 41): # 12-18 Prefix zero as address.
+            results.append(("address", '%0#42x' % uint256))
+        else:
+            results.append(("unknown", value.hex()))
+    
+    return results
