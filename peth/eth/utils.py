@@ -82,16 +82,32 @@ class SelectorDatabase(object):
             logger.debug("Load sig db from %s" % SIG_DB_PATH)
 
         atexit.register(self.save)
-        
-    def get_sig_from_selector(self, selector, only_one=False, online=True):
+    
+    def _normalize_selector(self, selector, with_prefix=False):
+        """
+        Return hex format.
+        """
         if type(selector) is int:
             selector = '%08x' % selector
+        elif type(selector) is bytes:
+            selector = selector.hex()
         else:
             selector = str(selector).lower()
-            if selector.startswith('0x'):
-                selector = selector[2:]
         
-        # No 0x prefix
+        if selector.startswith('0x'):
+            if not with_prefix:
+                selector = selector[2:]
+        else:
+            if with_prefix:
+                selector = '0x' + selector
+
+        return selector
+
+    def get_sig_from_selector(self, selector, only_one=False, online=True):
+
+        selector = self._normalize_selector(selector, False)
+        
+        # No 0x prefix in DB.
         if selector in self.db:
             sigs = self.db[selector]
             if type(sigs) is str:
@@ -126,10 +142,7 @@ class SelectorDatabase(object):
 
     def get_sig_online(self, selector, only_one=False):
         try:
-            if type(selector) is int:
-                selector = '%08x' % selector
-            else:
-                selector = str(selector).lower()
+            selector = self._normalize_selector(selector, True)
 
             # Get sig from sam's db.
 
@@ -188,6 +201,9 @@ class SelectorDatabase(object):
 
 
 def selector_to_sigs(selector, only_one=False):
+    """
+    selector: with 0x prefix.
+    """
     db = SelectorDatabase.get()
     return db.get_sig_from_selector(selector, only_one)
 
@@ -240,7 +256,11 @@ def guess_calldata_types(data):
     data: hex data without selector.
     return [(type, value),..]
     """
-    buf = hex2bytes(data)
+    if type(data) is str:
+        buf = hex2bytes(data)
+    else:
+        buf = data
+
     if len(buf) % 32 != 0:
         buf += b"\x00" * (32 - (len(buf) % 32))
     

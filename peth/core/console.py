@@ -251,19 +251,10 @@ class PethConsole(cmd.Cmd):
         else:
             selector = hexdata[:10]
             sigs = selector_to_sigs(selector, False)
-            if not sigs:
-                print("No selector found for %s." % selector)
-                calldata = hexdata[10:]
-                if not calldata: # No data.
-                    return
-                print("Guessing types ...")
-                i = 0
-                for offset, typ, value in guess_calldata_types(calldata):
-                    print("[%d] +%s   %s   %s" % (i, offset, typ, value))
-                    i += 1
-                return
-            else:
+            if sigs:
                 print("%s selectors found." % len(sigs))
+            else:
+                sigs = [None] # peth.decode_call will guess type.
         
         for sig in sigs:
             if(len(sigs) > 1):
@@ -899,6 +890,39 @@ class PethConsole(cmd.Cmd):
             i += 1
 
         print("End")
+
+    def do_tx_replay(self, arg):
+        """
+        tx_replay <txid> [<new sender>] : Try to replay the tx with different sender.
+        (To check if the tx has a msg.sender check.)
+        """
+        args = arg.split()
+        txid = args[0]
+        if len(args) >= 2:
+            sender = args[1]
+            assert Web3.isAddress(sender), "Invalid address %s" % sender
+        else:
+            # Just a random selected new address with no ETH.
+            sender = '0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f'
+
+        tx = self.web3.eth.get_transaction(txid)
+        block_number = tx.blockNumber - 1
+        print("Replay(eth_call) %s at block %s with sender %s:" % (txid, block_number, sender))
+
+        try:    
+            r = self.web3.eth.call({
+                # Just a random selected new address with no ETH.
+                'from': '0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f', 
+                'to': tx['to'],
+                'data': tx['input'],
+                'value': tx['value']
+            }, block_number)
+            print("Replay succeeded. eth_call returns:")
+            print(r)
+        except Exception as e: # revert or other errors.
+            print("Replay failed.")
+            print(e)
+        
 
     ##################################################################
     # Bytecode tools.
