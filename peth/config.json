@@ -104,6 +104,11 @@
             "https://optimism-mainnet.public.blastapi.io",
             "https://api-optimistic.etherscan.io/api?",
             "https://optimistic.etherscan.io/address/"
+        ],
+        "gnosis": [
+            "https://rpc.gnosischain.com",
+            "https://api.gnosisscan.io/api?",
+            "https://gnosisscan.io/address/"
         ]
     },
     "contracts": {
