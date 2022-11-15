@@ -951,7 +951,7 @@ class PethConsole(cmd.Cmd):
             sender = '0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f'
 
         tx = self.web3.eth.get_transaction(txid)
-        block_number = tx.blockNumber - 1
+        block_number = tx["blockNumber"] - 1
         print("Replay(eth_call) %s at block %s with sender %s:" %
               (txid, block_number, sender))
 
@@ -1188,12 +1188,29 @@ class PethConsole(cmd.Cmd):
         url <addr> : Open blockchain explorer of the address.
         url <tx> : Open blockchain explorer of the tx.
         """
+        sam_chains = {
+            "eth": "ethereum",
+            "op": "optimism",
+            "matic": "polygon",
+            "bsc": "binance",
+            "avax": "avalanche",
+            "arbi": "arbitrum",
+            "ftm": "fantom"
+        }
+
         if Web3.isAddress(arg):
             url = self.peth.get_address_url(arg)
+        elif len(arg) == 66 and self.peth.chain in sam_chains: # tx
+            chain = sam_chains[self.peth.chain]
+            url = "https://tx.eth.samczsun.com/%s/%s" % (chain, arg)
         else:
             if self.peth.address_url:
                 url = self.peth.address_url.replace(
                     "address/", "search?f=0&q=") + arg
+            else:
+                print('[!] peth.address_url not set for chain %s' % self.peth.chain)
+                return
+                
         print(url)
         self.do_open('"%s"' % url)
 
