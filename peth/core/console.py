@@ -239,8 +239,8 @@ class PethConsole(cmd.Cmd):
 
     def do_abi_decode(self, arg):
         """
-        abi_encode <hex>
-        abi_encode <hex> <sig>
+        abi_decode <hex>
+        abi_decode <hex> <sig>
         """
         args = arg.split()
         hexdata = args[0]
@@ -1203,14 +1203,13 @@ class PethConsole(cmd.Cmd):
         elif len(arg) == 66 and self.peth.chain in sam_chains: # tx
             chain = sam_chains[self.peth.chain]
             url = "https://tx.eth.samczsun.com/%s/%s" % (chain, arg)
+        elif self.peth.address_url:
+            url = self.peth.address_url.replace(
+                "address/", "search?f=0&q=") + arg
         else:
-            if self.peth.address_url:
-                url = self.peth.address_url.replace(
-                    "address/", "search?f=0&q=") + arg
-            else:
-                print('[!] peth.address_url not set for chain %s' % self.peth.chain)
-                return
-                
+            print('[!] peth.address_url not set for chain %s' % self.peth.chain)
+            return
+
         print(url)
         self.do_open('"%s"' % url)
 
@@ -1253,14 +1252,19 @@ class PethConsole(cmd.Cmd):
             d = r.json()
             assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
             print('-', chain.upper())
+            print(f"\t%-5s %-30s\t%-12s\t$ %-12s\t%-10s\t%-20s" %
+                ("Symbol", "Name", "Balance", "USD Value", "Raw balance", "Price")
+            )
             for token in d["data"]:
-                name = token["name"]
-                symbol = token["symbol"]
+                name = token["name"].strip()
+                symbol = token["symbol"].strip()
                 decimals = token["decimals"]
-                price = token["price"]
+                price = token["price"] if token["price"] else 0
+                raw_balance = token["balance"]
                 balance = token["balance"]/(10**decimals)
-                print(f"\t%-5s %-20s\t%-10.2f\t$ %-10.2f" %
-                      (symbol, name, balance, balance*price))
+
+                print(f"\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s" %
+                    (symbol, name, balance, balance*price, raw_balance,price))
 
     def do_price(self, arg):
         """
