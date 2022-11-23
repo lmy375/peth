@@ -3,7 +3,6 @@ import os
 import atexit
 import re
 from typing import Any, Dict
-from pytest import skip
 
 import requests
 from web3 import Web3

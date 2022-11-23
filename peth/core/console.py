@@ -11,7 +11,6 @@ import requests
 from peth.eth.sigs import ERC20Signatures, Signature
 from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, CoinPrice
 from peth.eth.bytecode import Code
-from peth.eth.opcodes import OpCode
 from peth.core.peth import Peth
 from peth.util import diff
 from peth.util.graph import ContractRelationGraph
@@ -322,6 +321,50 @@ class PethConsole(cmd.Cmd):
             print("%d secs" % ts)
             print("= %0.1f hours" % (ts/3600))
             print("= %0.1f days" % (ts/3600/24))
+
+    def do_aes(self, arg):
+        """
+        aes enc <plain text> <password>: Encrypt with AES.
+        aes dec <hex secret> <password>: Decrypt with AES. 
+        
+        NOTE: IV used as MD5 of password, which is not so safe.
+        """
+        args = arg.split()
+
+        # https://www.pycryptodome.org
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import pad, unpad
+        import hashlib
+
+        txt = args[1]
+        password = args[2]
+        
+        key = pad(bytes(password, 'utf-8'), 16)
+        iv = hashlib.md5(bytes(password, 'utf-8')).digest()
+
+        def do_enc(plain):
+            plain = pad(bytes(plain, 'utf-8'), 16)
+            aes = AES.new(key, AES.MODE_CBC, iv=iv)
+            secret = aes.encrypt(plain)
+            hex_secret = secret.hex()
+            return hex_secret
+        
+        def do_dec(hex_secret):
+            aes = AES.new(key, AES.MODE_CBC, iv=iv)
+            secret = bytes.fromhex(hex_secret)
+            plain = unpad(aes.decrypt(secret), 16)
+            return plain.decode("utf-8")
+
+        if args[0] == "enc":
+            print(do_enc(txt))
+        else:
+            assert args[0] == "dec", "args[0] is not enc/dec"
+            try:
+                plain = do_dec(txt)
+                print(plain)
+            except Exception as e:
+                print("[!] %s (Password may be wrong)" % e)
+
 
     ##################################################################
     # Basic ETH commands.
@@ -761,14 +804,47 @@ class PethConsole(cmd.Cmd):
             sender = info["from"]
             to = info["to"]
             data = info["input"]
+            r = self.web3.eth.get_transaction_receipt(txid)
             if to is None:
-                r = self.web3.eth.get_transaction_receipt(txid)
                 contract_address = r["contractAddress"]
                 print("%s creates contract %s" % (sender, contract_address))
+            else:
+                print("%s -> %s" % (sender, to))
+                if data:
+                    self.peth.decode_call(to, data)
+    
+            if r.status == 0:
+                print("Reverted.")
                 return
-            print("%s -> %s" % (sender, to))
-            if data:
-                self.peth.decode_call(to, data)
+
+            erc20_trans = []
+            for item in r.logs:
+                address_names = {
+                    sender: "sender",
+                    to: "to"
+                }
+
+                # Transfer event.
+                if len(item.topics) == 3 and item.topics[0].hex() == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef":
+                    src = self.web3.toChecksumAddress(item.topics[1][-20:])
+                    src = address_names.get(src, src)
+                    dst = self.web3.toChecksumAddress(item.topics[2][-20:])
+                    dst = address_names.get(dst, dst)
+
+                    amount = self.web3.toInt(hexstr = item.data)
+                    token = item.address
+                    symbol = self.peth.call_contract(token, "symbol()->(string)", silent=True)
+                    if symbol is None:
+                        symbol = "Unknown"
+                    token = '%s(%s)' % (symbol, token)
+                    msg = ' '.join(map(str, (token, '%s->%s' %(src, dst), amount)))
+                    erc20_trans.append(msg)
+            
+            if erc20_trans:
+                print("ERC20 Transfers:")
+                for msg in erc20_trans:
+                    print(" ", msg)
+
         else:
             assert len(args) == 2, "Invalid args number."
             sig_or_addr = args[0]
@@ -1186,7 +1262,8 @@ class PethConsole(cmd.Cmd):
     def do_url(self, arg):
         """
         url <addr> : Open blockchain explorer of the address.
-        url <tx> : Open blockchain explorer of the tx.
+        url <tx> : Open tx.eth.samczsun.com of the tx.
+        url <tx>& : Add a "&" to open blockchain explorer of the tx.
         """
         sam_chains = {
             "eth": "ethereum",

@@ -58,9 +58,6 @@ class AccountAnalysis(object):
             # "oracle": { ... }
         }
 
-        # For analyze_slither()
-        self.modifiers = {} # name => func_sig
-
         # Risk messages.
         self.risks = []
 
@@ -87,7 +84,8 @@ class AccountAnalysis(object):
             self.analyze_unverified_contract()
             self.analyze_extra()
 
-            self.analyze_slither()
+            # Can be slow.
+            # self.analyze_slither()
 
         logger.debug("%s %s done.", self.addr, self.name)
 
@@ -184,7 +182,8 @@ class AccountAnalysis(object):
     def __analyze_owner(self):
         ret = self.__collect_view_values(self.addr, [
             "owner()->(address)",
-            "admin()->(address)"
+            "admin()->(address)",
+            "gov()->(address)"
         ], False)
         if ret:
             self.extra_data["owner"] = ret
