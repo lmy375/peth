@@ -138,7 +138,9 @@ def main():
         project.save()
     elif args.cmd:
         c = PethConsole(peth)
-        c.single_command(args.cmd) 
+        cmd_str = ' '.join(args.cmd)
+        for cmd in cmd_str.split(";"):
+            c.single_command(cmd) 
     else:
         logger.debug("Config file: %s" % CHAIN_CONFIG_PATH)
         logger.debug("Output path: %s" % OUTPUT_PATH)

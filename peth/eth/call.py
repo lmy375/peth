@@ -1,5 +1,6 @@
-
 from web3 import Web3
+from web3.gas_strategies.rpc import rpc_gas_price_strategy
+from eth_account import Account
 
 from .scan import ScanAPI
 from .sigs import Signature, Signatures
@@ -12,12 +13,16 @@ class EthCall(object):
     The base class of Peth which implements basic eth_call related functions.
     """
 
-    def __init__(self, rpc_url, api_url, address_url, chain="Custom", sender=utils.ZERO_ADDRESS) -> None:
+    def __init__(self, rpc_url, api_url, address_url, chain="Custom", sender=utils.ZERO_ADDRESS, private_key=None) -> None:
         self.chain = chain
         self.rpc_url = rpc_url
         self.api_url = api_url
         self.address_url = address_url
         self.sender = sender
+        if private_key:
+            self.signer = Account.from_key(private_key)
+        else:
+            self.signer = None
 
         if rpc_url.startswith('http'):
             self.provider = Web3.HTTPProvider(rpc_url)
@@ -59,55 +64,36 @@ class EthCall(object):
             data = utils.hex2bytes(data)
         selector = data[:4]
 
-        sig = None
         if Web3.isAddress(to_or_sig):
             to = to_or_sig
             sigs = Signatures(self.scan.get_abi(to))
             sig = sigs.find_by_selector(selector)
-
-        elif type(to_or_sig) is str:
-            sig = Signature.from_sig(to_or_sig)
-        
-        if sig is None or sig.selector != selector: 
-            # Invalid sig from ABI or user provided sig.
-            sig_str = utils.selector_to_sigs(selector, True)
-            if sig_str:
-                sig = Signature.from_sig(sig_str)
-
-        if sig is None or sig.selector != selector: # Still invalid.
-            print("No sig found for selector 0x%s." % selector.hex())
-            data = data[4:]
-            if not data: # No data.
-                return
-            print("Guessing types ...")
-            i = 0
-            for offset, typ, value in utils.guess_calldata_types(data):
-                print("[%d] +%s   %s   %s" % (i, offset, typ, value))
-                i += 1
-            return
-
+            assert sig, "No method match 0x%s" % selector.hex()
         else:
-            print("Method:")
-            print(' ', sig)
-            
-            args = sig.decode_args(data)
-            if args:
-                print("Arguments:")
-                i = 0
-                for name, typ in sig.inputs:
-                    if name is None:
-                        name = 'arg%d' % (i+1)
-                    value = args[i]
+            sig = Signature.from_sig(to_or_sig)
+            assert sig.inputs, "Invalid sig: %s" % to_or_sig
+        
+        print("Method:")
+        print(' ', sig)
+        
+        args = sig.decode_args(data)
+        if args:
+            print("Arguments:")
+            i = 0
+            for name, typ in sig.inputs:
+                if name is None:
+                    name = 'arg%d' % (i+1)
+                value = args[i]
 
-                    if isinstance(value, bytes):
-                        value = value.hex()
-                    elif Web3.isAddress(value):
-                        value = self.scan.get_address_name(value)
+                if isinstance(value, bytes):
+                    value = value.hex()
+                elif Web3.isAddress(value):
+                    value = self.scan.get_address_name(value)
 
-                    print(' ', "%s %s = %s" %(typ, name, value))
-                    i += 1
-            else:
-                print("No args.")
+                print(' ', "%s %s = %s" %(typ, name, value))
+                i += 1
+        else:
+            print("No args.")
 
     def eth_call(self, to, sig_or_name, args=[], sender=None, throw_on_revert=False, **kwargs):
         """
@@ -219,4 +205,35 @@ class EthCall(object):
                     return r["result"]
             except Exception as e:
                 return r
+        return r
+
+    def send_transaction(self, data=None, to=None, value=None, dry_run=False):
+        assert self.signer, "send_transaction: signer not set."
+
+        tx = {
+            "from": self.signer.address
+        }
+
+        if data:
+            tx["data"] = data
+
+        if to:
+            tx["to"] =  Web3.toChecksumAddress(to)  
+        
+        if value:
+            tx["value"] = value
+
+        tx["chainId"] = self.web3.eth.chain_id
+        tx["nonce"] = self.web3.eth.get_transaction_count(self.signer.address) 
+
+        gas = self.web3.eth.estimate_gas(tx)
+        tx["gas"] = int(gas * 1.2)
+
+        gas_price = rpc_gas_price_strategy(self.web3)
+        tx["gasPrice"] = int(gas_price * 1.2)
+        signed_tx = self.signer.sign_transaction(tx)
+        if dry_run:
+            return tx, signed_tx
+        
+        r = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
         return r

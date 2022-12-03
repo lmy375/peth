@@ -4,8 +4,10 @@ import os
 import difflib
 import re
 import codecs
+import time
 
 from web3 import Web3
+from eth_account import Account
 import requests
 
 from peth.eth.sigs import ERC20Signatures, Signature
@@ -58,6 +60,9 @@ class PethConsole(cmd.Cmd):
             print("Error: ", e)
             if self._debug:
                 raise Exception from e
+            
+            cmd = line.split()[0]
+            super().onecmd(f"help {cmd}")
             return False  # don't stop
 
     def start_console(self):
@@ -478,6 +483,75 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         print("Size", len(self.web3.eth.get_code(addr)))
 
+    def do_signer(self, arg):
+        """
+        signer <private-key>: Set signer for send_tx. DANGEROUS!
+        """
+        if self.peth.signer:
+            print("Old:", self.peth.signer.address)
+        else:
+            print("Old: Not set.")
+
+        if not arg:
+            return
+
+        signer = Account.from_key(arg)
+        self.peth.signer = signer
+        print("New:", self.peth.signer.address)
+
+    def do_send_tx(self, arg):
+        """
+        send_tx <data> [<to>] [<value>] : Send tx. DANGEROUS!
+        """
+        assert self.peth.signer, "Use `signer` to set your key."
+        args = arg.split()
+        data = args[0]
+        to = None
+        value = None
+        if len(args) >= 2:
+            to = args[1]
+        if len(args) >= 3:
+            value = args[2]
+            
+        tx, signed_tx = self.peth.send_transaction(data, to, value, True)
+        print("TX info:")
+        self.__print_json(tx, True)
+        print("Sig info:")
+        tx_hash = signed_tx.hash.hex()
+        print("  Hash:\t", tx_hash)
+        print("  Raw Transaction:\t", signed_tx.rawTransaction.hex())
+        print("  r:\t", signed_tx.r)
+        print("  s:\t", signed_tx.s)
+        print("  v:\t", signed_tx.v)
+        print("RPC:", self.peth.rpc_url)
+
+        if input("Enter YES to send:") != "YES":
+            print("Cancelled.")
+            return
+
+        current_block = self.peth.web3.eth.block_number
+        self.peth.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        print(f"Sent {tx_hash}. Current block {current_block}")
+        while True:
+            new_block = self.peth.web3.eth.block_number
+            if new_block == current_block:
+                time.sleep(1)
+                continue
+            
+            print(f"New block {new_block}")
+            current_block = new_block
+            try:
+                rcpt = self.web3.eth.get_transaction_receipt(tx_hash)
+                try:
+                    self.do_tx(tx_hash)
+                except:
+                    pass
+                print("Full Receipt:")
+                self.__print_json(rcpt, True)
+                break
+            except Exception as e:
+                print(e)
+            
     ##################################################################
     # Common used eth_call alias command.
 
@@ -1340,8 +1414,9 @@ class PethConsole(cmd.Cmd):
                 raw_balance = token["balance"]
                 balance = token["balance"]/(10**decimals)
 
-                print(f"\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s" %
-                    (symbol, name, balance, balance*price, raw_balance,price))
+                if balance*price > 1: # Only print asset more than $1.0
+                    print(f"\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s" %
+                        (symbol, name, balance, balance*price, raw_balance,price))
 
     def do_price(self, arg):
         """
