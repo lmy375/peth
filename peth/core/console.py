@@ -188,8 +188,10 @@ class PethConsole(cmd.Cmd):
             value = int(arg)
         print("Value: %s" % value)
         print("Value: %e" % (value/1.0))
-        print("Value/1e6: %s" % (value/1e6))
-        print("Value/1e18: %s" % (value/1e18))
+        print("Value/1e6  (USDT): %s" % (value/1e6))
+        print("Value/1e9  (GWei): %s" % (value/1e9))
+        print("Value/1e18 (Ether): %s" % (value/1e18))
+        print("Hex: %#x" % value)
         print("Hex(Address): %#0.40x" % value)
         print("Hex(Uint256): %0.64x" % value)
 
@@ -1430,11 +1432,12 @@ class PethConsole(cmd.Cmd):
             tokens = coin.get_token(chain, *args)
             for token in tokens:
                 if token:
-                    print("%s %s %s %s" % (
+                    print("%s %s decimals %s price %s confidence %s" % (
                         token["symbol"],
                         token["address"],
                         token["decimals"],
-                        token["price"]
+                        token["price"],
+                        token["confidence"]
                     ))
                 else:
                     print("Unknown")

@@ -78,6 +78,23 @@ peth >
 
 # Usage 使用说明 
 
+## SDK 
+
+```
+In [1]: from peth.core.peth import Peth
+
+In [2]: p = Peth.get_or_create('eth')
+
+In [3]: p.rpc_call('eth_blockNumber')
+Out[3]: '0xf66715'
+
+In [4]: p.rpc_call('eth_getBalance', ['0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', 'latest'])
+Out[4]: '0x84c3181015c16f220'
+
+In [5]: p.call_contract('0xdAC17F958D2ee523a2206206994597C13D831ec7', 'balanceOf(address)->(uint256)', ['0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'])
+Out[5]: 72201976
+```
+
 ## Command-line options 命令行参数 
 
 ```sh
