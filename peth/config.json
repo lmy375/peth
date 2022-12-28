@@ -113,35 +113,39 @@
     },
     "contracts": {
         "UniswapV2Pair": [
-            "ethcn",
+            "eth",
             "0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852"
         ],
         "UniswapV2Factory": [
-            "ethcn",
+            "eth",
             "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
         ],
         "UniswapV2Router02": [
-            "ethcn",
+            "eth",
             "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
         ],
+        "SwapRouter02": [
+            "eth",
+            "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        ],
         "SushiMasterChef": [
-            "ethcn",
+            "eth",
             "0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd"
         ],
         "SushiMasterChefV2": [
-            "ethcn",
+            "eth",
             "0xef0881ec094552b2e128cf945ef17a6752b4ec5d"
         ],
         "Comptroller": [
-            "ethcn",
+            "eth",
             "0xbafe01ff935c7305907c33bf824352ee5979b526"
         ],
         "CErc20Delegate": [
-            "ethcn",
+            "eth",
             "0xa035b9e130F2B1AedC733eEFb1C67Ba4c503491F"
         ],
         "StakingRewards": [
-            "ethcn",
+            "eth",
             "0xFBaEdde70732540cE2B11A8AC58Eb2dC0D69dE10"
         ],
         "PancakeMasterChef": [
@@ -153,63 +157,63 @@
             "0x0eD7e52944161450477ee417DE9Cd3a859b14fD0"
         ],
         "LendingPoolAddressesProvider": [
-            "ethcn",
+            "eth",
             "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5"
         ],
         "LendingPoolAddressesProviderRegistry": [
-            "ethcn",
+            "eth",
             "0x52D306e36E3B6B02c153d0266ff0f85d18BCD413"
         ],
         "LendingPoolV2": [
-            "ethcn",
+            "eth",
             "0x987115c38fd9fd2aa2c6f1718451d167c13a3186"
         ],
         "LendingPoolV3": [
-            "ethcn",
+            "eth",
             "0xC6845a5C768BF8D7681249f8927877Efda425baf"
         ],
         "LendingPoolCollateralManager": [
-            "ethcn",
+            "eth",
             "0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C"
         ],
         "LendingPoolConfigurator": [
-            "ethcn",
+            "eth",
             "0x3a95Ee42f080ff7289C8B4a14EB483a8644d7521"
         ],
         "LendingRateOracle": [
-            "ethcn",
+            "eth",
             "0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D"
         ],
         "AaveOracle": [
-            "ethcn",
+            "eth",
             "0xA50ba011c48153De246E5192C8f9258A2ba79Ca9"
         ],
         "WETHGateway": [
-            "ethcn",
+            "eth",
             "0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04"
         ],
         "AaveEcosystemReserve":[
-            "ethcn",
+            "eth",
             "0xa335e2443b59d11337e9005c9af5bc31f8000714"
         ],
         "StakedTokenIncentivesController": [
-            "ethcn",
+            "eth",
             "0x83d055d382f25e6793099713505c68a5c7535a35"
         ],
         "ATokenV1" :[
-            "ethcn",
+            "eth",
             "0xda5e8e1c3596d3cc11a4dd5ad66b8f03b5410f8c"
         ],
         "ATokenV2" :[
-            "ethcn",
+            "eth",
             "0x541dcd3f00bcd1a683cc73e1b2a8693b602201f4"
         ],
         "StableDebtToken":[
-            "ethcn",
+            "eth",
             "0xdfd091e40e79e06f7298bd09a652f3a739f457bd"
         ],
         "VariableDebtToken":[
-            "ethcn",
+            "eth",
             "0xa65329a5a62ab12338aca9cc82d42ea925d92a1f"
         ],
         "AVAXLendingPool": [

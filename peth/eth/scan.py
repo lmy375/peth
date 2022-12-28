@@ -174,6 +174,17 @@ class ScanAPI(object):
         assert ret, "ScanAPI.get_source: source not found in info: %s" % (list(info))
         return ret
 
+    def _normal_file_path(self, path):
+        if 'contracts/' in path:
+            path = path[path.index('contracts/'):]
+
+        path = path.replace('..', '_') # Protect from path travel attack.
+        
+        if path.startswith('/'):
+            path = path[1:]
+        
+        return path
+
     def download_source(self, addr, output_dir=None):
 
         if not output_dir:
@@ -185,7 +196,7 @@ class ScanAPI(object):
         ret = self.get_source(addr, False)
         path_list = []
         for name, src in ret.items():
-            path = os.path.join(output_dir, name)
+            path = os.path.join(output_dir, self._normal_file_path(name))
             path_list.append(path)
 
             parent_dir = os.path.dirname(path)
