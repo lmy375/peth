@@ -18,6 +18,7 @@ SIG_DB_URL = "https://raw.githubusercontent.com/ethereum/go-ethereum/master/sign
 
 CACHE_PATH = os.path.join(OUTPUT_PATH, 'contract_info_cache')
 DIFF_PATH = os.path.join(OUTPUT_PATH, 'diff')
+DIFF_TMP_FILE = os.path.join(OUTPUT_PATH, 'diff', 'tmp.sol')
 REPORT_PATH = os.path.join(OUTPUT_PATH, 'report')
 SOURCE_PATH = os.path.join(OUTPUT_PATH, 'sources')
 

@@ -255,6 +255,18 @@
         "BlizzAaveOracle": [
             "avax",
             "0x89Fc4FA08B5fcB8Fa9538d6CC25B638370Fc26d8"
+        ],
+        "GnosisSafeProxy": [
+            "matic",
+            "0xdeb4c33d5c3e7e32f55a9d6336fe06010e40e3ab"
+        ],
+        "GnosisSafe_1.3.0": [
+            "eth",
+            "0xd9db270c1b5e3bd161e8c8503c55ceabee709552"
+        ],
+        "EACAggregatorProxy": [
+            "arbi",
+            "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"
         ]
     }
 }
