@@ -175,7 +175,9 @@ class ScanAPI(object):
         return ret
 
     def _normal_file_path(self, path):
-        if 'contracts/' in path:
+        if path.startswith("@"): # Skip npm package.
+            pass
+        elif 'contracts/' in path: # locate to contracts dir.
             path = path[path.index('contracts/'):]
 
         path = path.replace('..', '_') # Protect from path travel attack.

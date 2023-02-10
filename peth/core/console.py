@@ -313,6 +313,10 @@ class PethConsole(cmd.Cmd):
         timestamp <timestamp> : Convert UNIX timestamp to local datetime.
         timestamp <seconds> : Convert seconds to hours / days.
         """
+        if not arg:
+            print("Current:", int(time.time()))
+            return 
+        
         try:
             ts = int(arg)
         except Exception as e:
@@ -397,8 +401,8 @@ class PethConsole(cmd.Cmd):
         try:
             ret = self.web3.eth.call(
                 {
-                    "from": sender,
-                    "to": to,
+                    "from": self.web3.toChecksumAddress(sender),
+                    "to": self.web3.toChecksumAddress(to),
                     "data": data,
                     "value": value
                 },
@@ -407,7 +411,41 @@ class PethConsole(cmd.Cmd):
             print("returns:")
             print(ret.hex())
         except Exception as e:  # revert or other errors.
-            print("reverts:")
+            print("error:")
+            print(e)
+
+    def do_estimate_gas(self, arg):
+        """
+        estimate_gas <calldata> [<to>] [<sender>] [<value>]
+        """
+        args = arg.split()
+
+        data = args[0]
+        to = args[1]
+        if len(args) >= 3:
+            sender = args[2]
+        else:
+            sender = self.peth.sender
+
+        if len(args) >= 4:
+            value = args[4]
+        else:
+            value = "0"
+
+        try:
+            ret = self.web3.eth.estimate_gas(
+                {
+                    "from": self.web3.toChecksumAddress(sender),
+                    "to": self.web3.toChecksumAddress(to),
+                    "data": data,
+                    "value": value
+                },
+                "latest",
+            )
+            print("gas:")
+            print(ret)
+        except Exception as e:  # revert or other errors.
+            print("error:")
             print(e)
 
     def do_eth_call(self, arg):
@@ -460,9 +498,17 @@ class PethConsole(cmd.Cmd):
         """
         storage <address> <slot> : Get storage of address.
         """
-        addr, slot = arg.split()
+        addr, slot_str = arg.split()
         addr = self.web3.toChecksumAddress(addr)
-        slot = int(slot)
+        try:
+            slot = int(slot_str)
+        except:
+            try:
+                slot = int(slot_str, 16)
+            except:
+                print(f"Error: Invalid slot (must be hex/dec number) {slot_str}")
+                return
+                
         print(self.web3.eth.get_storage_at(addr, slot).hex())
 
     def do_number(self, arg):
@@ -1378,6 +1424,26 @@ class PethConsole(cmd.Cmd):
         url = self.peth.get_decompile_url(addr)
         print(url)
         self.do_open(url)
+
+    def do_deth(self, addr):
+        """
+        deth <addr> : Open contract code with deth.net.
+        """
+        addr = addr.strip()
+        if not Web3.isAddress(addr):
+            print("%s is not valid address." % addr)
+            return
+
+        url = self.peth.get_address_url(addr)
+        if '.io/' in url:
+            url = url.replace('.io/', '.deth.net/')
+        elif '.com/' in url:
+            url = url.replace('.com/', '.deth.net/')
+        else:
+            print("URL type not supported")
+        print(url)
+        self.do_open(url)
+        
 
     def do_debank(self, addr):
         """
