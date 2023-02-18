@@ -1401,7 +1401,7 @@ class PethConsole(cmd.Cmd):
             url = self.peth.get_address_url(arg)
         elif len(arg) == 66 and self.peth.chain in sam_chains: # tx
             chain = sam_chains[self.peth.chain]
-            url = "https://tx.eth.samczsun.com/%s/%s" % (chain, arg)
+            url = "https://openchain.xyz/trace/%s/%s" % (chain, arg)
         elif self.peth.address_url:
             url = self.peth.address_url.replace(
                 "address/", "search?f=0&q=") + arg

@@ -55,7 +55,7 @@
             "https://andromeda-explorer.metis.io/api?",
             "https://andromeda-explorer.metis.io/address/"
         ],
-        "arbi": [
+        "arb": [
             "https://arb1.arbitrum.io/rpc",
             "https://api.arbiscan.io/api?",
             "https://arbiscan.io/address/"
