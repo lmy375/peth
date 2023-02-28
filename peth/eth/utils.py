@@ -320,7 +320,7 @@ class CoinPrice(object):
             "eth": "ethereum",
             "bsc": "bsc",
             "arbi": "arbitrum",
-            "avax": "avalanche",
+            "avax": "avax",
             "ftm": "fantom",
             "op": "optimism",
             "matic": "polygon"

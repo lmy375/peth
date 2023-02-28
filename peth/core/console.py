@@ -18,7 +18,7 @@ from peth.util import diff
 from peth.util.graph import ContractRelationGraph
 
 from . import config
-from .config import chain_config, contracts_config, OUTPUT_PATH
+from .config import chain_config, contracts_config
 from .log import logger, logging
 
 
@@ -1350,7 +1350,7 @@ class PethConsole(cmd.Cmd):
         if len(args) > 1:
             output_dir = args[1]
             if '/' not in output_dir:
-                output_dir = os.path.join(OUTPUT_PATH, output_dir)
+                output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
         else:
             output_dir = None
 
@@ -1370,7 +1370,7 @@ class PethConsole(cmd.Cmd):
         if len(args) > 1:
             output_dir = args[1]
             if '/' not in output_dir:
-                output_dir = os.path.join(OUTPUT_PATH, output_dir)
+                output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
         else:
             output_dir = None
 
@@ -1380,6 +1380,60 @@ class PethConsole(cmd.Cmd):
                 print(f"Downloaded {i}")
         else:
             print("Nothing downloaded. Check `url {addr}`")
+
+
+    def _get_code(self, arg):
+        code = None
+        if Web3.isAddress(arg):
+            addr = self.web3.toChecksumAddress(arg)
+            code = self.web3.eth.get_code(addr).hex()
+            if code.startswith('0x'):
+                code = code[2:]
+        elif os.path.exists(arg):
+            solc_out = json.load(open(arg))
+            code = solc_out["deployedBytecode"]
+        else:
+            assert re.match("[a-fA-F0-9xX]+", arg), f"{arg[:10]} is not valid bytecode."
+            if arg.startswith('0x'):
+                arg = arg[2:]
+            code = arg
+        if code.endswith('64736f6c63430008110033'):
+            code = code[:-64-22]
+        return code
+    
+    def _code_to_list(self, code):
+        r = []
+        i = 0
+        while i < len(code):
+            r.append(code[i:i+64] + ' ' * 10) # add blanks so we have prettier diff file.
+            i += 64
+        return r
+
+    def do_verify(self, arg):
+        """
+        verify <addr/json file/bytecode> <addr/json file/bytecode>: Check if bytecodes match.
+        """
+        arg1, arg2 = arg.split()
+        code1 = self._get_code(arg1)
+        code2 = self._get_code(arg2)
+        if code1 == code2:
+            print("Exact 100% match.")
+            return
+        
+        code_list1 = self._code_to_list(code1)
+        code_list2 = self._code_to_list(code2)
+        s = difflib.SequenceMatcher(None, code_list1, code_list2)
+        similarity = s.ratio()
+        print("Similarity %0.2f%%" % (similarity * 100))
+
+        d = difflib.HtmlDiff()
+        buf = d.make_file(code_list1, code_list2)
+        if not os.path.exists(config.DIFF_PATH):
+            os.makedirs(config.DIFF_PATH)
+
+        path = os.path.join(config.DIFF_PATH, "bytecode_diff.html")
+        open(path, 'w').write(buf)
+        print("Written to " + path)
 
     def do_url(self, arg):
         """

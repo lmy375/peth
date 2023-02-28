@@ -11,7 +11,11 @@ from peth.core.config import REPORT_PATH
 from peth.core.log import logger
 from peth.util.graph import ContractRelationGraph
 from peth.util.markdown import make_attr_table, make_table
-from peth.util.slither import slither_from_chain_addr
+
+try:
+    from peth.util.slither import slither_from_chain_addr
+except:
+    slither_from_chain_addr = None
 
 class AccountAnalysis(object):
 
@@ -267,6 +271,9 @@ class AccountAnalysis(object):
 
 
     def analyze_slither(self):
+        if slither_from_chain_addr is None:
+            return
+        
         if not self.verified:
             return
 

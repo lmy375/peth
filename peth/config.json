@@ -109,6 +109,11 @@
             "https://rpc.gnosischain.com",
             "https://api.gnosisscan.io/api?",
             "https://gnosisscan.io/address/"
+        ],
+        "canto": [
+            "https://canto.slingshot.finance",
+            "https://tuber.build/api?",
+            "https://tuber.build/address/"
         ]
     },
     "contracts": {
@@ -127,6 +132,10 @@
         "SwapRouter02": [
             "eth",
             "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        ],
+        "UniversalRouter": [
+            "eth",
+            "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b"
         ],
         "SushiMasterChef": [
             "eth",
@@ -265,8 +274,44 @@
             "0xd9db270c1b5e3bd161e8c8503c55ceabee709552"
         ],
         "EACAggregatorProxy": [
-            "arbi",
+            "arb",
             "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"
+        ],
+        "AggregationRouterV5": [
+            "eth",
+            "0x1111111254EEB25477B68fb85Ed929f73A960582"
+        ],
+        "SolidlyBaseV1Router01": [
+            "ftm",
+            "0xa38cd27185a464914D3046f0AB9d43356B34829D"
+        ],
+        "SolidlyBaseV1Factory": [
+            "ftm",
+            "0x3faab499b519fdc5819e3d7ed0c26111904cbc28"
+        ],
+        "SolidlyGauge": [
+            "ftm",
+            "0xC009BC33201A85800b3593A40a178521a8e60a02"
+        ],
+        "VelodromeRouter" :[
+            "op",
+            "0x9c12939390052919aF3155f41Bf4160Fd3666A6f"
+        ],
+        "VelodromePairFactory":[
+            "op",
+            "0x25CbdDb98b35ab1FF77413456B31EC81A6B6B746"
+        ],
+        "VelodromeGaugeFactory":[
+            "op",
+            "0xC5be2c918EB04B091962fDF095A217A55CFA42C5"
+        ],
+        "VelodromeBribeFactory":[
+            "op",
+            "0xA84EA94Aa705F7d009CDDF2a60f65c0d446b748E"
+        ],
+        "VelodromeVoter":[
+            "op",
+            "0x09236cfF45047DBee6B921e00704bed6D6B8Cf7e"
         ]
     }
 }

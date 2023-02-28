@@ -8,3 +8,4 @@ requests==2.28.1
 setuptools==57.4.0
 sha3==0.2.1
 web3==5.31.1
+slither-analyzer==0.8.3
