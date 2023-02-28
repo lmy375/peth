@@ -1397,8 +1397,10 @@ class PethConsole(cmd.Cmd):
             if arg.startswith('0x'):
                 arg = arg[2:]
             code = arg
-        if code.endswith('64736f6c63430008110033'):
-            code = code[:-64-22]
+        # https://docs.soliditylang.org/en/v0.8.10/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode
+        if code.endswith('0033'):
+            code = code[:106]
+            code += "<metadata>"
         return code
     
     def _code_to_list(self, code):
