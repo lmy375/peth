@@ -140,21 +140,40 @@ class SelectorDatabase(object):
         return ret
 
     def get_sig_online(self, selector, only_one=False):
-        try:
-            selector = self._normalize_selector(selector, True)
 
+        try:
             # Get sig from sam's db.
 
-            # https://sig.eth.samczsun.com/api/v1/signatures\?function\=0xa9059cbb
-            # {"ok":true,"result":{"event":{},"function":{"0xa9059cbb":[{"name":"transfer(address,uint256)","filtered":false}]}}}
+            # https://api.openchain.xyz/signature-database/v1/lookup?function=0xa9059cbb&event=0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d&filter=true
+            # {
+            # "ok": true,
+            # "result": {
+            #     "event": {
+            #     "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d": [
+            #         {
+            #         "name": "RoleGranted(bytes32,address,address)",
+            #         "filtered": false
+            #         }
+            #     ]
+            #     },
+            #     "function": {
+            #     "0xa9059cbb": [
+            #         {
+            #         "name": "transfer(address,uint256)",
+            #         "filtered": false
+            #         }
+            #     ]
+            #     }
+            # }
+            # }
 
-            if not selector.startswith('0x'):
-                selector = '0x' + selector
-            
-            url = 'https://sig.eth.samczsun.com/api/v1/signatures?function=%s' % selector
+            selector = self._normalize_selector(selector, True)
+            assert selector.startswith('0x')
+            typ = "function" if len(selector) == 10 else "event"
+
+            url = f"https://api.openchain.xyz/signature-database/v1/lookup?&filter=true&{typ}={selector}"
             res = requests.get(url).json()
-            results = res["result"]["function"][selector]
-            
+            results = res["result"][typ][selector]
             if only_one:
                 if results:
                     return results[0]['name']

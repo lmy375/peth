@@ -233,37 +233,9 @@
             "avax",
             "0xc7938af7EC68C3d5aC3a396E28661B3E366b8fcf"
         ],
-        "GeistLendingPool" :[
-            "ftm",
-            "0x3104ad2aadb6fe9df166948a5e3a547004862f90"
-        ],
-        "GeistAToken" :[
-            "ftm",
-            "0xa2d7357c069b0cbc0f2b75487fa4045208b6f919"
-        ],
-        "BlizzLendingPool": [
-            "avax",
-            "0xbe064503283817a2fad7ab4f4732b733521593f9"
-        ],
-        "BlizzMasterChef" :[
-            "avax",
-            "0x514E0B2Ad01E44A7f1d31a83A662E42C2b585849"
-        ],
-        "BlizzChefIncentivesController":[
-            "avax",
-            "0x2d867AE30400ffFaD9BeD8472c514c2d6b827F5f"
-        ],
-        "BlizzMultiFeeDistribution" :[
-            "avax",
-            "0xA867c1acA4B5F1E0a66cf7b1FE33525D57608854"
-        ],
-        "BlizzAToken" :[
-            "avax",
-            "0xb2f09Abc6C5a515a098E65105895Bb637c064662"
-        ],
-        "BlizzAaveOracle": [
-            "avax",
-            "0x89Fc4FA08B5fcB8Fa9538d6CC25B638370Fc26d8"
+        "BalancerVault": [
+            "eth",
+            "0xba12222222228d8ba445958a75a0704d566bf2c8"
         ],
         "GnosisSafeProxy": [
             "matic",

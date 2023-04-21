@@ -34,8 +34,16 @@ class EthCall(object):
             raise NotImplementedError("Unknown url type. HTTP/IPC/WS required. %s" % rpc_url)
 
         self.web3 = Web3(self.provider)
- 
 
+        try:
+            self.web3.eth.get_block("latest")
+        except Exception as e:
+            if "POA chain" in str(e):
+                from web3.middleware import geth_poa_middleware
+                self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            else:
+                raise e
+            
         if api_url:
             self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
         else:
@@ -256,3 +264,29 @@ class EthCall(object):
         
         r = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
         return r
+    
+
+    def get_logs(self, address=None, topics=[], start=None, end=None, step=3000, count=50):
+        eth = self.web3.eth
+        if end is None:
+            end = eth.block_number
+        if start is None:
+            start = 0
+        
+        for _ in range(count):
+            if end <= start:
+                return
+            
+            temp_start = end - step
+            filter_params = {
+                "fromBlock": temp_start,
+                "toBlock": end
+            }
+            if address:
+                filter_params["address"] = Web3.toChecksumAddress(address)
+            if topics:
+                filter_params["topics"] = topics
+
+            for log in eth.get_logs(filter_params):
+                yield log
+            end = temp_start - 1
