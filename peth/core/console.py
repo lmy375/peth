@@ -635,6 +635,10 @@ class PethConsole(cmd.Cmd):
         step = 3000
         count = 50
         for arg in args.split():
+            if arg in ['-', 'null', 'None']:
+                topics.append(None)
+                continue
+
             if address is None and len(arg) in (40, 42):
                 address = arg
             elif len(arg) < 20:
@@ -1665,18 +1669,16 @@ class PethConsole(cmd.Cmd):
             print("%s is not valid address." % addr)
             return
 
+        print(f"https://debank.com/profile/{addr}")
+
         r = requests.get("https://api.debank.com/user/addr?addr=%s" % addr)
         d = r.json()
         assert d["error_code"] == 0, "DeBank addr API Error. %s" % d
+        print("Total USD Value: $ %0.2f" % d["data"]["usd_value"])
         chains = d["data"]["used_chains"]
 
-        r = requests.get(
-            "https://api.debank.com/user/total_balance?addr=%s" % addr)
-        d = r.json()
-        assert d["error_code"] == 0, "DeBank total_balance API Error. %s" % d
-        print("Total USD Value: $ %0.2f" % d["data"]["total_usd_value"])
-
         for chain in chains:
+            time.sleep(1) # Debank API limit.
             r = requests.get(
                 "https://api.debank.com/token/balance_list?user_addr=%s&chain=%s" % (addr, chain))
             d = r.json()

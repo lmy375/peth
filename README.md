@@ -16,6 +16,8 @@ $ python -m venv test
 $ source test/bin/activate
 
 $ pip install peth
+# or
+$ pip install git+https://github.com/lmy375/peth
 ```
 
 2. Run peth。运行 peth。

@@ -114,6 +114,11 @@
             "https://canto.slingshot.finance",
             "https://tuber.build/api?",
             "https://tuber.build/address/"
+        ],
+        "zksync": [
+            "https://mainnet.era.zksync.io",
+            null,
+            "https://explorer.zksync.io/address/"
         ]
     },
     "contracts": {
