@@ -890,12 +890,21 @@ class PethConsole(cmd.Cmd):
         """
         addr = self.web3.toChecksumAddress(arg)
         try:
+            print("Version:", self.peth.call_contract(addr, "VERSION()->(string)"))
+
             threshold = self.peth.call_contract(addr, "getThreshold()->(uint)")
             users = self.peth.call_contract(addr, "getOwners()->(address[])")
             print("Policy: %s/%s" % (threshold, len(users)))
             print("Owners:")
             for u in users:
                 print(" ", u)
+
+            print("Impl:", self.peth.call_contract(addr, "masterCopy()->(address)"))
+            print("Modules:", ','.join(self.peth.call_contract(
+                addr, "getModulesPaginated(address,uint256)->(address[],address)",
+                ["0x0000000000000000000000000000000000000001", 100]
+                )[0])
+            )
         except Exception as e:
             print("Failed. Ensure your input is a GnosisProxy contract address.")
 
@@ -1408,6 +1417,11 @@ class PethConsole(cmd.Cmd):
             contract = self.web3.eth.contract(address=addr, abi=abi_json)
 
             others = []
+            for item in abi_json:
+                if item["type"] == "fallback":
+                    others.append("fallback()")
+                    break
+
             for func in contract.all_functions():
                 sig = Signature.from_abi(func.abi)
 
