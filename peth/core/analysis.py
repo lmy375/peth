@@ -7,15 +7,10 @@ from web3 import Web3
 from peth.eth.bytecode import Code
 from peth.eth.sigs import Signatures, Signature
 from peth.eth import utils
-from peth.core.config import REPORT_PATH
+from peth.core import config
 from peth.core.log import logger
 from peth.util.graph import ContractRelationGraph
 from peth.util.markdown import make_attr_table, make_table
-
-try:
-    from peth.util.slither import slither_from_chain_addr
-except:
-    slither_from_chain_addr = None
 
 class AccountAnalysis(object):
 
@@ -89,7 +84,8 @@ class AccountAnalysis(object):
             self.analyze_extra()
 
             # Can be slow.
-            # self.analyze_slither()
+            if config.ENABLE_SLITHER:
+                self.analyze_slither()
 
         logger.debug("%s %s done.", self.addr, self.name)
 
@@ -271,7 +267,10 @@ class AccountAnalysis(object):
 
 
     def analyze_slither(self):
-        if slither_from_chain_addr is None:
+        try:
+            from peth.util.slither import slither_from_chain_addr
+        except:
+            logger.error("Slither not installed: pip install slither-analyzer")
             return
         
         if not self.verified:
@@ -537,8 +536,9 @@ class Project(object):
         time_tag = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         filename = "Report_%s_%s.md" % (time_tag, self.addresses[0][:10])
         
-        if not os.path.exists(REPORT_PATH):
-            os.makedirs(REPORT_PATH)
-        path = os.path.join(REPORT_PATH, filename)
+        report_dir = config.REPORT_PATH
+        if not os.path.exists(report_dir):
+            os.makedirs(report_dir)
+        path = os.path.join(report_dir, filename)
         open(path, "w").write(self.to_markdown())
         logger.info("Report saved as %s.", path)

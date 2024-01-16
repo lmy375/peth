@@ -30,6 +30,8 @@ contracts_config = user_config["contracts"]
 
 DIFF_MIN_SIMILARITY = 0.5
 
+ENABLE_SLITHER = False
+
 def print_config():
     for key, value in globals().items():
         if key.isupper():

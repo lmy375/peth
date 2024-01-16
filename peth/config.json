@@ -119,6 +119,26 @@
             "https://mainnet.era.zksync.io",
             null,
             "https://explorer.zksync.io/address/"
+        ],
+        "zkstest": [
+            "https://zksync2-testnet.zksync.dev",
+            null,
+            "https://goerli.explorer.zksync.io/address/"
+        ],
+        "zkfair": [
+            "https://rpc.zkfair.io",
+            "https://scan.zkfair.io/api?",
+            "https://scan.zkfair.io/address/"
+        ],
+        "base": [
+            "https://mainnet.base.org",
+            "https://basescan.org/api?",
+            "https://basescan.org/address/"
+        ],
+        "mantle": [
+            "https://rpc.mantle.xyz",
+            "https://explorer.mantle.xyz/api?",
+            "https://explorer.mantle.xyz/address/"
         ]
     },
     "contracts": {
