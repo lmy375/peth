@@ -6,7 +6,7 @@ from web3 import Web3
 
 from peth.eth.bytecode import Code
 from peth.eth.sigs import Signatures, Signature
-from peth.eth import utils
+from peth.eth.utils import ZERO_ADDRESS, selector_to_sigs
 from peth.core import config
 from peth.core.log import logger
 from peth.util.graph import ContractRelationGraph
@@ -204,7 +204,7 @@ class AccountAnalysis(object):
     def __analyze_proxy(self):
         impl = self.peth.web3.eth.get_storage_at(self.addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
         admin = self.peth.web3.eth.get_storage_at(self.addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
-        if impl != utils.ZERO_ADDRESS or admin != utils.ZERO_ADDRESS:
+        if impl != ZERO_ADDRESS or admin != ZERO_ADDRESS:
             self.extra_data["proxy"] = {
                 "implementation": impl,
                 "admin": admin
@@ -292,7 +292,7 @@ class AccountAnalysis(object):
         added_addrs = []
         r = [] # relation, address
         for name, value in self.properties.items():
-            if Web3.isAddress(value) and value != utils.ZERO_ADDRESS:
+            if Web3.isAddress(value) and value != ZERO_ADDRESS:
                 r.append((name, value))
                 added_addrs.append(value)
 
@@ -396,7 +396,7 @@ class AccountAnalysis(object):
                 txt += "从 bytecode 分析出的 Selectors 如下:\n"
                 for selector in self.selectors:
                     sig = '0x' + selector.hex()
-                    sigs = utils.selector_to_sigs(sig)
+                    sigs = selector_to_sigs(sig)
                     sigs = sigs[::-1]
                     txt += f"- {sig} {', '.join(sigs)}\n"
 

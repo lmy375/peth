@@ -101,7 +101,11 @@ class ScanAPI(object):
                     return self.get_contract_info(impl)
         return d
 
-    def get_abi(self, addr):
+    def get_abi(self, addr) -> dict:
+        """
+        If contract not verified, return None.
+        (Unlikely) If returns invalid json, return the string.
+        """
         info = self.get_contract_info(addr)
         if info is None:
             return None
@@ -110,7 +114,10 @@ class ScanAPI(object):
         if abi == "Contract source code not verified":
             return None
         else:
-            return abi
+            try:
+                return json.loads(abi)
+            except json.JSONDecodeError:
+                return abi
 
     def get_contract_name(self, addr):
         if not Web3.isAddress(addr):
@@ -224,7 +231,7 @@ class ScanAPI(object):
         if "vyper" in version: # Skip vyper.
             return
 
-        version = re.findall('\d+\.\d+\.\d+', version)[0]
+        version = re.findall(r'\d+\.\d+\.\d+', version)[0]
         optimization_used = info["OptimizationUsed"] == "1"
         if optimization_used:
             runs = int(info["Runs"])
