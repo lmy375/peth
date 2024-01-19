@@ -128,6 +128,13 @@ def _parse_simple_to_json(sig):
             a["outputs"].append(item)
     return a
 
+class ExtProcessor(object):
+
+    SEP_MARKER = ":"
+
+    def process(self, func: 'ABIFunction', key: str, values) -> str:
+        return str(func.extract_value(key, values))
+
 class ABIArgument(object):
 
     def __init__(self, name=None, typ=None, components=None, raw=None) -> None:
@@ -339,6 +346,9 @@ class ABIArgument(object):
 class ABIFunction(object):
 
     def __init__(self, raw: dict) -> None:
+        """
+        raw: type string or full json.
+        """
         if type(raw) is str:
             raw = _parse_simple_to_json(raw)
 
@@ -459,8 +469,11 @@ class ABIFunction(object):
         return r
 
 
-    def format_str(self, pattern: str, calldata) -> list:
-
+    def explain_calldata(self, pattern: str, calldata, ext: ExtProcessor = None) -> str:
+        """
+        Pattern:
+            Some words {{key}} some words {{key:hint_for_ext_processor}} some words.
+        """
         START_MARKER = "{{"
         END_MARKER = "}}"
 
@@ -470,17 +483,28 @@ class ABIFunction(object):
             start = pattern.find(START_MARKER)
             if start == -1:
                 r.append(pattern)
-                return r
+                return ''.join(str(i) for i in r)
             
             r.append(pattern[:start])
             end = pattern.find(END_MARKER)
             assert end != -1, "Unclosed marker"
-            indexes = pattern[start + len(START_MARKER): end]
-            value = self.extract_value(indexes, values)
+            key = pattern[start + len(START_MARKER): end]
+
+            try:
+                if ext:
+                    # Yield to ext-processor.
+                    value = ext.process(self, key, values)
+                else:
+                    key = key.split(ExtProcessor.SEP_MARKER)[0]
+                    value = self.extract_value(key, values)
+            except Exception as e:
+                print(f"[*] Error in explain_calldata, key={key}: {e}")
+                # Unable to resolve the key, just return itself.
+                value = '{{%s}}' % key
+
             r.append(value)
             pattern = pattern[end + len(END_MARKER):]
-
-
+        
 class ABI(object):
 
     def __init__(self, arg) -> None:
@@ -539,7 +563,7 @@ class ABI(object):
         if name not in self._name_collisions:
             self.functions[name] = func
     
-    def union(self, other: 'ABI'):
+    def merge(self, other: 'ABI'):
         self.raw += other.raw
         for func in other.signatures.values():
             self.add_func(func)
@@ -573,7 +597,6 @@ class ABI(object):
         func = self._get_function_by_calldata(calldata)
         return func.decode_input(calldata)
     
-
     def extract_value(self, indexes, values):
         indexes = _normal_indexes(indexes)
         name = indexes[0]
@@ -586,9 +609,9 @@ class ABI(object):
         values = func.decode_input(calldata)
         return func.extract_value(indexes, values)
     
-    def format_str(self, pattern: str, calldata) -> list:
+    def explain_calldata(self, pattern: str, calldata, alias: dict = {}) -> list:
         func = self._get_function_by_calldata(calldata)
-        return func.format_str(pattern, calldata)
+        return func.explain_calldata(pattern, calldata, alias)
 
     def map_values(self, calldata) -> list:
         func = self._get_function_by_calldata(calldata)

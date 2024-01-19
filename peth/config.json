@@ -162,6 +162,14 @@
             "eth",
             "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b"
         ],
+        "CurveStableSwap": [
+            "eth",
+            "0x4dece678ceceb27446b35c672dc7d61f30bad69e"
+        ],
+        "CurveTricryptoOptimizedWETH": [
+            "eth",
+            "0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B"
+        ],
         "SushiMasterChef": [
             "eth",
             "0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd"
@@ -194,10 +202,6 @@
             "eth",
             "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5"
         ],
-        "LendingPoolAddressesProviderRegistry": [
-            "eth",
-            "0x52D306e36E3B6B02c153d0266ff0f85d18BCD413"
-        ],
         "LendingPoolV2": [
             "eth",
             "0x987115c38fd9fd2aa2c6f1718451d167c13a3186"
@@ -206,33 +210,9 @@
             "eth",
             "0xC6845a5C768BF8D7681249f8927877Efda425baf"
         ],
-        "LendingPoolCollateralManager": [
-            "eth",
-            "0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C"
-        ],
-        "LendingPoolConfigurator": [
-            "eth",
-            "0x3a95Ee42f080ff7289C8B4a14EB483a8644d7521"
-        ],
-        "LendingRateOracle": [
-            "eth",
-            "0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D"
-        ],
         "AaveOracle": [
             "eth",
             "0xA50ba011c48153De246E5192C8f9258A2ba79Ca9"
-        ],
-        "WETHGateway": [
-            "eth",
-            "0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04"
-        ],
-        "AaveEcosystemReserve":[
-            "eth",
-            "0xa335e2443b59d11337e9005c9af5bc31f8000714"
-        ],
-        "StakedTokenIncentivesController": [
-            "eth",
-            "0x83d055d382f25e6793099713505c68a5c7535a35"
         ],
         "ATokenV1" :[
             "eth",
@@ -249,14 +229,6 @@
         "VariableDebtToken":[
             "eth",
             "0xa65329a5a62ab12338aca9cc82d42ea925d92a1f"
-        ],
-        "AVAXLendingPool": [
-            "avax",
-            "0x01ae7DDA024eA9712344D9332c94d3168a91f342"
-        ],
-        "AVAXLendingPoolConfigurator": [
-            "avax",
-            "0xc7938af7EC68C3d5aC3a396E28661B3E366b8fcf"
         ],
         "BalancerVault": [
             "eth",
@@ -289,26 +261,6 @@
         "SolidlyGauge": [
             "ftm",
             "0xC009BC33201A85800b3593A40a178521a8e60a02"
-        ],
-        "VelodromeRouter" :[
-            "op",
-            "0x9c12939390052919aF3155f41Bf4160Fd3666A6f"
-        ],
-        "VelodromePairFactory":[
-            "op",
-            "0x25CbdDb98b35ab1FF77413456B31EC81A6B6B746"
-        ],
-        "VelodromeGaugeFactory":[
-            "op",
-            "0xC5be2c918EB04B091962fDF095A217A55CFA42C5"
-        ],
-        "VelodromeBribeFactory":[
-            "op",
-            "0xA84EA94Aa705F7d009CDDF2a60f65c0d446b748E"
-        ],
-        "VelodromeVoter":[
-            "op",
-            "0x09236cfF45047DBee6B921e00704bed6D6B8Cf7e"
         ]
     }
 }

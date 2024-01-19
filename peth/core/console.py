@@ -8,11 +8,13 @@ import time
 from datetime import datetime
 
 from web3 import Web3
+from hexbytes import HexBytes
 from eth_account import Account
 import requests
 
+from peth.eth.abi import ABI
 from peth.eth.sigs import ERC20Signatures, Signature
-from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, CoinPrice
+from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, CoinPrice, guess_calldata_types
 from peth.eth.bytecode import Code
 from peth.core.peth import Peth
 from peth.util import diff
@@ -239,31 +241,47 @@ class PethConsole(cmd.Cmd):
         args = list(map(convert_value, args))
         print('0x' + s.encode_args(args, True).hex())
 
-    def do_abi_decode(self, arg):
+    def _print_decoded_calldata(self, calldata, to=None, sig=None):
+        func = self.peth.get_function(to, sig, calldata)
+
+        if func:
+            values = func.decode_input(calldata)
+            value_map = func.map_values(values)
+
+            print("Method:", func.full)
+            print("Arguments:")
+            values = func.decode_input(calldata)
+            value_map = func.map_values(values)
+            ABI.print_value_map(value_map, 4)
+        
+        else:
+            data = HexBytes(calldata)
+            print("No signature found for selector %s." % data[:4].hex())
+            data = data[4:]
+            if not data: # No data.
+                return
+            print("Guessing types ...")
+            i = 0
+            for offset, typ, value in guess_calldata_types(data):
+                print("[%d] +%s   %s   %s" % (i, offset, typ, value))
+                i += 1
+
+    def do_calldata_decode(self, arg):
         """
-        abi_decode <hex>
-        abi_decode <hex> <sig>
+        calldata_decode <hex>
+        calldata_decode <hex> <sig>
         """
         args = arg.split()
         hexdata = args[0]
         assert re.match('^[0-9A-Fa-fXx]+$',
                         hexdata), "Invalid hex data. %s" % hexdata
-        data = hex2bytes(hexdata)
 
         if len(args) == 2:
-            sigs = [args[1]]
+            sig = args[1]
         else:
-            selector = hexdata[:10]
-            sigs = selector_to_sigs(selector, False)
-            if sigs:
-                print("%s selectors found." % len(sigs))
-            else:
-                sigs = [None]  # peth.decode_call will guess type.
-
-        for sig in sigs:
-            if(len(sigs) > 1):
-                print('-----')
-            self.peth.decode_call(sig, data)
+            sig = None
+        
+        self._print_decoded_calldata(hexdata, sig=sig)
 
     def do_common_addresses(self, arg):
         """
@@ -477,7 +495,7 @@ class PethConsole(cmd.Cmd):
         to = args[0]
         sig_or_name = args[1]
         arg_list = args[2:]
-        print(self.peth.call_contract(to, sig_or_name, arg_list))
+        print(self.peth.call_contract(to, sig_or_name, arg_list, silent=False))
 
     def do_rpc_call(self, arg):
         """
@@ -1096,12 +1114,12 @@ class PethConsole(cmd.Cmd):
                 contract_address = r["contractAddress"]
                 print("%s creates contract %s" % (sender, contract_address))
             else:
-                print("%s -> %s" % (sender, to))
+                print("From: %s\nTo: %s" % (sender, to))
                 if data:
-                    self.peth.decode_call(to, data)
+                    self._print_decoded_calldata(data, to)
 
             if r.status == 0:
-                print("Reverted.")
+                print("Tx reverted.")
                 return
 
             erc20_trans = []
@@ -1138,7 +1156,11 @@ class PethConsole(cmd.Cmd):
             assert len(args) == 2, "Invalid args number."
             sig_or_addr = args[0]
             data = args[1]
-            self.peth.decode_call(sig_or_addr, data)
+
+            if Web3.isAddress(sig_or_addr):
+                self._print_decoded_calldata(data, sig_or_addr, None)
+            else:
+                self._print_decoded_calldata(data, None, sig_or_addr)
 
     def do_idm(self, arg):
         """
@@ -1234,7 +1256,7 @@ class PethConsole(cmd.Cmd):
 
             sender = tx["from"]
             to = tx["to"]
-            data = tx["input"]
+            data = HexBytes(tx["input"])
             contract = tx["contractAddress"]
             value = tx["value"]
 
@@ -1249,15 +1271,15 @@ class PethConsole(cmd.Cmd):
             if contract:
                 print("%s creates contract %s" % (sender, contract))
                 continue
-
+            
             if value:
                 print("%s -> %s value %s" % (sender, to_name, value))
             else:
                 print("%s -> %s" % (sender, to_name))
 
-            if data and data != "0x":
+            if len(data) > 4:
                 try:
-                    self.peth.decode_call(to, data)
+                    self._print_decoded_calldata(data, to)
                 except Exception as e:
                     print("Error:", e)
 

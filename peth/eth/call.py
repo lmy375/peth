@@ -1,9 +1,11 @@
 from web3 import Web3
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from eth_account import Account
+from hexbytes import HexBytes
 
 from .scan import ScanAPI
 from .sigs import Signature, Signatures
+from .abi import ABIFunction, ABI
 from . import utils
 from peth.core.log import logger
 from peth.util.solc import compile_with_eth_call
@@ -66,61 +68,56 @@ class EthCall(object):
         if "error" in r:
             return "Code: %s, Message: %s" %(r["error"]["code"], r["error"]["message"])
         return r
+    
+    def get_function(self, to=None, sig=None, data=None) -> ABIFunction:
+        """
+        to: contract address.
+        sig: function signature or function name.
+        data: calldata.
+
+        Options:
+            to + sig: contract address + function name/sig => Full ABI
+            to + data: contract address + selector => Full ABI
+            sig: simple signature => Simple ABI
+            data: selector => Simple ABI
+        """
+        func = None
+        selector = HexBytes(data)[:4] if data and len(data) > 4 else None
+
+        if to:
+            abi_json = self.scan.get_abi(to)
+            if abi_json:
+                abi = ABI(abi_json)
+
+                if sig in abi.signatures:
+                    func = abi.signatures[sig]
+                elif sig in abi.functions:
+                    func = abi.functions[sig]
+
+                if selector:
+                    if func:
+                        assert func.selector == selector, "Function not match calldata"
+                    else:
+                        assert selector in abi.selectors, "Function not match calldata"
+                        func = abi.selectors[selector]         
         
-    def decode_call(self, to_or_sig, data):
-        if type(data) is str:
-            data = utils.hex2bytes(data)
-        selector = data[:4]
-
-        sig = None
-        if Web3.isAddress(to_or_sig):
-            to = to_or_sig
-            sigs = Signatures(self.scan.get_abi(to))
-            sig = sigs.find_by_selector(selector)
-
-        elif type(to_or_sig) is str:
-            sig = Signature.from_sig(to_or_sig)
+                if func:
+                    return func
         
-        if sig is None or sig.selector != selector: 
-            # Invalid sig from ABI or user provided sig.
-            sig_str = utils.selector_to_sigs(selector, True)
-            if sig_str:
-                sig = Signature.from_sig(sig_str)
+   
+        if sig:
+            func = ABIFunction(sig)
+            if func and selector:
+                assert func.selector == selector, "Function not match calldata"
+                return func
 
-        if sig is None or sig.selector != selector: # Still invalid.
-            print("No sig found for selector 0x%s." % selector.hex())
-            data = data[4:]
-            if not data: # No data.
-                return
-            print("Guessing types ...")
-            i = 0
-            for offset, typ, value in utils.guess_calldata_types(data):
-                print("[%d] +%s   %s   %s" % (i, offset, typ, value))
-                i += 1
-            return
-
-        else:
-            print("Method:")
-            print(' ', sig)
-            
-            args = sig.decode_args(data)
-            if args:
-                print("Arguments:")
-                i = 0
-                for name, typ in sig.inputs:
-                    if name is None:
-                        name = 'arg%d' % (i+1)
-                    value = args[i]
-
-                    if isinstance(value, bytes):
-                        value = value.hex()
-                    elif Web3.isAddress(value):
-                        value = self.scan.get_address_name(value)
-
-                    print(' ', "%s %s = %s" %(typ, name, value))
-                    i += 1
-            else:
-                print("No args.")
+        if selector:
+            sig = utils.selector_to_sigs(selector, True)
+            if sig:
+                return ABIFunction(sig)
+        
+        # No signature found.
+        return None
 
     def eth_call(self, to, sig_or_name, args=[], sender=None, throw_on_revert=False, **kwargs):
         """
@@ -177,7 +174,7 @@ class EthCall(object):
                 return r
         return r
 
-    def call_contract(self, contract, sig_or_name, args=[], sender=None, value=None, silent=False):
+    def call_contract(self, contract, sig_or_name, args=[], sender=None, value=None, silent=True):
         """
         If revert, print error message and return None. 
         So we never throws here and it can be safely used.

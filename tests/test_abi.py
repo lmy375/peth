@@ -58,8 +58,7 @@ def test_bal_extract_value():
 
     ABI.print_value_map(abi.map_values(data))
 
-    r = abi.format_str("Sell {{assets[0]}} of {{funds.sender}}, buy {{assets[-1]}} for {{funds.recipient}}, start amount {{swaps[0].amount}}", data)
-    desc = ''.join(str(i) for i in r)
+    desc = abi.explain_calldata("Sell {{assets[0]}} of {{funds.sender}}, buy {{assets[-1]}} for {{funds.recipient}}, start amount {{swaps[0].amount}}", data)
     assert desc == "Sell 0x470ebf5f030ed85fc1ed4c2d36b9dd02e77cf1b7 of 0x37e76af74c7c4994865b04f06b026785e25441b3, buy 0x0000000000000000000000000000000000000000 for 0x37e76af74c7c4994865b04f06b026785e25441b3, start amount 3600000000000000000000"
 
 '''

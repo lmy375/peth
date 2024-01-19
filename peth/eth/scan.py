@@ -101,7 +101,7 @@ class ScanAPI(object):
                     return self.get_contract_info(impl)
         return d
 
-    def get_abi(self, addr) -> dict:
+    def get_abi(self, addr) -> list:
         """
         If contract not verified, return None.
         (Unlikely) If returns invalid json, return the string.
