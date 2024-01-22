@@ -1635,24 +1635,24 @@ class PethConsole(cmd.Cmd):
     def do_url(self, arg):
         """
         url <addr> : Open blockchain explorer of the address.
-        url <tx> : Open tx.eth.samczsun.com of the tx.
+        url <tx> : Open tx explorer of the tx.
         url <tx>& : Add a "&" to open blockchain explorer of the tx.
         """
-        sam_chains = {
-            "eth": "ethereum",
+        _chains_alias = {
+            "eth": "eth",
+            "bsc": "bsc",
             "op": "optimism",
+            "arb": "arbitrum",
             "matic": "polygon",
-            "bsc": "binance",
             "avax": "avalanche",
-            "arbi": "arbitrum",
             "ftm": "fantom"
         }
 
         if Web3.isAddress(arg):
             url = self.peth.get_address_url(arg)
-        elif len(arg) == 66 and self.peth.chain in sam_chains:  # tx
-            chain = sam_chains[self.peth.chain]
-            url = "https://openchain.xyz/trace/%s/%s" % (chain, arg)
+        elif len(arg) == 66 and self.peth.chain in _chains_alias:  # tx
+            chain = _chains_alias[self.peth.chain]
+            url = "https://phalcon.blocksec.com/explorer/tx/eth/%s/%s" % (chain, arg)
         elif self.peth.address_url:
             url = self.peth.address_url.replace(
                 "address/", "search?f=0&q=") + arg

@@ -88,7 +88,7 @@ class SelectorDatabase(object):
         """
         if type(selector) is int:
             selector = '%08x' % selector
-        elif type(selector) is bytes:
+        elif isinstance(selector, bytes):
             selector = selector.hex()
         else:
             selector = str(selector).lower()

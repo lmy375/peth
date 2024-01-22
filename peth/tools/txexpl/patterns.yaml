@@ -1,0 +1,3 @@
+approve: Approve {{_value:balance:contract}} {{contract}} tokens to {{_spender}}
+transfer: Transfer {{_value:balance:contract}} {{contract}} tokens to {{_to}}
+swapExactTokensForTokens: 'Sell {{amountIn:balance:path[0]}} {{path[0]}} to buy >= {{amountOutMin:balance:path[-1]}} {{path[-1]}}. Swap path: {{path}}'

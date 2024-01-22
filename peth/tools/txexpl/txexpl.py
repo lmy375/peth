@@ -7,15 +7,13 @@ from hexbytes import HexBytes
 
 from web3 import Web3
 
-from peth.eth.utils import func_selector
-from peth.eth.scan import ScanAPI
 from peth.eth.abi import ABI, ExtProcessor, ABIFunction
 from peth import Peth
 
 PATTERN_PATH = os.path.join(os.path.dirname(__file__), "patterns.yaml")
 ABI_PATH = os.path.join(os.path.dirname(__file__), "abis")
 
-class TxDecoder(ExtProcessor):
+class TxExplainer(ExtProcessor):
 
     def __init__(self, chain):
         self.peth = Peth.get_or_create(chain)
@@ -80,23 +78,24 @@ class TxDecoder(ExtProcessor):
             name = self.peth.scan.get_contract_name(addr)
         if name is None:
             codesize = len(self.peth.web3.eth.get_code(addr))
+
             if codesize:
-                name = "UnknownContract"
+                name = "Contract(%s..%s)" % (addr[:6], addr[-4:])
             else:
-                name = "EOA"
-        return f"{name}({addr})"
+                name = "EOA(%s..%s)" % (addr[:6], addr[-4:])
+        return f"[{name}]({self.peth.get_address_url(addr)})"
 
     def _post_process(self, hint, value, func, values):
         if hint:
             typ = hint[0]
-            if typ == 'token':
-                symbol = self.peth.call_contract(value, "symbol()->(string)")
-                return f"{symbol}({value})"
-            elif typ == 'balance':
+            if typ == 'balance':
                 arg = hint[1]
                 token = self._process_key(arg, func, values)
                 decimals = self.peth.call_contract(token, "decimals()->(uint256)")
                 return "%f * 1e%s" % (value/(10**decimals), decimals)
+            elif typ == "path":
+                tokens = [self._process_addr(i) for i in value]
+                return ' -> '.join(tokens)
         return self._fallback_process(value)
 
     def _fallback_process(self, value):
@@ -152,15 +151,21 @@ class TxDecoder(ExtProcessor):
         data = tx["input"]
         return self.explain_call(to, data)
 
-txs = [
-     "0xe012b2e0b4f79cbc4e20c634557b6e1826ec3ae3a49cb909d56dd87f0aa0d715", # Balancer swap
-     "0xfc1bacf1d3be11536c5bd7f6032c6e546f0c9a1029cab41ee778c507c1174926", # USDT transfer
-     "0xa52c02055248e1c740186e39d684230efea468129bc8125de9788205254cb54c", # Uniswap.swapExactTokensForTokens
-]
 
-tx_dec = TxDecoder("eth")
-for txid in txs:
-    s = tx_dec.explain_tx(txid)
-    print(s)
+    def value_map_to_md(self, value_map, indent=0):
+        s = ''
+        for k, v in value_map:
+            if type(v) in (tuple, list):
+                s += '  ' * indent + f"- **{k}**:\n"
+                s += self.value_map_to_md(v, indent+1) + "\n"
+            else:
+                if type(v) is bytes:
+                    v = v.hex()
+                    if len(v) == 0:
+                        v = "0x"
 
-
+                s += '  ' * indent + f"- **{k}**: " + str(self._fallback_process(v)) + '\n'
+       
+        # Remove last newline.
+        s = s.strip('\n')
+        return s

@@ -82,7 +82,7 @@ class EthCall(object):
             data: selector => Simple ABI
         """
         func = None
-        selector = HexBytes(data)[:4] if data and len(data) > 4 else None
+        selector = HexBytes(data)[:4] if data and len(HexBytes(data)) > 4 else None
 
         if to:
             abi_json = self.scan.get_abi(to)
@@ -98,8 +98,8 @@ class EthCall(object):
                     if func:
                         assert func.selector == selector, "Function not match calldata"
                     else:
-                        assert selector in abi.selectors, "Function not match calldata"
-                        func = abi.selectors[selector]         
+                        if selector in abi.selectors:
+                            func = abi.selectors[selector]         
         
                 if func:
                     return func
@@ -107,8 +107,9 @@ class EthCall(object):
    
         if sig:
             func = ABIFunction(sig)
-            if func and selector:
-                assert func.selector == selector, "Function not match calldata"
+            if func:
+                if selector:
+                    assert func.selector == selector, "Function not match calldata"
                 return func
 
         if selector:
