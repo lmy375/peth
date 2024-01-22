@@ -1652,7 +1652,7 @@ class PethConsole(cmd.Cmd):
             url = self.peth.get_address_url(arg)
         elif len(arg) == 66 and self.peth.chain in _chains_alias:  # tx
             chain = _chains_alias[self.peth.chain]
-            url = "https://phalcon.blocksec.com/explorer/tx/eth/%s/%s" % (chain, arg)
+            url = "https://phalcon.blocksec.com/explorer/tx/%s/%s" % (chain, arg)
         elif self.peth.address_url:
             url = self.peth.address_url.replace(
                 "address/", "search?f=0&q=") + arg

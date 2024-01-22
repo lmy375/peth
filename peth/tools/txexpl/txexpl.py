@@ -64,9 +64,9 @@ class TxExplainer(ExtProcessor):
         return value
 
     def _process_int(self, value):
-        if value < 1e9:
+        if value < 1e9 * 100:
             return '%s' % value
-        elif value < 1e18:
+        elif value < 1e18 * 100:
             return '%f * 1e9' % (value / 1e9)
         else:
             return '%f * 1e18' % (value / 1e18)
@@ -90,8 +90,11 @@ class TxExplainer(ExtProcessor):
             typ = hint[0]
             if typ == 'balance':
                 arg = hint[1]
-                token = self._process_key(arg, func, values)
-                decimals = self.peth.call_contract(token, "decimals()->(uint256)")
+                if arg.lower() == 'eth':
+                    decimals = 18
+                else:
+                    token = self._process_key(arg, func, values)
+                    decimals = self.peth.call_contract(token, "decimals()->(uint256)")
                 return "%f * 1e%s" % (value/(10**decimals), decimals)
             elif typ == "path":
                 tokens = [self._process_addr(i) for i in value]
@@ -136,20 +139,22 @@ class TxExplainer(ExtProcessor):
         selector = HexBytes(data)[:4]
         return self.patterns.get(selector)
 
-    def explain_call(self, to, data) -> str:
+    def explain_call(self, to, data, value=0) -> str:
         pattern = self.get_pattern(data)
         if pattern is None:
             return None
         
         # Prepare alias.
-        self.pattern_alias["contract"] = to 
+        self.pattern_alias["tx.to"] = to
+        self.pattern_alias["tx.value"] = value
         return self.pattern_abi.explain_calldata(pattern, data, self)
 
     def explain_tx(self, txid):
         tx = self.peth.web3.eth.get_transaction(txid)
         to = tx["to"]
         data = tx["input"]
-        return self.explain_call(to, data)
+        value = tx["value"]
+        return self.explain_call(to, data, value)
 
 
     def value_map_to_md(self, value_map, indent=0):

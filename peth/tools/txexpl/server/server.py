@@ -40,11 +40,12 @@ def parse_url_tx(url):
     tx = txe.peth.web3.eth.get_transaction(txid)
     to = tx["to"]
     data = tx["input"]
+    value = tx["value"]
 
     if len(data) <= 8 + 2:
         return f"Calldata too short. length:{len(data)}"
 
-    s = txe.explain_call(to, data)
+    s = txe.explain_call(to, data, value)
     if s is None:
         s = "No pattern found for this tx."
     
