@@ -36,7 +36,7 @@
 <body>
     <div class="container">
         <p class="description">Drag the button to your bookmarks bar.</p>
-        <a href="javascript:s=document.createElement('script');s.src='http://127.0.0.1:8000/index.js';document.body.appendChild(s);" class="button">Transaction Explainer</a>
+        <a href="javascript:s=document.createElement('script');s.src='http://127.0.0.1:8000/index.js';s.onerror=function(){alert('Server disconnected')};document.body.appendChild(s);" class="button">Transaction Explainer</a>
     </div>
 </body>
 </html>

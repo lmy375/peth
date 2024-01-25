@@ -7,35 +7,49 @@ from hexbytes import HexBytes
 
 from web3 import Web3
 
-from peth.eth.abi import ABI, ExtProcessor, ABIFunction
+from peth.eth.abi import ABI, ExtProcessor, ABIFunction, eth_abi
 from peth import Peth
 
-PATTERN_PATH = os.path.join(os.path.dirname(__file__), "patterns.yaml")
+EXPLANATIONS_PATH = os.path.join(os.path.dirname(__file__), "explanations.yaml")
+SUBCALLS_PATH = os.path.join(os.path.dirname(__file__), "subcalls.yaml")
 ABI_PATH = os.path.join(os.path.dirname(__file__), "abis")
 
 class TxExplainer(ExtProcessor):
 
     def __init__(self, chain):
         self.peth = Peth.get_or_create(chain)
-        self.patterns: Dict[bytes, str] = {}
         self.pattern_abi = ABI([])
+        self.explanations: Dict[bytes, str] = {}
+        self.subcalls: Dict[bytes, dict] = {}
 
-        # Init ABI first as patterns relies on this.
         self._init_pattern_abi()
-        self._init_patterns()
 
-        self.pattern_alias = {}
+        self._init_patterns(EXPLANATIONS_PATH, self.explanations)
+        self._init_patterns(SUBCALLS_PATH, self.subcalls)
 
-    def _init_patterns(self):
-        for k, v in yaml.safe_load(open(PATTERN_PATH)).items():
+        self.key_alias = {}
+
+    def _init_patterns(self, path, patterns):
+        for k, v in yaml.safe_load(open(path)).items():
             if '(' in k:
-                func = self.pattern_abi.signatures[k]
+                if k in self.pattern_abi.signatures:
+                    func = self.pattern_abi.signatures[k]
+                else:
+                    # This is a sig.
+                    func = ABIFunction(k)
+                    self.pattern_abi.add_func(func)
             elif k.startswith("0x"):
                 func = self.pattern_abi.selectors[HexBytes(k)]
             else:
-                func = self.pattern_abi.functions[k] 
+                if k in self.pattern_abi.functions: 
+                    func = self.pattern_abi.functions[k]
+                else:
+                    if k in self.pattern_abi._name_collisions:
+                        raise KeyError(f"{k} matches mutliple functions")
+                    else:
+                        raise KeyError(f"{k} not found in abi.")
             
-            self.patterns[func.selector] = v
+            patterns[func.selector] = v
 
     def _init_pattern_abi(self, abi_dir=ABI_PATH):
         for dir_path, _, files in os.walk(abi_dir):
@@ -53,12 +67,12 @@ class TxExplainer(ExtProcessor):
         key = s[0]
         hint = s[1:]
         value = self._process_key(key, func, values)
-        value = self._post_process(hint, value, func, values)
+        value = self._post_process_with_hint(hint, value, func, values)
         return value
     
     def _process_key(self, key, func, values):
-        if key in self.pattern_alias:
-            value = self.pattern_alias[key]
+        if key in self.key_alias:
+            value = self.key_alias[key]
         else:
             value = func.extract_value(key, values)
         return value
@@ -85,7 +99,7 @@ class TxExplainer(ExtProcessor):
                 name = "EOA(%s..%s)" % (addr[:6], addr[-4:])
         return f"[{name}]({self.peth.get_address_url(addr)})"
 
-    def _post_process(self, hint, value, func, values):
+    def _post_process_with_hint(self, hint, value, func, values):
         if hint:
             typ = hint[0]
             if typ == 'balance':
@@ -99,6 +113,13 @@ class TxExplainer(ExtProcessor):
             elif typ == "path":
                 tokens = [self._process_addr(i) for i in value]
                 return ' -> '.join(tokens)
+            elif typ == "names":
+                name_list = json.loads(hint[1])
+                for v, name in name_list:
+                    if v == value:
+                        return name
+                return value
+        
         return self._fallback_process(value)
 
     def _fallback_process(self, value):
@@ -115,19 +136,34 @@ class TxExplainer(ExtProcessor):
 
     # Decoding.
         
-    def decode_call(self, to, data):
+    def decode_call(self, to, data, include_sub=True) -> list:
+        r = []
         try:
-            return self.pattern_abi.map_values(data)
+            func = self.pattern_abi._get_function_by_calldata(data)
         except:
-            pass
+            func = self.peth.get_function(to, None, data)
 
-        func = self.peth.get_function(to, None, data)
         if func:
             values = func.decode_input(data)
             value_map = func.map_values(values)
-            return value_map
-        else:
-            return None
+
+            tag = f"{func.full}"
+            if to:
+                tag = self._process_addr(to) + ' ' + tag
+
+            r.append((tag, value_map))
+
+            subcalls = self.get_subcalls(to, data, 0)
+            if subcalls:
+                sub_value_maps = []
+                for tag, to, data, _ in subcalls:
+                    rets = self.decode_call(to, data, include_sub)
+                    sub_value_maps.append((
+                        f"{tag}",
+                        rets
+                    ))
+                r.append(("Sub calls", sub_value_maps))
+        return r
 
     def decode_tx(self, txid):
         tx = self.peth.web3.eth.get_transaction(txid)
@@ -135,27 +171,118 @@ class TxExplainer(ExtProcessor):
         data = tx["input"]
         return self.decode_call(to, data)
     
-    def get_pattern(self, data) -> str:
+    def get_explanation(self, data) -> str:
         selector = HexBytes(data)[:4]
-        return self.patterns.get(selector)
+        return self.explanations.get(selector)
 
-    def explain_call(self, to, data, value=0) -> str:
-        pattern = self.get_pattern(data)
-        if pattern is None:
-            return None
-        
-        # Prepare alias.
-        self.pattern_alias["tx.to"] = to
-        self.pattern_alias["tx.value"] = value
-        return self.pattern_abi.explain_calldata(pattern, data, self)
+    def explain_call(self, to, data, value=0, include_sub=True, prefix="") -> str:
+        s = ''
+        expl = self.get_explanation(data)
+        if expl is None:
+            s += "No explanation."
+        else:
+            # Prepare alias.
+            self.key_alias["tx.to"] = to
+            self.key_alias["tx.value"] = value
+            s += self.pattern_abi.explain_calldata(expl, data, self)
 
-    def explain_tx(self, txid):
+        if not include_sub:
+            return expl
+
+        subcalls = self.get_subcalls(to, data, value)
+        for tag, to, data, value in subcalls:
+            tag = prefix + tag
+            s += f"\n\n**{tag}**: "
+            s += self.explain_call(to, data, value, True, tag + ".")
+        return s
+
+    def explain_tx(self, txid, include_sub=True):
         tx = self.peth.web3.eth.get_transaction(txid)
         to = tx["to"]
         data = tx["input"]
         value = tx["value"]
-        return self.explain_call(to, data, value)
+        return self.explain_call(to, data, value, include_sub)
+    
+    def _parse_multisend(self, txbytes) -> list:
+        txbytes = HexBytes(txbytes)
 
+        r = []
+        i = 0
+        while len(txbytes) > 0:
+            op = txbytes[0]
+            tag = f"multiSend[{i}]." + ("call" if op == 0 else "delegatecall")
+            i += 1
+            
+            txbytes = txbytes[1:]
+            to = txbytes[:20].hex()
+            assert to.startswith('0x')
+            
+            txbytes = txbytes[20:]
+            value = eth_abi.decode(["uint32"], txbytes[:32])[0]
+
+            txbytes = txbytes[32:]
+            datalength = eth_abi.decode(["uint32"], txbytes[:32])[0]
+
+            txbytes = txbytes[32:]
+            data = txbytes[: datalength]
+
+            txbytes = txbytes[datalength:]
+            r.append((tag, to, data, value))
+        return r
+
+    def _customized_get_subcall(self, tx_to=None, tx_data=None, tx_value=0) -> list:
+        selector = HexBytes(tx_data)[:4]
+        if selector == HexBytes("0x8d80ff0a"): # multiSend(bytes)
+            txbytes = eth_abi.decode(["bytes"], HexBytes(tx_data)[4:])[0]
+          
+            return self._parse_multisend(txbytes)
+
+    def get_subcalls(self, tx_to=None, tx_data=None, tx_value=0):
+        assert tx_data is not None
+
+        r = self._customized_get_subcall(tx_to, tx_data, tx_value)
+        if r:
+            return r
+
+        selector = HexBytes(tx_data)[:4]
+        if selector not in self.subcalls:
+            return []
+        calls = [] # tag, to, data, value
+        pattern = self.subcalls[selector]
+        if "count" in pattern:
+            cnt_index = pattern["count"]
+            subcall_cnt = self.pattern_abi.extract_value_from_calldata(cnt_index, tx_data)
+            for i in range(subcall_cnt):
+                if "to" in pattern:
+                    to_idx = pattern["to"].replace("#", str(i))
+                    to = self.pattern_abi.extract_value_from_calldata(to_idx, tx_data)
+                else:
+                    to = tx_to
+                
+                assert "data" in pattern, 'Invalid subcall pattern: "data" not found'
+                data_idx = pattern["data"].replace("#", str(i))
+                data = self.pattern_abi.extract_value_from_calldata(data_idx, tx_data)
+
+                if "value" in pattern:
+                    value_idx = pattern["value"].replace("#", str(i))
+                    value = self.pattern_abi.extract_value_from_calldata(value_idx, tx_data)
+                else:
+                    value = tx_value
+                calls.append((data_idx, to, data, value))
+        else:
+            if "to" in pattern:
+                to = self.pattern_abi.extract_value_from_calldata(pattern["to"], tx_data)
+            else:
+                to = tx_to
+            
+            assert "data" in pattern, 'Invalid subcall pattern: "data" not found'
+            data = self.pattern_abi.extract_value_from_calldata(pattern["data"], tx_data)
+            if "value" in pattern:
+                value = self.pattern_abi.extract_value_from_calldata(pattern["value"], tx_data)
+            else:
+                value = tx_value
+            calls.append((pattern["data"], to, data, value))
+        return calls
 
     def value_map_to_md(self, value_map, indent=0):
         s = ''

@@ -7,7 +7,7 @@
         ],
         "eth": [
             "https://rpc.ankr.com/eth",
-            "https://api.etherscan.io/api?",
+            "https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&",
             "https://etherscan.io/address/"
         ],
         "ethcn": [
@@ -139,6 +139,11 @@
             "https://rpc.mantle.xyz",
             "https://explorer.mantle.xyz/api?",
             "https://explorer.mantle.xyz/address/"
+        ],
+        "manta": [
+            "https://pacific-rpc.manta.network/http",
+            "https://manta.socialscan.io/api?",
+            "https://manta.socialscan.io/address/"
         ]
     },
     "contracts": {

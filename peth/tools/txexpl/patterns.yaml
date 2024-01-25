@@ -1,8 +1,0 @@
-approve: Approve {{_value:balance:tx.to}} {{tx.to}} tokens to {{_spender}}
-transfer: Transfer {{_value:balance:tx.to}} {{tx.to}} tokens to {{_to}}
-swapExactTokensForTokens: 'Sell {{amountIn:balance:path[0]}} {{path[0]}} to buy >= {{amountOutMin:balance:path[-1]}} {{path[-1]}}. Swap path: {{path}}'
-swapExactTokensForETHSupportingFeeOnTransferTokens: 'Sell {{amountIn:balance:path[0]}} {{path[0]}} to buy >= {{amountOutMin:balance:path[-1]}} ETH. Swap path: {{path}}'
-swapExactETHForTokens: 'Sell {{tx.value:balance:eth}} ETH to buy >= {{amountOutMin:balance:path[-1]}} {{path[-1]}}. Swap path: {{path}}'
-swapExactETHForTokensSupportingFeeOnTransferTokens: 'Sell {{tx.value:balance:eth}} ETH to buy >= {{amountOutMin:balance:path[-1]}} {{path[-1]}}. Swap path: {{path}}'
-setApprovalForAll: 'NFT ApproveForAll to {{operator}}: {{approved}}'
-swap(string,address,uint256,bytes): "Metamask DEX: Sell {{amount}} {{tokenFrom}} with **{{aggregatorId}}**"

@@ -11,7 +11,6 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 from ..txexpl import TxExplainer
 
-
 def parse_url_tx(url):
     r = re.findall("[0-9a-fA-F]{64}", url)
     if not r:
@@ -19,7 +18,9 @@ def parse_url_tx(url):
     
     txid = r[0]
     chain = None
-    if 'etherscan' in url:
+    if 'optimistic' in url: # Should before etherscan check.
+        chain = 'op'
+    elif 'etherscan' in url:
         chain = 'eth'
     elif 'bscscan' in url:
         chain = 'bsc'
@@ -27,8 +28,6 @@ def parse_url_tx(url):
         chain = 'avax'
     elif 'polygonscan' in url:
         chain = 'matic'
-    elif 'optimistic' in url:
-        chain = 'op'
     elif 'arbiscan' in url:
         chain = 'arb'
     
@@ -45,22 +44,10 @@ def parse_url_tx(url):
     if len(data) <= 8 + 2:
         return f"Calldata too short. length:{len(data)}"
 
-    s = txe.explain_call(to, data, value)
-    if s is None:
-        s = "No pattern found for this tx."
-    
-    s += "\n\n----------------\n"
-
-    func = None
-    try:
-        func = txe.pattern_abi._get_function_by_calldata(data)
-    except Exception as e:
-        func = txe.peth.get_function(to, None, data)
-
-    if func:
-        s += "**%s**\n" % func.full
-        value_map = txe.decode_tx(txid)
-        s += txe.value_map_to_md(value_map)
+    s = txe.explain_call(to, data, value, True)
+    s += "\n\n--------------------\n\n"
+    value_map = txe.decode_tx(txid)
+    s += txe.value_map_to_md(value_map)
     return s
 
 PWD = os.path.dirname(__file__)

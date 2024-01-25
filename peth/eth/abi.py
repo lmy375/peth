@@ -1,6 +1,5 @@
 import json
 import os
-import warnings
 import re
 from typing import Dict, List
 
@@ -11,6 +10,7 @@ from hexbytes import HexBytes
 ALIGN_SIZE = 32
 DYNAMIC_SIZE = -1
 
+
 def _normal_indexes(indexes):
     if type(indexes) is str:
         indexes = indexes.replace("[", ".").replace("]", "")
@@ -19,55 +19,48 @@ def _normal_indexes(indexes):
     assert type(indexes) is list, "Invalid indexes"
     return indexes
 
+
 def _split_sig(sig: str) -> list:
     sig = re.sub(r"\s", "", sig)  # remove blank chars.
-    assert sig.startswith('(') and sig.endswith(')'), f"Invalid sig: {sig}"
-    sig = sig[1:-1] # Remove ()
+    assert sig.startswith("(") and sig.endswith(")"), f"Invalid sig: {sig}"
+    sig = sig[1:-1]  # Remove ()
 
     types = []
     left = 0
 
-    type_str = ''
+    type_str = ""
     for c in sig:
-        if c == ',' and left == 0:
+        if c == "," and left == 0:
             types.append(type_str)
-            type_str = ''
+            type_str = ""
             continue
 
-        elif c == '(':
+        elif c == "(":
             left += 1
 
-        elif c == ')':
+        elif c == ")":
             left -= 1
             assert left >= 0, "Invalid sig: %s" % sig
-        
+
         type_str += c
 
     if type_str:
-        types.append(type_str) # Append the last one.
+        types.append(type_str)  # Append the last one.
 
     return types
 
+
 def _convert_typ_to_abi_item(type_str):
     if not type_str.startswith("("):
-        return {
-            "name": "",
-            "type": type_str,
-            "internalType": type_str
-        }
-    
+        return {"name": "", "type": type_str, "internalType": type_str}
+
     typ = "tuple"
-    if type_str.endswith(']'):
-        i = type_str.rindex(')') + 1
+    if type_str.endswith("]"):
+        i = type_str.rindex(")") + 1
         typ += type_str[i:]
         type_str = type_str[:i]
 
-    a = {
-        "name": "",
-        "components": [],
-        "type": typ,
-        "internalType": typ
-    }
+    a = {"name": "", "components": [], "type": typ, "internalType": typ}
 
     i = 0
     for elem_type in _split_sig(type_str):
@@ -99,7 +92,6 @@ def _parse_simple_to_json(sig):
         "name": "",
         "inputs": [],
         "outputs": [],
-
         # Default values as simple sig does not cover.
         "constant": False,
         "payable": False,
@@ -117,7 +109,7 @@ def _parse_simple_to_json(sig):
     args_sig = func_sig[idx:]
     for arg_type in _split_sig(args_sig):
         item = _convert_typ_to_abi_item(arg_type)
-        item["name"] =  "arg%s" % i
+        item["name"] = "arg%s" % i
         a["inputs"].append(item)
         i += 1
 
@@ -128,16 +120,57 @@ def _parse_simple_to_json(sig):
             a["outputs"].append(item)
     return a
 
-class ExtProcessor(object):
 
+def _get_item_by_index(index: str, items: list, only_int=False):
+    assert type(items) in (tuple, list)
+    try:
+        # For int index
+        i = int(index)
+        if i < 0:
+            i = len(items) + i
+        assert i < len(items), "tuple index out-of-bound"
+        return items[i]
+    except ValueError:
+        if not only_int:
+            # For non-int index
+            for item in items:
+                if item.name == index:
+                    return item
+        raise KeyError(f"index {index} not valid for list {items}")
+
+
+def _get_item_value_by_index(index: str, items: list, values: list):
+    assert type(items) in (tuple, list)
+    assert type(values) in (tuple, list)
+    assert len(items) == len(values), "length mismatch"
+
+    try:
+        # For int index
+        i = int(index)
+        if i < 0:
+            i = len(items) + i
+        assert i < len(items), "tuple index out-of-bound"
+
+        return items[i], values[i]
+    except ValueError:
+        # For non-int index
+        for i, item in enumerate(items):
+            if item.name == index:
+                return item, values[i]
+
+        raise KeyError(f"index {index} not valid for list {items}")
+
+
+class ExtProcessor(object):
     SEP_MARKER = ":"
 
-    def process(self, func: 'ABIFunction', key: str, values) -> str:
+    def process(self, func: "ABIFunction", key: str, values) -> str:
         return str(func.extract_value(key, values))
 
-class ABIArgument(object):
 
-    def __init__(self, name=None, typ=None, components=None, raw=None) -> None:
+class ABIType(object):
+    
+    def __init__(self, name="", typ=None, components=None, raw=None) -> None:
         assert raw is not None or typ is not None
         assert raw is None or type(raw) is dict, "Invalid raw"
         assert typ is None or type(typ) is str, "Invalid typ"
@@ -150,12 +183,12 @@ class ABIArgument(object):
         self.name = name if name else raw["name"]
 
         if components:
-            self.components: List[ABIArgument] = components
+            self.components: List[ABIType] = components
         else:
-            self.components: List[ABIArgument] = []
+            self.components: List[ABIType] = []
             if raw:
                 for item in raw.get("components", []):
-                    self.components.append(ABIArgument(raw=item))
+                    self.components.append(ABIType(raw=item))
 
         if self.type.startswith("tuple"):
             self.is_tuple = True
@@ -167,15 +200,15 @@ class ABIArgument(object):
         if self.type.endswith("]"):
             self.is_array = True
             if self.type.endswith("[]"):
-                self.base_type = ABIArgument(self.name, self.type[:-2], self.components)
+                self.base_type = ABIType(self.name, self.type[:-2], self.components)
                 self.is_dynamic_array = True
                 self.array_size = DYNAMIC_SIZE
             else:
-                start = typ.rindex("[")
+                start = self.type.rindex("[")
                 end = -1
-                size = int(typ[start + 1 : end])
+                size = int(self.type[start + 1 : end])
 
-                self.base_type = ABIArgument(self.name, self.type[:start], self.components)
+                self.base_type = ABIType(self.name, self.type[:start], self.components)
                 self.is_dynamic_array = False
                 self.array_size = size
         else:
@@ -237,6 +270,9 @@ class ABIArgument(object):
 
     @property
     def element_type(self) -> str:
+        """
+        Return the basic element type of multi-dim array.
+        """
         s = self
         while s.base_type is not None:
             s = s.base_type
@@ -255,6 +291,26 @@ class ABIArgument(object):
             static_offset += arg.static_size
         raise (NameError(f"{name} not in tuple of {self}"))
 
+    def get_type(self, indexes="") -> "ABIType":
+        indexes = _normal_indexes(indexes)
+        if len(indexes) == 0:
+            return self
+        elif self.is_array:
+            if indexes[0] == "length":
+                return ABIType(typ="uint256")
+            else:
+                # skip index[0]
+                return self.base_type.get_type(indexes[1:])
+        elif self.is_tuple:
+            arg = _get_item_by_index(indexes[0], self.components)
+            return arg.get_type(indexes[1:])
+        else:
+            # string/bytes .length
+            assert self.type in ["bytes", "string"], "Should be bytes/string length"
+            assert indexes[0] == "length", "Should be length here"
+            assert len(indexes) == 1, "length should be end of indexes"
+            return ABIType(typ="uint256")
+
     def extract_value(self, indexes="", values=None):
         """
         Extract the value with the indexes path.
@@ -264,7 +320,7 @@ class ABIArgument(object):
 
         if len(indexes) == 0:
             # Return the entire value
-            return values
+            return self.normalize(values)
 
         elif self.is_array:
             assert type(values) in (list, tuple), "Value not array"
@@ -273,32 +329,12 @@ class ABIArgument(object):
                 return len(values)
             else:
                 # Get array element
-                i = int(indexes[0])
-                if i < 0:
-                    i = len(values) + i
-
-                assert i >= 0 and i < len(values), "Value array out-of-bound"
-                return self.base_type.extract_value(indexes[1:], values[i])
+                value = _get_item_by_index(indexes[0], values, True)
+                return self.base_type.extract_value(indexes[1:], value)
 
         elif self.is_tuple:
-            assert type(values) in (list, tuple), "Value not tuple"
-            assert len(values) == len(self.components), "Value not match tuple size"
-
-            name = indexes[0]
-
-            try:
-                i = int(name)
-                assert i < len(values), "Value tuple out-of-bound"
-                arg = self.components[i]
-                return arg.extract_value(indexes[1:], values[i])
-            except ValueError:
-                pass
-
-            for i, arg in enumerate(self.components):
-                if arg.name == name:
-                    return arg.extract_value(indexes[1:], values[i])
-
-            raise ValueError(f"{name} not in tuple {self}")
+            arg, value = _get_item_value_by_index(indexes[0], self.components, values)
+            return arg.extract_value(indexes[1:], value)
 
         else:
             # string/bytes .length
@@ -329,7 +365,7 @@ class ABIArgument(object):
                 _, v = self.base_type.map_values(values[i])
                 r.append((name, v))
             return (self.name, r)
-        
+
         elif self.is_tuple:
             assert type(values) in (list, tuple), "Value not tuple"
             assert len(values) == len(self.components), "Value not match tuple size"
@@ -337,14 +373,95 @@ class ABIArgument(object):
             r = []
             for i, arg in enumerate(self.components):
                 name = f"{arg.name}"
-                _, v = arg.map_values(values[i])  
+                _, v = arg.map_values(values[i])
                 r.append((name, v))
             return (self.name, r)
         else:
-            return (self.name, values)         
+            return (self.name, values)
+
+    def _convert_list(self, value):
+        if type(value) is str:
+            value = json.loads(value)
+        assert type(value) in (list, tuple), f"Invalid list {value} for type {self}"
+        return value
+
+    def _convert_int(self, value):
+        if type(value) is str:
+            value = value.strip()
+            if value.startswith("0x") or value.startswith("-0x"):
+                return int(value, 16)
+            else:
+                return int(value)
+        else:
+            if type(value) is not int:
+                raise ValueError(f"Invalid int {value} for type {self}")
+            return value
+
+    def _convert_bool(self, value):
+        if type(value) is str:
+            _value = value.strip().lower()
+            if _value in ["0", "false"]:
+                return False
+            elif _value in ["1", "true"]:
+                return True
+        else:
+            if value in [False, True]:
+                return value
+            elif value == 1:
+                return True
+            elif value == 0:
+                return False
+        raise ValueError(f"Invalid list {value} for type {self}")
+
+    def normalize(self, value, is_list=False):
+        if is_list:
+            values = self._convert_list(value)
+            return [self.normalize(i) for i in values]
+
+        if self.is_array:
+            value = self.base_type.normalize(value, True)
+            if self.array_size != DYNAMIC_SIZE:
+                assert len(value) == self.array_size, "Value not match fixed-array size"
+            return value
+        elif self.is_tuple:
+            values = self._convert_list(value)
+            assert len(values) == len(self.components), "Value not match tuple size"
+
+            r = []
+            for i, arg in enumerate(self.components):
+                v = arg.normalize(values[i])
+                r.append(v)
+            return v
+        else:
+            if self.type == "string":
+                return str(value)
+            elif self.type.startswith("bytes"):
+                _value = HexBytes(value)
+                if len(self.type) > 5:
+                    size = int(self.type[5:])
+                    assert len(_value) <= size, f"{value} too long for type {self}"
+                return _value
+            elif self.type.startswith("uint") or self.type.startswith("int"):
+                value = self._convert_int(value)
+                bits = int(self.type.strip("uint"))  # remove u, i, n, t chars.
+                assert bits % 8 == 0
+                size = bits // 8
+                signed = self.type.startswith("int")
+                try:
+                    int.to_bytes(value, size, "big", signed=signed)
+                except OverflowError:
+                    raise ValueError(f"Invalid integer {value} for type {self}")
+                return value
+            elif self.type == "bool":
+                return self._convert_bool(value)
+            else:
+                assert self.type == "address"
+                assert type(value) is str
+                assert re.match("0x[0-9a-fA-F]{40}", value)
+                return value
+
 
 class ABIFunction(object):
-
     def __init__(self, raw: dict) -> None:
         """
         raw: type string or full json.
@@ -356,13 +473,13 @@ class ABIFunction(object):
 
         self.name = self.raw["name"]
 
-        self.inputs: List[ABIArgument] = []
+        self.inputs: List[ABIType] = []
         for item in self.raw["inputs"]:
-            self.inputs.append(ABIArgument(raw=item))
+            self.inputs.append(ABIType(raw=item))
 
-        self.outputs: List[ABIArgument] = []
+        self.outputs: List[ABIType] = []
         for item in self.raw["outputs"]:
-            self.outputs.append(ABIArgument(raw=item))
+            self.outputs.append(ABIType(raw=item))
 
     @property
     def is_view(self):
@@ -391,11 +508,11 @@ class ABIFunction(object):
         s += ",".join(self.input_types)
         s += ")"
         return s
-    
+
     @property
     def output_types(self):
         return [i.type_str for i in self.outputs]
-    
+
     @property
     def output_type_str(self):
         s = "("
@@ -413,9 +530,11 @@ class ABIFunction(object):
 
     def __repr__(self):
         return self.full
-    
+
     def encode_input(self, args=[]):
-        return HexBytes(self.selector + HexBytes(eth_abi.encode(self.input_types, args)))
+        return HexBytes(
+            self.selector + HexBytes(eth_abi.encode(self.input_types, args))
+        )
 
     def decode_input(self, calldata):
         calldata = HexBytes(calldata)
@@ -437,29 +556,28 @@ class ABIFunction(object):
             static_offset += arg.static_size
         raise (NameError(f"{name} not in arguments of {self}"))
 
+    def get_type(self, indexes="") -> ABIType:
+        indexes = _normal_indexes(indexes)
+
+        # Skip function name if provided in indexes.
+        if indexes[0] == self.name:
+            indexes = indexes[1:]
+
+        arg = _get_item_by_index(indexes[0], self.inputs)
+        return arg.get_type(indexes[1:])
+
     def extract_value(self, indexes="", values=[]):
         assert len(values) == len(self.inputs), "Value not match arguments size"
 
         indexes = _normal_indexes(indexes)
+
+        # Skip function name if provided in indexes.
         if indexes[0] == self.name:
             indexes = indexes[1:]
 
-        name = indexes[0]
+        arg, value = _get_item_value_by_index(indexes[0], self.inputs, values)
+        return arg.extract_value(indexes[1:], value)
 
-        try:
-            i = int(name)
-            assert i < len(values), "Value tuple out-of-bound"
-            arg = self.inputs[i]
-            return arg.extract_value(indexes[1:], values[i])
-        except ValueError:
-            pass
-
-        for i, arg in enumerate(self.inputs):
-            if arg.name == name:
-                return arg.extract_value(indexes[1:], values[i])
-
-        raise ValueError(f"unknown arguments {indexes}")
-    
     def map_values(self, values):
         assert len(values) == len(self.inputs), "Value not match arguments size"
 
@@ -467,7 +585,6 @@ class ABIFunction(object):
         for arg, value in zip(self.inputs, values):
             r.append(arg.map_values(value))
         return r
-
 
     def explain_calldata(self, pattern: str, calldata, ext: ExtProcessor = None) -> str:
         """
@@ -483,12 +600,12 @@ class ABIFunction(object):
             start = pattern.find(START_MARKER)
             if start == -1:
                 r.append(pattern)
-                return ''.join(str(i) for i in r)
-            
+                return "".join(str(i) for i in r)
+
             r.append(pattern[:start])
             end = pattern.find(END_MARKER)
             assert end != -1, "Unclosed marker"
-            key = pattern[start + len(START_MARKER): end]
+            key = pattern[start + len(START_MARKER) : end]
 
             try:
                 if ext:
@@ -500,23 +617,25 @@ class ABIFunction(object):
             except Exception as e:
                 print(f"[*] Error in explain_calldata, key={key}: {e}")
                 # Unable to resolve the key, just return itself.
-                value = '{{%s}}' % key
+                value = "{{%s}}" % key
 
             r.append(value)
-            pattern = pattern[end + len(END_MARKER):]
-        
-class ABI(object):
+            pattern = pattern[end + len(END_MARKER) :]
 
+
+class ABI(object):
     def __init__(self, arg) -> None:
         """
-        arg: 
+        arg:
             - List of ABI item
             - List of simple sigs: "balanceOf(address)->(uin256)"
             - JSON string
             - JSON file path
         """
+
+        self.raw = arg
+
         if type(arg) is list:
-            self.raw = arg
             if len(arg) > 0:
                 if type(arg[0]) is str:
                     self.raw = list(_parse_simple_to_json(i) for i in arg)
@@ -530,7 +649,7 @@ class ABI(object):
                 except json.JSONDecodeError:
                     raise TypeError(f"not valid ABI or file path: {arg}")
 
-            assert type(self.raw) is list, "Invalid ABI."
+        assert type(self.raw) is list, f"Invalid ABI: {arg}"
 
         self.functions: Dict[
             str, ABIFunction
@@ -550,10 +669,10 @@ class ABI(object):
     def add_func(self, func: ABIFunction):
         name = func.name
 
-        assert func.signature not in self.signatures, "Signatures collision."
+        assert func.signature not in self.signatures, f"Signatures collision. {func.signature}"
         self.signatures[func.signature] = func
 
-        assert func.selector not in self.selectors, "Selector collision."
+        assert func.selector not in self.selectors, f"Selector collision. {func.selector}"
         self.selectors[func.selector] = func
 
         if name in self.functions:
@@ -562,8 +681,8 @@ class ABI(object):
 
         if name not in self._name_collisions:
             self.functions[name] = func
-    
-    def merge(self, other: 'ABI'):
+
+    def merge(self, other: "ABI"):
         self.raw += other.raw
         for func in other.signatures.values():
             self.add_func(func)
@@ -571,8 +690,7 @@ class ABI(object):
     def __getattr__(self, key):
         if key in self.functions:
             return self.functions[key]
-        else:
-            return super().__getattr__(key)
+        raise KeyError(key)
 
     def __getitem__(self, key):
         if key in self.functions:
@@ -581,8 +699,7 @@ class ABI(object):
             return self.signatures[key]
         elif key in self.selectors:
             return self.selectors[key]
-        else:
-            return super().__getitem__(key)
+        raise KeyError(key)
 
     def _get_function_by_calldata(self, calldata):
         calldata = bytes(HexBytes(calldata))
@@ -592,11 +709,18 @@ class ABI(object):
         assert selector in self.selectors, "Selector not found"
 
         return self.selectors[selector]
-    
+
     def decode_calldata(self, calldata):
         func = self._get_function_by_calldata(calldata)
         return func.decode_input(calldata)
-    
+
+    def get_type(self, indexes) -> ABIType:
+        indexes = _normal_indexes(indexes)
+        name = indexes[0]
+        indexes = indexes[1:]
+        func = self[name]
+        return func.get_type(indexes)
+
     def extract_value(self, indexes, values):
         indexes = _normal_indexes(indexes)
         name = indexes[0]
@@ -608,27 +732,26 @@ class ABI(object):
         func = self._get_function_by_calldata(calldata)
         values = func.decode_input(calldata)
         return func.extract_value(indexes, values)
-    
-    def explain_calldata(self, pattern: str, calldata, alias: dict = {}) -> list:
+
+    def explain_calldata(self, pattern: str, calldata, ext: ExtProcessor = None) -> list:
         func = self._get_function_by_calldata(calldata)
-        return func.explain_calldata(pattern, calldata, alias)
+        return func.explain_calldata(pattern, calldata, ext)
 
     def map_values(self, calldata) -> list:
         func = self._get_function_by_calldata(calldata)
         values = func.decode_input(calldata)
         return func.map_values(values)
-    
+
     @classmethod
     def print_value_map(cls, value_map, indent=0):
         for k, v in value_map:
             if type(v) in (tuple, list):
-                print(' ' * indent, k, ":")
-                cls.print_value_map(v, indent+1)
+                print(" " * indent, k, ":")
+                cls.print_value_map(v, indent + 1)
             else:
                 if type(v) is bytes:
                     v = v.hex()
                     if len(v) == 0:
                         v = "0x"
 
-                print(' ' * indent, k, ":", v)
-
+                print(" " * indent, k, ":", v)
