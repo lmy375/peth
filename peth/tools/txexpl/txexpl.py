@@ -10,9 +10,16 @@ from web3 import Web3
 from peth.eth.abi import ABI, ExtProcessor, ABIFunction, eth_abi
 from peth import Peth
 
-EXPLANATIONS_PATH = os.path.join(os.path.dirname(__file__), "explanations.yaml")
+EXPLANATIONS_PATH = os.path.join(os.path.dirname(__file__), "explanations")
 SUBCALLS_PATH = os.path.join(os.path.dirname(__file__), "subcalls.yaml")
 ABI_PATH = os.path.join(os.path.dirname(__file__), "abis")
+
+def _list_files(dir, ext):
+    for dir_path, _, files in os.walk(dir):
+        for file_name in files:
+            if file_name.endswith(ext):
+                file_path = os.path.join(dir_path, file_name)
+                yield file_path
 
 class TxExplainer(ExtProcessor):
 
@@ -30,6 +37,12 @@ class TxExplainer(ExtProcessor):
         self.key_alias = {}
 
     def _init_patterns(self, path, patterns):
+        if os.path.isdir(path):
+            for file_path in _list_files(path, ".yaml"):
+                self._init_patterns(file_path, patterns)
+            return
+        
+        print("Load pattern", path)
         for k, v in yaml.safe_load(open(path)).items():
             if '(' in k:
                 if k in self.pattern_abi.signatures:
@@ -37,7 +50,7 @@ class TxExplainer(ExtProcessor):
                 else:
                     # This is a sig.
                     func = ABIFunction(k)
-                    self.pattern_abi.add_func(func)
+                    self.pattern_abi.add_func(func, True)
             elif k.startswith("0x"):
                 func = self.pattern_abi.selectors[HexBytes(k)]
             else:
@@ -52,13 +65,11 @@ class TxExplainer(ExtProcessor):
             patterns[func.selector] = v
 
     def _init_pattern_abi(self, abi_dir=ABI_PATH):
-        for dir_path, _, files in os.walk(abi_dir):
-            for file_name in files:
-                if file_name.endswith(".json"):
-                    file_path = os.path.join(dir_path, file_name)
-                    abi = json.load(open(file_path))
-                    abi = ABI(abi)
-                    self.pattern_abi.merge(abi)
+        for path in _list_files(abi_dir, ".json"):
+            print("Load ABI", path)
+            abi = json.load(open(path))
+            abi = ABI(abi, True)
+            self.pattern_abi.merge(abi, True)
 
     # ExtProcessor functions.
 
@@ -131,6 +142,12 @@ class TxExplainer(ExtProcessor):
         
         if Web3.isAddress(value):
             return self._process_addr(value)
+        
+        if isinstance(value, bytes):
+            s = value.decode().strip('\x00')
+            if s.isprintable():
+                return '`%s`' % s
+            return '`%s`' % HexBytes(value).hex()
         
         return value
 
@@ -301,3 +318,21 @@ class TxExplainer(ExtProcessor):
         # Remove last newline.
         s = s.strip('\n')
         return s
+
+    def gen_full_md_from_call(self, to, data, value=0):
+        data = HexBytes(data)
+        if len(data) < 4:
+            return f"Calldata too short. length:{len(data)}"
+
+        s = self.explain_call(to, data, value, True)
+        s += "\n\n--------------------\n\n"
+        value_map = self.decode_call(to, data)
+        s += self.value_map_to_md(value_map)
+        return s
+
+    def gen_full_md_from_txid(self, txid):
+        tx = self.peth.web3.eth.get_transaction(txid)
+        to = tx["to"]
+        data = tx["input"]
+        value = tx["value"]
+        return self.gen_full_md_from_call(to, data, value)

@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
-from ..txexpl import TxExplainer
+from ..txexpl import TxExplainer, Peth
 
 def parse_url_tx(url):
     r = re.findall("[0-9a-fA-F]{64}", url)
@@ -35,31 +35,18 @@ def parse_url_tx(url):
         return "chain not found"
     
     txe = TxExplainer(chain)
-
-    tx = txe.peth.web3.eth.get_transaction(txid)
-    to = tx["to"]
-    data = tx["input"]
-    value = tx["value"]
-
-    if len(data) <= 8 + 2:
-        return f"Calldata too short. length:{len(data)}"
-
-    s = txe.explain_call(to, data, value, True)
-    s += "\n\n--------------------\n\n"
-    value_map = txe.decode_tx(txid)
-    s += txe.value_map_to_md(value_map)
-    return s
+    return txe.gen_full_md_from_txid(txid)
 
 PWD = os.path.dirname(__file__)
 
-INDEX = os.path.join(PWD, "index.html")
-INDEX_DATA = open(INDEX).read()
+INDEX_PATH = os.path.join(PWD, "index.html")
+INDEX_DATA = open(INDEX_PATH).read()
 
-MD = os.path.join(PWD, "markdown.html")
-MD_DATA = open(INDEX).read()
+MD_PATH = os.path.join(PWD, "markdown.html")
+MD_DATA = open(MD_PATH).read()
 
-JS = os.path.join(PWD, "index.js")
-JS_DATA = open(JS).read()
+JS_PATH = os.path.join(PWD, "index.js")
+JS_DATA = open(JS_PATH).read()
 
 app = FastAPI()
 
@@ -72,23 +59,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+txe = TxExplainer("eth")
+
+def _switch_chain(chain):
+    if txe.peth.chain != chain:
+        txe.peth = Peth.get_or_create(chain)
+
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return open(INDEX).read()
-
-@app.get("/markdown.html", response_class=HTMLResponse)
-def markdown(url):
-    msg = parse_url_tx(url)
-    msg = msg.replace('`', '\\`')
-    return open(MD).read().replace("#MARKDOWN", str(msg))
+    return INDEX_DATA
 
 @app.get("/index.js")
 def index_js():
-    return Response(content=open(JS).read(), media_type="text/javascript")
+    return Response(content=JS_DATA, media_type="text/javascript")
 
-@app.get("/explain", response_class=HTMLResponse)
-def explain(url):
-    return parse_url_tx(url)
+@app.get("/explain_url", response_class=HTMLResponse)
+def markdown(url):
+    msg = parse_url_tx(url)
+    msg = msg.replace('`', '\\`')
+    return MD_DATA.replace("#MARKDOWN", str(msg))
+
+@app.get("/explain_txid", response_class=HTMLResponse)
+def markdown(chain, txid):
+    _switch_chain(chain)
+    msg = txe.gen_full_md_from_txid(txid)
+    msg = msg.replace('`', '\\`')
+    return MD_DATA.replace("#MARKDOWN", str(msg))
+
+@app.get("/explain_call", response_class=HTMLResponse)
+def markdown(chain, to, data, value=0):
+    _switch_chain(chain)
+    msg = txe.gen_full_md_from_call(to, data, value)
+    msg = msg.replace('`', '\\`')
+    return MD_DATA.replace("#MARKDOWN", str(msg))
     
 if __name__ == "__main__":
     import uvicorn

@@ -82,7 +82,8 @@ class EthCall(object):
             data: selector => Simple ABI
         """
         func = None
-        selector = HexBytes(data)[:4] if data and len(HexBytes(data)) >= 4 else None
+        data = HexBytes(data) if data else HexBytes("0x")
+        selector = data[:4] if len(data) >= 4 else None
 
         if to:
             abi_json = self.scan.get_abi(to)

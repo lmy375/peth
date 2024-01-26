@@ -1,4 +1,4 @@
 (function(){
-    let url = "http://localhost:8000/markdown.html?url=" + escape(location.href)
+    let url = "http://localhost:8000/explain_url?url=" + escape(location.href)
     open(url);
 })()

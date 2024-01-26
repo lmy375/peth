@@ -1,0 +1,29 @@
+initArgus: Create and initialize CoboSafe via factory {{factory}}
+upgradeArgus: Upgrade old CoboSafe {{oldCoboSafeAddress}} via factory {{factory}}
+grantRoles: Bind roles {{roles}} to delegates {{delegates}} in CoboSafe {{coboSafeAddress}}
+grantRolesV2: Bind roles {{roles}} to delegates {{delegates}} in CoboSafe {{coboSafeAddress}}
+revokeRoles: Unbind roles {{roles}} from delegates {{delegates}} in CoboSafe {{coboSafeAddress}}
+revokeRolesV2: Unbind roles {{roles}} from delegates {{delegates}} in CoboSafe {{coboSafeAddress}}
+createAuthorizer: Create new authorizer({{authorizerName}} {{tag}}) to CoboSafe {{coboSafeAddress}} via factory {{factory}}
+createAuthorizerV2: Create new authorizer({{authorizerName}} {{tag}} impl {{authorizerImplAddress}}) to CoboSafe {{coboSafeAddress}} via factory {{factory}}
+addAuthorizer: Bind authorizer {{authorizerAddress}} to {{roles}} with {{isDelegateCall:names:[[true,"delegatecall"], [false, "call"]]}} mode in {{coboSafeAddress}}
+addAuthorizerV2: Bind authorizer {{authorizerAddress}} to {{roles}} with {{isDelegateCall:names:[[true,"delegatecall"], [false, "call"]]}} mode in {{coboSafeAddress}}
+createAndAddAuthorizer: Create new authorizer({{authorizerName}} {{tag}} impl {{authorizerImplAddress}}) to CoboSafe {{coboSafeAddress}} via factory {{factory}} and bind it {{roles}} with {{isDelegateCall:names:[[true,"delegatecall"], [false, "call"]]}} mode.
+removeAuthorizer: Unbind authorizer {{authorizerAddress}} from {{roles}} with {{isDelegateCall:names:[[true,"delegatecall"], [false, "call"]]}} mode in {{coboSafeAddress}}
+removeAuthorizerV2: Unbind authorizer {{authorizerAddress}} from {{roles}} with {{isDelegateCall:names:[[true,"delegatecall"], [false, "call"]]}} mode in {{coboSafeAddress}}
+addFuncAuthorizer: Add CoboSafe FuncAuthorizer with tag {{tag}} to {{coboSafeAddress}} via {{factory}}. It's bound to roles {{roles}} and allows calling contract {{_contracts}} and functions {{funcLists}}
+addFuncAuthorizerV2: Add CoboSafe FuncAuthorizer with tag {{params.tag}} to {{params.coboSafeAddress}} via {{params.factory}}. It's bound to roles {{params.roles}} and allows calling contract {{_contracts}} and functions {{funcLists}}
+addTransferAuthorizer: Add TransferAuthorizer with tag {{tag}} to {{coboSafeAddress}} via {{factory}}. It's bound to roles {{roles}} and allows sending tokens to receivers {{tokenReceivers}}
+addTransferAuthorizerV2: Add TransferAuthorizer with tag {{params.tag}} to {{params.coboSafeAddress}} via {{params.factory}}. It's bound to roles {{params.roles}} and allows sending tokens to receivers {{tokenReceivers}}
+addDexAuthorizer: Add Dex authorizer {{dexAuthorizerName}} with tag {{tag}} to {{coboSafeAddress}} via {{factory}}. It's bound to roles {{roles}} and allows selling {{_swapInTokens}} and buying {{_swapOutTokens}}
+addDexAuthorizerV2: Add Dex authorizer {{dexAuthorizerName}} with tag {{tag}} to {{coboSafeAddress}} via {{factory}}. It's bound to roles {{roles}} and allows selling {{_swapInTokens}} and buying {{_swapOutTokens}}
+addApproveAuthorizer: Add ApproveAuthorizer with tag {{tag}} to {{coboSafeAddress}} via {{factory}}. It's bound to roles {{roles}} and allows spending tokens by {{tokenSpenders}}
+addApproveAuthorizerV2: Add ApproveAuthorizer with tag {{params.tag}} to {{params.coboSafeAddress}} via {{params.factory}}. It's bound to roles {{params.roles}} and allows spending tokens by {{tokenSpenders}}
+setFuncAuthorizerParams: Add contracts {{_contracts}} and methods {{funcLists}} to FuncAuthorizer {{authorizerAddress}}
+unsetFuncAuthorizerParams: Remove contracts {{_contracts}} and methods {{funcLists}} from FuncAuthorizer {{authorizerAddress}}
+setTransferAuthorizerParams: Add token-receiver pairs {{tokenReceivers}} to TransferAuthorizer {{authorizerAddress}}
+unsetTransferAuthorizerParams: Remove token-receiver pairs {{tokenReceivers}} from TransferAuthorizer {{authorizerAddress}}
+setDexAuthorizerParams: Add sellable tokens {{_swapInTokens}} and buyable tokens {{_swapOutTokens}} to DexAuthorizer {{authorizerAddress}}
+unsetDexAuthorizerParams: Remove sellable tokens {{_swapInTokens}} and buyable tokens {{_swapOutTokens}} to DexAuthorizer {{authorizerAddress}}
+setApproveAuthorizerParams: Add token-spender pairs {{tokenSpenders}} to ApproveAuthorizer {{authorizerAddress}}
+unsetApproveAuthorizerParams: Remove token-spender pairs {{tokenSpenders}} from ApproveAuthorizer {{authorizerAddress}}

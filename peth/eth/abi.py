@@ -624,7 +624,7 @@ class ABIFunction(object):
 
 
 class ABI(object):
-    def __init__(self, arg) -> None:
+    def __init__(self, arg, exclude_views=False)-> None:
         """
         arg:
             - List of ABI item
@@ -664,9 +664,12 @@ class ABI(object):
             typ = item["type"]
             if typ == "function":
                 func = ABIFunction(item)
-                self.add_func(func)
+                self.add_func(func, exclude_views)
 
-    def add_func(self, func: ABIFunction):
+    def add_func(self, func: ABIFunction, exclude_views=False):
+        if exclude_views and func.is_view:
+            return
+        
         name = func.name
 
         assert func.signature not in self.signatures, f"Signatures collision. {func.signature}"
@@ -682,10 +685,10 @@ class ABI(object):
         if name not in self._name_collisions:
             self.functions[name] = func
 
-    def merge(self, other: "ABI"):
+    def merge(self, other: "ABI", exclude_views=False):
         self.raw += other.raw
         for func in other.signatures.values():
-            self.add_func(func)
+            self.add_func(func, exclude_views)
 
     def __getattr__(self, key):
         if key in self.functions:

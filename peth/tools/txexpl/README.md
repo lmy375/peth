@@ -5,12 +5,18 @@ A tool decodes the EVM transaction and gives explanations according to pre-confi
 # Usage
 
 ```
-python -m peth.tools.txexpl.server.server
+# Install peth if not exists
+$ pip install git+https://github.com/lmy375/peth
+
+# Start txexpl server.
+$ python -m peth.tools.txexpl.server.server
 ```
 
 Open http://localhost:8000/. Drag the button to your bookmarks bar.
 
 Click the bookmark on a [Transaction Etherscan page](https://etherscan.io/tx/0x69120b25c790dbcbd5e50abb6ac8f402b905a26741f4f4f1a20745d1f534e9c8) to explain it.
+
+If you'd like to use it while signing, add [this file](server/monkey.js) to your [tampermonkey](https://www.tampermonkey.net/) of the browser. If intercepts before you send transactions and sign Safe transactions.
 
 # Explanations
 
