@@ -34,7 +34,7 @@ def parse_url_tx(url):
     if chain is None:
         return "chain not found"
     
-    txe = TxExplainer(chain)
+    _switch_chain(chain)
     return txe.gen_full_md_from_txid(txid)
 
 PWD = os.path.dirname(__file__)

@@ -431,7 +431,7 @@ class ABIType(object):
             for i, arg in enumerate(self.components):
                 v = arg.normalize(values[i])
                 r.append(v)
-            return v
+            return r
         else:
             if self.type == "string":
                 return str(value)
