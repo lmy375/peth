@@ -14,8 +14,11 @@ BATCH_SWAP_DATA = HexBytes(
 )
 
 ABI_PATH = path.join(path.dirname(__file__), "bal.json")
-BAL_ABI = ABI(json.load(open(ABI_PATH)))
+if not path.exists(ABI_PATH):
+    abi = Peth.get_or_create('eth').scan.get_abi(BAL_VAULT)
+    json.dump(abi, open(ABI_PATH, "w"))
 
+BAL_ABI = ABI(json.load(open(ABI_PATH)))
 
 def test_ABIType():
     a = ABIType(typ="uint256[2][3]")

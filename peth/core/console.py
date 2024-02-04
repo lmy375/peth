@@ -849,6 +849,12 @@ class PethConsole(cmd.Cmd):
         """
         proxy <address> [<address>]: Print ERC1967 proxy information
         """
+        def _print_slot_as_address(name,slot):
+            bytes32 = self.web3.eth.get_storage_at(addr, slot)
+            if(int(bytes32.hex(), 16) != 0):
+                _addr = bytes32[12:].hex()
+                print(f"{name}: {self._get_full_name(_addr)}")
+
         for arg in args.split():
             addr = self.web3.toChecksumAddress(arg)
             impl = self.web3.eth.get_storage_at(
@@ -857,24 +863,20 @@ class PethConsole(cmd.Cmd):
                 addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
 
             if int(impl, 16) == 0:
-                print(f"{addr} may be not a ERC1967 Proxy")
-                print("Implementation", impl)
-                print("Admin", admin)
+                print(f"{addr} may be not an ERC-1967 Proxy")
+                print("Implementation:", self._get_full_name(impl))
+                print("Admin:",  self._get_full_name(admin))
                 # Print first slots, may be used as customized proxy.
-                print("Slot[0]", self.web3.eth.get_storage_at(addr, 0).hex())
-                print("Slot[1]", self.web3.eth.get_storage_at(addr, 1).hex())
-                print("Slot[2]", self.web3.eth.get_storage_at(addr, 2).hex())
-                print("Slot[3]", self.web3.eth.get_storage_at(addr, 3).hex())
+                _print_slot_as_address("Slot[0]", 0)
+                _print_slot_as_address("Slot[1]", 1)
+                _print_slot_as_address("Slot[2]", 2)
+                _print_slot_as_address("Slot[3]", 3)
             else:
-                print(f"{addr} is a ERC1967 Proxy")
-                print("Implementation", impl)
-                print("Admin", admin)
-                print("Rollback", self.web3.eth.get_storage_at(
-                    addr, 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)[12:].hex())
-                print("Beacon", self.web3.eth.get_storage_at(
-                    addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex())
-                print("Initialized", self.web3.eth.get_storage_at(
-                    addr, 0x834ce84547018237034401a09067277cdcbe7bbf7d7d30f6b382b0a102b7b4a3)[12:].hex())
+                print(f"{addr} is an ERC-1967 Proxy")
+                print("Implementation:", self._get_full_name(impl))
+                print("Admin:",  self._get_full_name(admin))
+                _print_slot_as_address("Rollback", 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)
+                _print_slot_as_address("Beacon", 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)
 
     def do_proxy_all(self, args):
         """
@@ -897,8 +899,7 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         try:
             owner = self.peth.call_contract(addr, "owner()->(address)")
-            print("Owner: %s" % (owner))
-            self.do_name(owner)
+            print("Owner: %s" % self._get_full_name(owner))
         except Exception as e:
             print("Failed. Ensure your input is a Ownable contract address.")
 
@@ -907,24 +908,27 @@ class PethConsole(cmd.Cmd):
         gnosis <gnosis-proxy-address>: Print Gnosis information.
         """
         addr = self.web3.toChecksumAddress(arg)
-        try:
-            print("Version:", self.peth.call_contract(addr, "VERSION()->(string)"))
 
-            threshold = self.peth.call_contract(addr, "getThreshold()->(uint)")
-            users = self.peth.call_contract(addr, "getOwners()->(address[])")
+        print("Version:", self.peth.call_contract(addr, "VERSION()->(string)"))
+
+        threshold = self.peth.call_contract(addr, "getThreshold()->(uint)")
+        users = self.peth.call_contract(addr, "getOwners()->(address[])")
+        if users:
             print("Policy: %s/%s" % (threshold, len(users)))
             print("Owners:")
             for u in users:
-                print(" ", u)
+                print(" ", self._get_full_name(u))
 
-            print("Impl:", self.peth.call_contract(addr, "masterCopy()->(address)"))
-            print("Modules:", ','.join(self.peth.call_contract(
-                addr, "getModulesPaginated(address,uint256)->(address[],address)",
-                ["0x0000000000000000000000000000000000000001", 100]
-                )[0])
-            )
-        except Exception as e:
-            print("Failed. Ensure your input is a GnosisProxy contract address.")
+        print("Impl:", self.peth.call_contract(addr, "masterCopy()->(address)"))
+
+        modules = self.peth.call_contract(
+            addr, "getModulesPaginated(address,uint256)->(address[],address)",
+            ["0x0000000000000000000000000000000000000001", 100]
+            )[0]
+        if modules:
+            print("Modules:")
+            for m in modules:
+                print(" ", self._get_full_name(m))
 
     def do_timelock(self, arg):
         """
@@ -957,7 +961,7 @@ class PethConsole(cmd.Cmd):
 
         try:
             admin = self.peth.call_contract(addr, "admin()->(address)")
-            print("Admin: %s" % admin)
+            print("Admin: %s" % self._get_full_name(admin))
         except Exception as e:
             pass
 
@@ -1405,22 +1409,39 @@ class PethConsole(cmd.Cmd):
 
     ##################################################################
     # Contract source tools.
+        
+    def _get_name(self, addr):
+        addr = self.web3.toChecksumAddress(addr)
+        codesize = len(self.web3.eth.get_code(addr))
+        if codesize:
+            name = self.peth.scan.get_contract_name(addr)
+            if name:
+                if name == "GnosisSafe":
+                    threshold = self.peth.call_contract(addr, "getThreshold()->(uint)")
+                    users = self.peth.call_contract(addr, "getOwners()->(address[])")
+                    if users is None:
+                        total = 0
+                    else:
+                        total = len(users)
+                    return f"GnosisSafe {threshold}/{total}"
+                else:
+                    return f"{name}"
+            else:
+                return f"Contract {codesize} bytes"
+        else:
+            return f"EOA"
+        
+    def _get_full_name(self, addr):
+        return f"{addr} {self._get_name(addr)}"
+
+
 
     def do_name(self, arg):
         """
         name <address> : the contract name.
         """
         if self.web3.isAddress(arg):
-            addr = self.web3.toChecksumAddress(arg)
-            name = self.peth.scan.get_contract_name(addr)
-            if name:
-                print(name)
-            else:
-                codesize = len(self.web3.eth.get_code(addr))
-                if codesize:
-                    print("Unverified contract size %s" % codesize)
-                else:
-                    print("EOA")
+            print(self._get_full_name(arg))
         else:
             print("Invalid address format.")
 
