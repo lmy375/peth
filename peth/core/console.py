@@ -861,8 +861,10 @@ class PethConsole(cmd.Cmd):
                 addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
             admin = self.web3.eth.get_storage_at(
                 addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
+            beacon = self.web3.eth.get_storage_at(
+                addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex()
 
-            if int(impl, 16) == 0:
+            if int(impl, 16) == 0 and int(beacon, 16) == 0:
                 print(f"{addr} may be not an ERC-1967 Proxy")
                 print("Implementation:", self._get_full_name(impl))
                 print("Admin:",  self._get_full_name(admin))
@@ -875,8 +877,8 @@ class PethConsole(cmd.Cmd):
                 print(f"{addr} is an ERC-1967 Proxy")
                 print("Implementation:", self._get_full_name(impl))
                 print("Admin:",  self._get_full_name(admin))
+                print("Beacon:",  self._get_full_name(beacon))
                 _print_slot_as_address("Rollback", 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)
-                _print_slot_as_address("Beacon", 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)
 
     def do_proxy_all(self, args):
         """
