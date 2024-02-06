@@ -645,9 +645,3 @@ peth > run ethcall_executor.sol
 Read the code.
 
 参考源码。
-
-# Copy Right 版权
-
-Commercial use is forbidden without authorization.
-
-未经授权不得用于商业用途。
