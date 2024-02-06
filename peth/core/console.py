@@ -12,7 +12,7 @@ from hexbytes import HexBytes
 from eth_account import Account
 import requests
 
-from peth.eth.abi import ABI
+from peth.eth.abi import ABI, ABIFunction
 from peth.eth.sigs import ERC20Signatures, Signature
 from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, CoinPrice, guess_calldata_types
 from peth.eth.bytecode import Code
@@ -804,20 +804,38 @@ class PethConsole(cmd.Cmd):
         r = self.peth.run_solidity(code)
         print(r)
 
-    def do_get_prop(self, arg):
+    def do_view(self, arg):
         """
-        get_prop <contract> <name> [<type>] : Call property-like view method.
+        view <contract> <name> [<type>] [<length>] : Call property-like view method.
+
         eg:
-        get_prop <contract> admin         => eth_call <contract> admin()
-        get_prop <contract> admin address => eth_call <contract> admin()=>(address)
-        get_prop <contract> name string => eth_call <contract> name()=>(string)
+            view <contract> admin         => eth_call <contract> admin()
+            view <contract> admin address => eth_call <contract> admin()->(address)
+            view <contract> name string => eth_call <contract> name()->(string)
+            view <contract> addrs address addrs_length => eth_call <contract> addrs(uint256)->(address) i
         """
         args = arg.split()
         to = args[0]
         name = args[1]
         typ = None
-        if len(args) == 3:
+        if len(args) >= 3:
             typ = args[2]
+            if len(args) >= 4:
+                length = args[3]
+                try:
+                    length = int(length)
+                except Exception:
+                    length = self.peth.get_view_value(to, name, "uint256")
+                
+                sig = f"{name}(uint256)->({typ})"
+                for i in range(length):
+                    value = self.peth.call_contract(to, sig, [i])
+                    print(f"[{i}]\t{value}")
+                    
+                    if not value:
+                        print("None found. Stop.")
+                        return
+                return
         print(self.peth.get_view_value(to, name, typ))
 
     def do_erc20(self, arg):
@@ -1375,7 +1393,15 @@ class PethConsole(cmd.Cmd):
             sig = '0x' + selector.hex()
             sigs = selector_to_sigs(sig)
             sigs = sigs[::-1]
-            print(sig, ', '.join(sigs))
+            value = ""
+            if sigs:
+                func_sig = sigs[0]
+                if len(ABIFunction(func_sig).inputs) == 0:
+                    value = self.peth.call_contract(addr, func_sig, silent=True)
+                    if value is None:
+                        value = ""
+               
+            print(sig, ', '.join(sigs), ' ' * 10, '\t', value)
 
     def do_disasm(self, arg):
         """

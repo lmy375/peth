@@ -144,6 +144,11 @@
             "https://pacific-rpc.manta.network/http",
             "https://manta.socialscan.io/api?",
             "https://manta.socialscan.io/address/"
+        ],
+        "merlin": [
+            "https://rpc.merlinchain.io",
+            "https://scan.merlinchain.io/api?",
+            "https://scan.merlinchain.io/address/"
         ]
     },
     "contracts": {

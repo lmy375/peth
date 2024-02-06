@@ -85,9 +85,8 @@ class ScanAPI(object):
         else:
             url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
             d = self.get(url)[0] # The first.
-            
             # Un-verified.
-            if d["ContractName"] == "":
+            if not d.get("ContractName", None):
                 return None
 
             if d: 

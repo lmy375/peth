@@ -66,14 +66,17 @@ peth > help
 
 Documented commands (type help <topic>):
 ========================================
-4byte     common_addresses  download_json    help    pair      storage
-abi4byte  config            download_source  int     proxy     timelock
-aml       contract          erc20            name    py        timestamp
-balance   debug             eth_call         nonce   quit      tx
-bye       decompile         exit             number  rpc_call  tx_raw
-chain     diff              get_prop         open    sender    txs
-code      diffasm           gnosis           oracle  sh        url
-codesize  disasm            graph            owner   sha3
+abi4byte          config           erc20         ipython  proxy      signer
+abi_encode        contract         estimate_gas  log      proxy_all  storage
+aes               debank           eth_call      loop     py         timelock
+aml               debug            eth_call_raw  name     quit       timestamp
+balance           decompile        exit          nonce    rpc_call   tx
+bye               deth             factory       number   run        tx_raw
+calldata_decode   diff             gnosis        open     send_tx    tx_replay
+chain             diffasm          graph         oracle   sender     txs
+code              disasm           help          owner    sh         url
+codesize          download_json    idm           pair     sha3       verify
+common_addresses  download_source  int           price    sig        view
 
 peth >
 ```
@@ -315,9 +318,9 @@ Tether USD
 ```sh
 # Get property value of the contract.
 # 获取合约某个属性值（调用无参 View 方法，可指定类型）
-peth > get_prop 0xdac17f958d2ee523a2206206994597c13d831ec7 name
+peth > view 0xdac17f958d2ee523a2206206994597c13d831ec7 name
 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a5465746865722055534400000000000000000000000000000000000000000000
-peth > get_prop 0xdac17f958d2ee523a2206206994597c13d831ec7 name string
+peth > view 0xdac17f958d2ee523a2206206994597c13d831ec7 name string
 Tether USD
 
 # Print ERC20 information
@@ -331,15 +334,10 @@ decimals()->(uint8) => 6
 # Print proxy information
 # 打印代理信息
 peth > proxy 0xdD4051c3571C143b989C3227E8eB50983974835C
-Implementation 0x7d0c7372f38958d9cf5ae6da2b0794337045559b
-Admin 0x0e1dde6cd48758482528b718ef8d27a7e69eae62
-Rollback 0x0000000000000000000000000000000000000000
-Beacon 0x0000000000000000000000000000000000000000
-Initialized 0x0000000000000000000000000000000000000000
-Slot[0] 0x0000000000000000000000000000000000000000000000000000000000000000
-Slot[1] 0x0000000000000000000000000000000000000000000000000000000000000015
-Slot[2] 0x5c7ca7fab99db3519042713201658e964bf814053cc1d2062dbd7b8197a0271d
-Slot[3] 0x0000000000000000000000000000000000000000000000000000000000000006
+0xdD4051c3571C143b989C3227E8eB50983974835C is an ERC-1967 Proxy
+Implementation: 0xeabe9aa60e7da3a962b39942fb3c3568b7c57c1d Controller
+Admin: 0x0e1dde6cd48758482528b718ef8d27a7e69eae62 ProxyAdmin
+Beacon: 0x0000000000000000000000000000000000000000 EOA
 
 # Print owner information of Ownable contract.
 # 打印合约的 owner 信息
@@ -350,16 +348,18 @@ EOA
 # Print Gnosis information.
 # 打印 Gnosis 多签信息
 peth > gnosis 0xF6Bc2E3b1F939C435D9769D078a6e5048AaBD463
+Version: 1.3.0
 Policy: 5/8
 Owners:
-  0x01bb2320faea7f514b790a04812461112687bb19
-  0x4cc02225a3d7636af61d3903b2cba838a6f54ac2
-  0x587b28fad1132fd3ac50cb38342e2c6ca7dc670a
-  0x30e7c016fc702cde9a50720a469d418490b7b652
-  0x76adf688f4bd5b15e882428cae8df4d1d0831f87
-  0x6cee7a18072c5d26e99d186ead6feb9f17d5ac9e
-  0x64dcf80aa31f40d094cfb2d578019bcb2eccf58b
-  0x1f2d4431a415d3065a95810449f21c8e391065ee
+  0x01bb2320faea7f514b790a04812461112687bb19 EOA
+  0x4cc02225a3d7636af61d3903b2cba838a6f54ac2 EOA
+  0x587b28fad1132fd3ac50cb38342e2c6ca7dc670a EOA
+  0xcc16c45be95773e9da59d42a575b169b23d4f58d EOA
+  0xa286844303f5207658bc2a6ef582099295501f5e EOA
+  0x6cee7a18072c5d26e99d186ead6feb9f17d5ac9e EOA
+  0x64dcf80aa31f40d094cfb2d578019bcb2eccf58b EOA
+  0x46ff1b2b030201f572e22fc18c26974ec8fe8819 EOA
+Impl: 0xd9db270c1b5e3bd161e8c8503c55ceabee709552
 
 # Print timelock information
 # 打印时间锁合约信息
@@ -367,7 +367,7 @@ peth > timelock 0x574703381d4cb4eeb474e43eee97e3d9986e48a7
 Min Delay: 0s = 0.00h
 Max Delay: 2592000s = 720.00h
 Current Delay: 0s = 0.00h
-Admin: 0xabb55d166bb028d0d73c9aa31e294c88cfe29579
+Admin: 0xa42f6fb68607048dde54fcd53d2195cc8ca5f486 GnosisSafe 3/5
 
 # Print Uniswap pair information.
 # 打印 Uniswap 类型交易对信息
@@ -416,26 +416,30 @@ Min Answer: 100000000000000000 (0.10)
 # Print decoded transaction information with txid.
 # 打印解码后的合约调用信息。
 peth > tx 0x1f26956899a5d6754b1b765794bf8b5daef994357a817209a6d84498da026922
-0x17F96db7cf1D3964F3Cd32E98AFE9Eb43A15fe24 -> 0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852
-Method:
-  0x022c0d9f function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data)
+From: 0x17F96db7cf1D3964F3Cd32E98AFE9Eb43A15fe24
+To: 0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852
+Method: function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data) returns ()
 Arguments:
-  uint256 amount0Out = 21829054100743363759
-  uint256 amount1Out = 0
-  address to = 0x0302c1e37200005183c900a30000aa005eaf710c
-  bytes data = 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
+     amount0Out : 21829054100743363759
+     amount1Out : 0
+     to : 0x0302c1e37200005183c900a30000aa005eaf710c
+     data : 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
+ERC20 Transfers:
+  WETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) to->0x0302c1E37200005183c900A30000Aa005eaF710C 21829054100743363759
+  USDT(0xdAC17F958D2ee523a2206206994597C13D831ec7) 0x11b815efB8f581194ae79006d24E0d814B7697F6->to 71705387770
+  WETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) 0x0302c1E37200005183c900A30000Aa005eaF710C->0x11b815efB8f581194ae79006d24E0d814B7697F6 21801173487118685020
+  WETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) 0x0302c1E37200005183c900A30000Aa005eaF710C->0x0000E0Ca771e21bD00057F54A68C30D400000000 27880613624678739
 
 # Print decoded transaction information with address and calldata.
 # 也可以直接指定合约地址及数据（解析多签或者时间锁交易时常用）
 peth > tx 0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852 0x022c0d9f0000000000000000000000000000000000000000000000012ef0610ca1979caf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000302c1e37200005183c900a30000aa005eaf710c0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000006911b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d4537380953010000000000000000000000000000000000000000000000
-Method:
-  0x022c0d9f function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data)
+Method: function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data) returns ()
 Arguments:
-  uint256 amount0Out = 21829054100743363759
-  uint256 amount1Out = 0
-  address to = 0x0302c1e37200005183c900a30000aa005eaf710c
-  bytes data = 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
-
+     amount0Out : 21829054100743363759
+     amount1Out : 0
+     to : 0x0302c1e37200005183c900a30000aa005eaf710c
+     data : 11b815efb8f581194ae79006d24e0d814b7697f6c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000010b1f962fa00000000000000000000000000000000000000000000000000630d453738095301
+    
 # Print transaction history of address.
 # 打印某个地址多条的交易信息
 peth > txs 0xf8E5227aDD01b2b8f36981a2566c160E5E4136e4
@@ -482,38 +486,39 @@ PUSH1 0xe0
 # Extract selector dispatching code and print signatures.
 # 获取合约可能的 selector （根据 PUSH4 指令提取，会有误报），分析闭源合约常用。
 peth > abi4byte 0xdAC17F958D2ee523a2206206994597C13D831ec7
-0x6fdde03 name(), message_hour(uint256,int8,uint16,bytes32)
-0x753c30c deprecate(address)
-0x95ea7b3 approve(address,uint256), sign_szabo_bytecode(bytes16,uint128)
-0xe136b19 deprecated()
-0xecb93c0 addBlackList(address)
-0x18160ddd totalSupply(), voting_var(address,uint256,int128,int128)
-0x23b872dd transferFrom(address,address,uint256), gasprice_bit_ether(int128)
-0x26976e3f upgradedAddress()
+0x06fdde03 name()            	 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a5465746865722055534400000000000000000000000000000000000000000000
+0x0753c30c deprecate(address)
+0x095ea7b3 approve(address,uint256)
+0x0ecb93c0 addBlackList(address)
+0x18160ddd totalSupply()            	 0x000000000000000000000000000000000000000000000000009c5715d89b008f
+0x23b872dd transferFrom(address,address,uint256)
+0x26976e3f upgradedAddress()            	 0x0000000000000000000000000000000000000000000000000000000000000000
 0x27e235e3 balances(address)
-0x313ce567 decimals(), available_assert_time(uint16,uint64)
-0x35390714 maximumFee()
-0x3eaaf86b _totalSupply()
+0x313ce567 decimals()            	 0x0000000000000000000000000000000000000000000000000000000000000006
+0x3eaaf86b _totalSupply()            	 0x000000000000000000000000000000000000000000000000009c5715d89b008f
 0x3f4ba83a unpause()
 0x59bf1abe getBlackListStatus(address)
 0x5c658165 allowed(address,address)
-0x5c975abb paused()
-0x70a08231 balanceOf(address), branch_passphrase_public(uint256,bytes8), passphrase_calculate_transfer(uint64,address)
+0x5c975abb paused()            	 0x0000000000000000000000000000000000000000000000000000000000000000
+0x70a08231 balanceOf(address)
 0x8456cb59 pause()
-0x893d20e8 getOwner()
-0x8da5cb5b owner(), ideal_warn_timed(uint256,uint128)
-0x95d89b41 symbol(), link_classic_internal(uint64,int64)
-0xa9059cbb transfer(address,uint256), many_msg_babbage(bytes1), transfer(bytes4[9],bytes5[6],int48[11]), func_2093253501(bytes)
+0x893d20e8 getOwner()            	 0x000000000000000000000000c6cde7c39eb2f0f0095f41570af89efc2c1ea828
+0x8da5cb5b owner()            	 0x000000000000000000000000c6cde7c39eb2f0f0095f41570af89efc2c1ea828
+0x95d89b41 symbol()            	 0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045553445400000000000000000000000000000000000000000000000000000000
+0xa9059cbb transfer(address,uint256)
 0xc0324c77 setParams(uint256,uint256)
 0xcc872b66 issue(uint256)
 0xdb006a75 redeem(uint256)
-0xdd62ed3e allowance(address,address), remove_good(uint256[],bytes8,bool), _func_5437782296(address,address)
-0xdd644f72 basisPointsRate()
+0xdd62ed3e allowance(address,address)
+0xdd644f72 basisPointsRate()            	 0x0000000000000000000000000000000000000000000000000000000000000000
 0xe47d6060 isBlackListed(address)
 0xe4997dc5 removeBlackList(address)
-0xe5b5019a MAX_UINT()
+0xe5b5019a MAX_UINT()            	 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 0xf2fde38b transferOwnership(address)
 0xf3bdc228 destroyBlackFunds(address)
+0xaee92d33 approveByLegacy(address,address,uint256)
+0x8b477adb transferFromByLegacy(address,address,address,uint256)
+0x6e18980a transferByLegacy(address,address,uint256)
 ```
 
 ### Source 源码类工具
@@ -573,9 +578,9 @@ peth > contract 0xdAC17F958D2ee523a2206206994597C13D831ec7
 # Print contract name.
 # 打印合约名（或 EOA)
 peth > name 0xdAC17F958D2ee523a2206206994597C13D831ec7
-TetherToken
+0xdAC17F958D2ee523a2206206994597C13D831ec7 TetherToken
 peth > name 0x0000000000000000000000000000000000000000
-EOA
+0x0000000000000000000000000000000000000000 EOA
 
 # Diff contract source code.
 # 对比合约源码差异。
