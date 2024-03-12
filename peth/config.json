@@ -149,6 +149,11 @@
             "https://rpc.merlinchain.io",
             "https://scan.merlinchain.io/api?",
             "https://scan.merlinchain.io/address/"
+        ],
+        "blast": [
+            "https://rpc.ankr.com/blast",
+            "https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan/api?",
+            "https://blastexplorer.io/address/"
         ]
     },
     "contracts": {

@@ -20,9 +20,9 @@ from peth.core.peth import Peth
 from peth.util import diff
 from peth.util.graph import ContractRelationGraph
 
-from . import config
-from .config import chain_config, contracts_config
-from .log import logger, logging
+from .core import config
+from .core.config import chain_config, contracts_config
+from .core.log import logger, logging
 
 
 class PethConsole(cmd.Cmd):
@@ -535,21 +535,27 @@ class PethConsole(cmd.Cmd):
 
     def do_storage(self, arg):
         """
-        storage <address> <slot> : Get storage of address.
+        storage <address> [<slot>] : Get storage of address.
         """
-        addr, slot_str = arg.split()
-        addr = self.web3.toChecksumAddress(addr)
-        try:
-            slot = int(slot_str)
-        except:
+        args = arg.split()
+        addr = self.web3.toChecksumAddress(args[0])
+        slot = None
+        if len(args) >= 2:
+            slot_str = args[1]
             try:
-                slot = int(slot_str, 16)
+                slot = int(slot_str)
             except:
-                print(
-                    f"Error: Invalid slot (must be hex/dec number) {slot_str}")
-                return
-
-        print(self.web3.eth.get_storage_at(addr, slot).hex())
+                try:
+                    slot = int(slot_str, 16)
+                except:
+                    print(
+                        f"Error: Invalid slot (must be hex/dec number) {slot_str}")
+                    return
+        if slot is not None:
+            print(hex(slot), ":", self.web3.eth.get_storage_at(addr, slot).hex())
+        else:
+            for slot in range(0, 0x10):
+                print(hex(slot), ":", self.web3.eth.get_storage_at(addr, slot).hex())
 
     def do_number(self, arg=None):
         """
@@ -1479,6 +1485,12 @@ class PethConsole(cmd.Cmd):
         """
         addr = self.web3.toChecksumAddress(arg)
         info = self.peth.scan.get_contract_info(arg)
+
+        if info is None:
+            print("Contract not verified. Run abi4byte ..")
+            self.do_abi4byte(addr)
+            return
+
         self.__print_json(info)
 
         abis = info["ABI"]

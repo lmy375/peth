@@ -4,8 +4,8 @@ from argparse import ArgumentParser
 
 from peth.core.config import chain_config, CHAIN_CONFIG_PATH, OUTPUT_PATH
 from peth.core.peth import Peth
-from peth.core.console import PethConsole
 from peth.core.log import logger
+from peth.console import PethConsole
 
 def get_args():
     parser = ArgumentParser(

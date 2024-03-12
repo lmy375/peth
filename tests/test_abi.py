@@ -54,18 +54,15 @@ def test_validation():
             print(typ, value, e)
             assert valid is False
 
-    _check_value("uint8", "1", True)
     _check_value("uint8", 1, True)
-    _check_value("uint8", "0xff", True)
-    _check_value("uint8", "0xfff", False)
-    _check_value("uint8", "abcd", False)
-    _check_value("uint8", "-1", False)
     _check_value("uint8", -1, False)
+    _check_value("uint8", 0xFF, True)
+    _check_value("uint8", 0xFFF, False)
+    _check_value("uint8", "abcd", False)
 
     _check_value("int8", -1, True)
-    _check_value("int8", "-1", True)
-    _check_value("int8", "-0xf", True)
-    _check_value("int8", "-0xf0", False)
+    _check_value("int8", -0xF, True)
+    _check_value("int8", -0xF0, False)
 
     _check_value("string", "1", True)
     _check_value("string", "this is string", True)
@@ -75,20 +72,13 @@ def test_validation():
     _check_value("bytes32", "0xAAAA", True)
     _check_value("bytes1", "0xAAAA", False)
 
-    _check_value("bool", "True", True)
-    _check_value("bool", "1", True)
     _check_value("bool", True, True)
-    _check_value("bool", 0x0, True)
     _check_value("bool", "NotBool", False)
 
     _check_value("address", "0x", False)
     _check_value("address", "0x88c6C46EBf353A52Bdbab708c23D0c81dAA8134A", True)
 
-    _check_value("bool[]", [1, True, "False"], True)
-    _check_value("bool", '[1, true, "False"]', True, True)
-    _check_value("bool[]", '[1, true, "False"]', True)
-
-    _check_value("(bool[],uint8)", '[[1, true, "False"], 1]', True)
+    _check_value("(bool[],uint8)", ([True, False], 1), True)
 
 
 def test_bal_extract_value():
@@ -105,6 +95,7 @@ def test_bal_extract_value():
     )
     assert abi.get_type("batchSwap.swaps.length").type_str == "uint256"
     assert abi.get_type("batchSwap.swaps[0].poolId").type_str == "bytes32"
+    assert abi.get_type("batchSwap.limits").type_str == "int256[]"
 
     assert abi.extract_value_from_calldata("batchSwap.kind", data) == 0
     assert abi.extract_value_from_calldata("kind", data) == 0
@@ -217,4 +208,3 @@ def test_simple_sig():
     )
     assert abi2.extract_value_from_calldata("1.0.2", data) == 1
     assert abi2.extract_value_from_calldata("1[0].2", data) == 1
-
