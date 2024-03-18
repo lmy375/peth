@@ -192,6 +192,7 @@ class PethConsole(cmd.Cmd):
         print("Value: %s" % value)
         print("Value: %e" % (value/1.0))
         print("Value/1e6  (USDT): %s" % (value/1e6))
+        print("Value/1e8  (BTC): %s" % (value/1e8))
         print("Value/1e9  (GWei): %s" % (value/1e9))
         print("Value/1e18 (Ether): %s" % (value/1e18))
         print("Hex: %#x" % value)

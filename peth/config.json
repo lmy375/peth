@@ -142,8 +142,8 @@
         ],
         "manta": [
             "https://pacific-rpc.manta.network/http",
-            "https://manta.socialscan.io/api?",
-            "https://manta.socialscan.io/address/"
+            "https://pacific-explorer.manta.network/api?",
+            "https://pacific-explorer.manta.network/address/"
         ],
         "merlin": [
             "https://rpc.merlinchain.io",
