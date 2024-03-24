@@ -1,3 +1,4 @@
+import ast
 import cmd
 import codecs
 import difflib
@@ -20,12 +21,14 @@ from peth.eth.utils import (
     CoinPrice,
     SelectorDatabase,
     convert_value,
+    convert_value_list,
     guess_calldata_types,
     selector_to_sigs,
     sha3_256,
 )
 from peth.util import diff
 from peth.util.graph import ContractRelationGraph
+from peth.util.logos import random_logo
 
 from .core import config
 from .core.config import chain_config, contracts_config
@@ -79,6 +82,10 @@ class PethConsole(cmd.Cmd):
         """
         Start a peth console. Catch Ctrl+C.
         """
+
+        print(random_logo())
+        print("                           -- https://github.com/lmy375")
+        print()
         print("Welcome to the peth shell. Type `help` to list commands.\n")
         while True:
             try:
@@ -99,7 +106,10 @@ class PethConsole(cmd.Cmd):
         self._debug = debug
         self.onecmd(cmd)
 
-    def __normal_str(self, v, full=False):
+    ##################################################################
+    # Internal functions.
+
+    def _normal_str(self, v, full=False):
         if isinstance(v, bytes):
             v = v.hex()
         v = str(v).splitlines()[0]
@@ -107,20 +117,68 @@ class PethConsole(cmd.Cmd):
             v = v[:80] + " ..."
         return v
 
-    def __print_json(self, data, full=False):
+    def _print_json(self, data, full=False):
         if isinstance(data, list):
             i = 1
             for item in data:
                 print("---- [%d] ----" % i)
-                self.__print_json(item, full)
+                self._print_json(item, full)
                 i += 1
         elif getattr(data, "items", None):  # dict-like object.
             for k, v in data.items():
                 if v:
-                    v = self.__normal_str(v, full)
+                    v = self._normal_str(v, full)
                 print(" ", k, ":\t", v)
         else:
-            print(self.__normal_str(data, full))
+            print(self._normal_str(data, full))
+
+    def _parse_args(self, arg, typ="auto"):
+        """
+        Simple command line arguments parser.
+
+        auto: Split to arguments and covert numbers and addresses.
+
+        address: if not address raise an error.
+        number: if not number raise an error.
+        string: return string
+
+        (type, type, ..)
+            Tuple.
+
+        [type]:
+            Array.
+        """
+        if type(arg) is str:
+            args = arg.strip().split()
+        else:
+            assert type(arg) is list
+            args = arg
+
+        assert len(args) > 0, "Empty args"
+        if typ == "auto":
+            return convert_value_list(args)
+        elif typ == "address":
+            assert Web3.isAddress(args[0]), f"{args[0]} not address"
+            return Web3.toChecksumAddress(args[0])
+        elif typ == "number":
+            value = ast.literal_eval(args[0])
+            assert type(value) is int, f"{args[0]} not number"
+            return value
+        elif typ == "string":
+            return args[0]
+        elif type(typ) is list:
+            assert len(typ) == 1, "_parse_args: invalid type"
+            return [self._parse_args(a, typ[0]) for a in args]
+        elif type(typ) is tuple:
+            assert len(typ) == len(
+                args
+            ), f"Invalid args count: {len(typ)} need. {len(args)} found."
+            r = []
+            for a, t in zip(args, typ):
+                return self._parse_args(a, t)
+            return r
+        else:
+            raise Exception("_parse_args: invalid type")
 
     ##################################################################
     # Console related commands, such as configuration commands.
@@ -525,10 +583,10 @@ class PethConsole(cmd.Cmd):
         """
         print("Transaction:")
         tx = self.web3.eth.get_transaction(arg)
-        self.__print_json(tx, True)
+        self._print_json(tx, True)
 
         print("Receipt:")
-        self.__print_json(self.web3.eth.get_transaction_receipt(arg), True)
+        self._print_json(self.web3.eth.get_transaction_receipt(arg), True)
 
     def do_balance(self, arg):
         """
@@ -620,7 +678,7 @@ class PethConsole(cmd.Cmd):
 
         tx, signed_tx = self.peth.send_transaction(data, to, value, True)
         print("TX info:")
-        self.__print_json(tx, True)
+        self._print_json(tx, True)
         print("Sig info:")
         tx_hash = signed_tx.hash.hex()
         print("  Hash:\t", tx_hash)
@@ -652,7 +710,7 @@ class PethConsole(cmd.Cmd):
                 except Exception:
                     pass
                 print("Full Receipt:")
-                self.__print_json(rcpt, True)
+                self._print_json(rcpt, True)
                 break
             except Exception as e:
                 print(e)
@@ -866,21 +924,26 @@ class PethConsole(cmd.Cmd):
 
         args = arg.split()
         if len(args) == 1:
-            sigs = [
-                "totalSupply()->(uint256)",
-                "name()->(string)",
-                "symbol()->(string)",
-                "decimals()->(uint8)",
+            methods = [
+                ("Name:", "name()->(string)"),
+                ("Symbol:", "symbol()->(string)"),
+                ("decimals:", "decimals()->(uint256)"),
+                ("totalSupply:", "totalSupply()->(uint256)"),
             ]
-            for sig in sigs:
-                value = self.peth.call_contract(arg, sig)
-                print(sig, "=>", value)
+
+            token = self._parse_args(arg, "address")
+            for name, method in methods:
+                print(name, self.peth.call_contract(token, method))
+
         else:
             addr = args[0]
             func = args[1]
+            call_args = convert_value_list(args[2:])
+
             sig = ERC20Signatures.find_by_name(func)
             assert sig, "Unknown ERC20 view function"
-            value = self.peth.call_contract(addr, sig, args[2:])
+
+            value = self.peth.call_contract(addr, sig, call_args)
             print(value)
 
     def do_proxy(self, args):
@@ -1544,7 +1607,7 @@ class PethConsole(cmd.Cmd):
             self.do_abi4byte(addr)
             return
 
-        self.__print_json(info)
+        self._print_json(info)
 
         abis = info["ABI"]
         try:

@@ -227,26 +227,6 @@ def selector_to_sigs(selector, only_one=False):
     return db.get_sig_from_selector(selector, only_one)
 
 
-def process_args(args):
-    """
-    Try to covert address, int values.
-    """
-    r = []
-    for arg in args:
-        if Web3.isAddress(arg):
-            r.append(Web3.toChecksumAddress(arg))
-            continue
-
-        try:
-            if arg.startswith("0x"):
-                r.append(int(arg, 16))
-            else:
-                r.append(int(arg))
-        except Exception:
-            r.append(arg)
-    return r
-
-
 def hex2bytes(hex_data):
     if hex_data.startswith("0x"):
         hex_data = hex_data[2:]
@@ -262,7 +242,7 @@ def convert_value(value):
     HEX_PATTERN = r"^[0-9A-Fa-fXx]+$"
 
     if Web3.isAddress(value):  # address
-        return value
+        return Web3.toChecksumAddress(value)
     elif re.match(STR_PATTERN, value):  # string.
         return re.findall(STR_PATTERN, value)[0]
     elif re.match(DEC_PATTERN, value):  # decimal
@@ -270,7 +250,11 @@ def convert_value(value):
     elif re.match(HEX_PATTERN, value):  # hexcimal
         return int(value, 16)
     else:
-        raise NotImplementedError("Can not convert value: %s" % value)
+        return value
+
+
+def convert_value_list(values):
+    return [convert_value(v) for v in values]
 
 
 def guess_calldata_types(data):

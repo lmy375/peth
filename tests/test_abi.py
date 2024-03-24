@@ -176,7 +176,7 @@ def test_abi():
         == "function batchSwap(uint8 kind, (bytes32,uint256,uint256,uint256,bytes)[] swaps, address[] assets, (address,bool,address,bool) funds, int256[] limits, uint256 deadline) returns (int256[] assetDeltas)"
     )
 
-    ret = ((1, -1),)
+    ret = (1, -1)  # abi.decode convert array to tuple.
     data = abi.batchSwap.encode_output(ret)
     assert abi.batchSwap.decode_output(data) == ret
 

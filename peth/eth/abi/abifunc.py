@@ -100,11 +100,16 @@ class ABIFunction(object):
         calldata = calldata[4:]
         return abi_decode(self.input_types, calldata)
 
-    def encode_output(self, rets=[]):
+    def encode_output(self, rets=[], auto_tuple=True):
+        if auto_tuple and len(self.outputs) == 1:
+            rets = [rets]
         return HexBytes(abi_encode(self.output_types, rets))
 
-    def decode_output(self, retdata):
-        return abi_decode(self.output_types, retdata)
+    def decode_output(self, retdata, auto_one=True):
+        ret = abi_decode(self.output_types, HexBytes(retdata))
+        if auto_one and len(self.outputs) == 1:
+            return ret[0]
+        return ret
 
     def get_static_offset(self, name):
         static_offset = 0

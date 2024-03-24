@@ -1,4 +1,3 @@
-import json
 import logging
 from argparse import ArgumentParser
 
@@ -6,6 +5,7 @@ from peth.console import PethConsole
 from peth.core.config import CHAIN_CONFIG_PATH, OUTPUT_PATH, chain_config
 from peth.core.log import logger
 from peth.core.peth import Peth
+from peth.eth.utils import convert_value_list
 
 
 def get_args():
@@ -27,13 +27,6 @@ def get_args():
         metavar="ARG",
         nargs="+",
         help="Ethereum RPC call: method arg1 arg2 [...]",
-    )
-
-    parser.add_argument(
-        "--rpc-call-raw",
-        metavar="ARG",
-        nargs=2,
-        help="Ethereum RPC call: method arguments",
     )
 
     parser.add_argument(
@@ -101,8 +94,6 @@ def get_args():
 
 
 def main():
-    global peth
-
     args = get_args()
 
     if args.rpc_url:
@@ -113,11 +104,7 @@ def main():
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    if args.rpc_call_raw:
-        method = args.rpc_call_raw[0]
-        arg_list = json.loads(args.rpc_call_raw[1])
-        print(peth.rpc_call_raw(method, arg_list))
-    elif args.rpc_call:
+    if args.rpc_call:
         method = args.rpc_call[0]
         arg_list = args.rpc_call[1:]
         print(peth.rpc_call(method, arg_list))
@@ -125,7 +112,7 @@ def main():
         sender = args.sender
         to = args.to
         sig_or_name = args.eth_call[0]
-        arg_list = args.eth_call[1:]
+        arg_list = convert_value_list(args.eth_call[1:])
         print(peth.eth_call(to, sig_or_name, arg_list, sender))
     elif args.graph:
         addr = args.to

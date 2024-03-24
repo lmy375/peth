@@ -1,50 +1,74 @@
 
-# Install 安装
+# 安装
 
-## From pip 
+## 安装前的准备
 
-1. Install with pip. 通过 pip 安装。
+建议创建 python 虚拟环境使用。
+```sh
+$ python -m venv pethenv
+$ source pethenv/bin/activate
 ```
-$ python -m venv test
-$ source test/bin/activate
 
+## 从 pypi 安装
+
+```sh
+# install
 $ pip install peth
-# or
-$ pip install git+https://github.com/lmy375/peth
-```
 
-2. Run peth。运行 peth。
-```
+# run
 $ peth -h
 ```
 
-## From source
+## 从 github 安装
 
-1. Clone the repo. 克隆本仓库。
+> *注：建议的安装方式，可以获得最新特性*
 
+```sh
+# install
+$ pip install git+https://github.com/lmy375/peth
+
+# run
+$ peth -h
 ```
-git clone https://github.com/lmy375/peth
-```
-2. (Optional) Edit `config.json` with new EVM network RPC endpoints and your Etherscan API keys. （可选的）编辑根目录下的 `config.json` 文件，添加自定义的 RPC 地址。添加 API Key 可以提高执行速度（否则限频时会自动等待）。
 
-```json
+## 克隆源码直接运行
+
+```sh
+# download
+$ git clone https://github.com/lmy375/peth
+
+# run
+$ cd peth
+$ python main.py -h
+```
+
+## （可选）配置自定义的 RPC 及 API Key
+
+编辑 peth 目录下的 `config.json` 文件。如果是通过 pip 形式安装，则文件位于 `site-packages` 中对应的包中。
+
+添加自定义的 RPC 地址，以支持新的 EVM 链，，也欢迎提交 Github Pull Request。
+
+添加 API Key 可以提高执行速度，否则遇到 API 限频时会自动等待。
+
+```js
 {
     "chains": {
         "eth": [
-            // RPC endpoint URL.
+            // 节点 RPC 地址
             "https://rpc.ankr.com/eth",  
 
-            // Etherscan-style API URL.
-            // Get better experience if you have an API key.
-            // https://api.etherscan.io/api?apikey=<Your API Key>&
-            // Do NOT forget the '?' or '&' in the URL.
+            // Etherscan API URL，注意不要少了末尾的 ?
+            // 仅支持 Etherscan 系列的区块链浏览器
             "https://api.etherscan.io/api?",
             
-            // Etherscan address page URL.
+            // 如果要添加 API Key 则使这样的格式
+            // https://api.etherscan.io/api?apikey=<Your API Key>&
+
+            // 用于打开特定地址的 URL
             "https://etherscan.io/address/"
         ],
 
-      //...
+       // 可继续添加新的链
     }
 }
 ```

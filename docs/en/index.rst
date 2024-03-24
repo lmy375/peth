@@ -2,24 +2,12 @@
 Peth
 =======
 
-.. toctree::
-    :maxdepth: 2
-
-    Overview <overview.md>
-    quickstart.rst
-
+TODO
 
 .. toctree::
     :caption: Getting Started
     :maxdepth: 2
 
-    install.rst
-    init.rst
-    structure.rst
-    compile.rst
-    interaction.rst
-    package-manager.rst
-    gui.rst
 
 
 .. toctree::

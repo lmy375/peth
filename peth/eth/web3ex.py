@@ -68,22 +68,16 @@ class Web3Ex(object):
         return len(self.web3.eth.get_code(addr)) != 0
 
     def get_address_url(self, addr):
-        if self.address_url:
-            return self.address_url + addr
-
-    def rpc_call_raw(self, method, args=[]):
-        logger.debug("PRC request: method=%s args=%s" % (method, args))
-        r = self.web3.provider.make_request(method, args)
-        logger.debug("PRC result: %s " % r)
-        return r
+        assert self.address_url, "address_url not set"
+        return self.address_url + addr
 
     def rpc_call(self, method, args=[]):
-        r = self.rpc_call_raw(method, args)
+        logger.debug(f"rpc_call: {method} {args}")
+        r = self.web3.provider.make_request(method, args)
+        logger.debug(f"rpc_call returns: {r}")
         if "result" in r:
             return r["result"]
-        if "error" in r:
-            return "Code: %s, Message: %s" % (r["error"]["code"], r["error"]["message"])
-        return r
+        raise Exception(f"rpc_call error: returns {r}")
 
     def get_function(self, to=None, sig=None, data=None) -> ABIFunction:
         """
@@ -136,18 +130,20 @@ class Web3Ex(object):
         # No signature found.
         return None
 
+    def eth_call_raw(self, to, data, sender=None, value="0x0"):
+        if not sender:
+            sender = self.sender
+
+        tx = {"from": sender, "to": to, "data": HexBytes(data).hex(), "value": value}
+        return self.rpc_call("eth_call", [tx, "latest"])
+
     def eth_call(
-        self, to, sig_or_name, args=[], sender=None, throw_on_revert=False, **kwargs
+        self, to, sig_or_name, args=[], sender=None, value="0x0", silent=False
     ):
         """
         Construct tx data and perform eth_call RPC call.
-
-        NOTE:
-        1. utils.process_args is used to convert int/address-like string arguments to int/address.
-           (Maybe we should move this to an upper layer.)
-        2. When throw_on_revert=True, we raise exceptions when tx reverts or return data is not properly decodes.
+        If silent=False raise exceptions when tx reverts or return data is not properly decodes.
         """
-        args = utils.process_args(args)
         if type(sig_or_name) is str:
             if "(" in sig_or_name:
                 func = ABIFunction(sig_or_name)
@@ -159,50 +155,26 @@ class Web3Ex(object):
             func = sig_or_name
         else:
             assert False, f"Invalid sig_or_name {sig_or_name}"
+        try:
 
-        data = func.encode_input(args)
-
-        if not sender:
-            sender = self.sender
-
-        tx = {"from": sender, "to": to, "data": "0x" + data.hex()}
-        tx.update(kwargs)
-
-        r = self.rpc_call_raw("eth_call", [tx, "latest"])
-        if "error" in r:
-            msg = "Code: %s, Message: %s" % (r["error"]["code"], r["error"]["message"])
-            if throw_on_revert:
-                raise Exception(msg)
-            return r
-
-        if "result" in r:
-            try:
-                ret = func.decode_output(r["result"])
-                if ret is not None:
-                    return ret
-                else:
-                    # If no output sig, return raw data.
-                    return r["result"]
-            except Exception as e:
-                if throw_on_revert:
-                    raise Exception from e
-                return r
-        return r
+            input = func.encode_input(args)
+            output = self.eth_call_raw(to, input, sender, value)
+            ret = func.decode_output(output)
+            if ret is not None:
+                return ret
+        except Exception as e:
+            if not silent:
+                raise e
 
     def call_contract(
-        self, contract, sig_or_name, args=[], sender=None, value=None, silent=True
+        self, contract, sig_or_name, args=[], sender=None, value="0x0", silent=False
     ):
         """
-        If revert, print error message and return None.
-        So we never throws here and it can be safely used.
+        If tx reverts, print error message and return None.
+        So we never throws here and it can be safely used without try-except codes.
         """
         try:
-            if value:
-                return self.eth_call(
-                    contract, sig_or_name, args, sender, True, value=value
-                )
-            else:
-                return self.eth_call(contract, sig_or_name, args, sender, True)
+            return self.eth_call(contract, sig_or_name, args, sender, value, silent)
         except Exception as e:
             if not silent:
                 logger.warning(
@@ -230,10 +202,11 @@ class Web3Ex(object):
             raise Exception("Executor.run() not found in the code")
 
         func = ABIFunction(abi)
+
         tx = {"from": self.sender, "data": "0x" + calldata}
 
         # print(tx)
-        r = self.rpc_call_raw("eth_call", [tx, "latest"])
+        r = self.rpc_call("eth_call", [tx, "latest"])
         # print(r)
         if "error" in r:
             return r
