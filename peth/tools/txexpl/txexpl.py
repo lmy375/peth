@@ -1,18 +1,18 @@
-from typing import Dict
-import os
 import json
+import os
+from typing import Dict
+
 import yaml
-
 from hexbytes import HexBytes
-
 from web3 import Web3
 
-from peth.eth.abi import ABI, ExtProcessor, ABIFunction, eth_abi
 from peth import Peth
+from peth.eth.abi import ABI, ABIFunction, ExtProcessor, eth_abi
 
 EXPLANATIONS_PATH = os.path.join(os.path.dirname(__file__), "explanations")
 SUBCALLS_PATH = os.path.join(os.path.dirname(__file__), "subcalls.yaml")
 ABI_PATH = os.path.join(os.path.dirname(__file__), "abis")
+
 
 def _list_files(dir, ext):
     for dir_path, _, files in os.walk(dir):
@@ -20,6 +20,7 @@ def _list_files(dir, ext):
             if file_name.endswith(ext):
                 file_path = os.path.join(dir_path, file_name)
                 yield file_path
+
 
 class TxExplainer(ExtProcessor):
 
@@ -41,10 +42,10 @@ class TxExplainer(ExtProcessor):
             for file_path in _list_files(path, ".yaml"):
                 self._init_patterns(file_path, patterns)
             return
-        
+
         print("Load pattern", path)
         for k, v in yaml.safe_load(open(path)).items():
-            if '(' in k:
+            if "(" in k:
                 if k in self.pattern_abi.signatures:
                     func = self.pattern_abi.signatures[k]
                 else:
@@ -54,14 +55,14 @@ class TxExplainer(ExtProcessor):
             elif k.startswith("0x"):
                 func = self.pattern_abi.selectors[HexBytes(k)]
             else:
-                if k in self.pattern_abi.functions: 
+                if k in self.pattern_abi.functions:
                     func = self.pattern_abi.functions[k]
                 else:
                     if k in self.pattern_abi._name_collisions:
                         raise KeyError(f"{k} matches mutliple functions")
                     else:
                         raise KeyError(f"{k} not found in abi.")
-            
+
             patterns[func.selector] = v
 
     def _init_pattern_abi(self, abi_dir=ABI_PATH):
@@ -80,7 +81,7 @@ class TxExplainer(ExtProcessor):
         value = self._process_key(key, func, values)
         value = self._post_process_with_hint(hint, value, func, values)
         return value
-    
+
     def _process_key(self, key, func, values):
         if key in self.key_alias:
             value = self.key_alias[key]
@@ -90,12 +91,12 @@ class TxExplainer(ExtProcessor):
 
     def _process_int(self, value):
         if value < 1e9 * 100:
-            return '%s' % value
+            return "%s" % value
         elif value < 1e18 * 100:
-            return '%f * 1e9' % (value / 1e9)
+            return "%f * 1e9" % (value / 1e9)
         else:
-            return '%f * 1e18' % (value / 1e18)
-    
+            return "%f * 1e18" % (value / 1e18)
+
     def _process_addr(self, addr):
         addr = self.peth.web3.toChecksumAddress(addr)
         name = self.peth.call_contract(addr, "symbol()->(string)")
@@ -113,51 +114,51 @@ class TxExplainer(ExtProcessor):
     def _post_process_with_hint(self, hint, value, func, values):
         if hint:
             typ = hint[0]
-            if typ == 'balance':
+            if typ == "balance":
                 arg = hint[1]
-                if arg.lower() == 'eth':
+                if arg.lower() == "eth":
                     decimals = 18
                 else:
                     token = self._process_key(arg, func, values)
                     decimals = self.peth.call_contract(token, "decimals()->(uint256)")
-                return "%f * 1e%s" % (value/(10**decimals), decimals)
+                return "%f * 1e%s" % (value / (10**decimals), decimals)
             elif typ == "path":
                 tokens = [self._process_addr(i) for i in value]
-                return ' -> '.join(tokens)
+                return " -> ".join(tokens)
             elif typ == "names":
                 name_list = json.loads(hint[1])
                 for v, name in name_list:
                     if v == value:
                         return name
                 return value
-        
+
         return self._fallback_process(value)
 
     def _fallback_process(self, value):
         if type(value) in (list, tuple):
-            return ', '.join(str(self._fallback_process(v)) for v in value)
+            return ", ".join(str(self._fallback_process(v)) for v in value)
 
         if type(value) is int:
             return self._process_int(value)
-        
+
         if Web3.isAddress(value):
             return self._process_addr(value)
-        
+
         if isinstance(value, bytes):
-            s = value.decode().strip('\x00')
+            s = value.decode().strip("\x00")
             if s.isprintable():
-                return '`%s`' % s
-            return '`%s`' % HexBytes(value).hex()
-        
+                return "`%s`" % s
+            return "`%s`" % HexBytes(value).hex()
+
         return value
 
     # Decoding.
-        
+
     def decode_call(self, to, data, include_sub=True) -> list:
         r = []
         try:
             func = self.pattern_abi._get_function_by_calldata(data)
-        except:
+        except Exception:
             func = self.peth.get_function(to, None, data)
 
         if func:
@@ -166,7 +167,7 @@ class TxExplainer(ExtProcessor):
 
             tag = f"{func.full}"
             if to:
-                tag = self._process_addr(to) + ' ' + tag
+                tag = self._process_addr(to) + " " + tag
 
             r.append((tag, value_map))
 
@@ -175,10 +176,7 @@ class TxExplainer(ExtProcessor):
                 sub_value_maps = []
                 for tag, to, data, _ in subcalls:
                     rets = self.decode_call(to, data, include_sub)
-                    sub_value_maps.append((
-                        f"{tag}",
-                        rets
-                    ))
+                    sub_value_maps.append((f"{tag}", rets))
                 r.append(("Sub calls", sub_value_maps))
         return r
 
@@ -187,13 +185,13 @@ class TxExplainer(ExtProcessor):
         to = tx["to"]
         data = tx["input"]
         return self.decode_call(to, data)
-    
+
     def get_explanation(self, data) -> str:
         selector = HexBytes(data)[:4]
         return self.explanations.get(selector)
 
     def explain_call(self, to, data, value=0, include_sub=True, prefix="") -> str:
-        s = ''
+        s = ""
         expl = self.get_explanation(data)
         if expl is None:
             s += "No explanation."
@@ -219,7 +217,7 @@ class TxExplainer(ExtProcessor):
         data = tx["input"]
         value = tx["value"]
         return self.explain_call(to, data, value, include_sub)
-    
+
     def _parse_multisend(self, txbytes) -> list:
         txbytes = HexBytes(txbytes)
 
@@ -229,11 +227,11 @@ class TxExplainer(ExtProcessor):
             op = txbytes[0]
             tag = f"multiSend[{i}]." + ("call" if op == 0 else "delegatecall")
             i += 1
-            
+
             txbytes = txbytes[1:]
             to = txbytes[:20].hex()
-            assert to.startswith('0x')
-            
+            assert to.startswith("0x")
+
             txbytes = txbytes[20:]
             value = eth_abi.decode(["uint32"], txbytes[:32])[0]
 
@@ -241,7 +239,7 @@ class TxExplainer(ExtProcessor):
             datalength = eth_abi.decode(["uint32"], txbytes[:32])[0]
 
             txbytes = txbytes[32:]
-            data = txbytes[: datalength]
+            data = txbytes[:datalength]
 
             txbytes = txbytes[datalength:]
             r.append((tag, to, data, value))
@@ -249,9 +247,9 @@ class TxExplainer(ExtProcessor):
 
     def _customized_get_subcall(self, tx_to=None, tx_data=None, tx_value=0) -> list:
         selector = HexBytes(tx_data)[:4]
-        if selector == HexBytes("0x8d80ff0a"): # multiSend(bytes)
+        if selector == HexBytes("0x8d80ff0a"):  # multiSend(bytes)
             txbytes = eth_abi.decode(["bytes"], HexBytes(tx_data)[4:])[0]
-          
+
             return self._parse_multisend(txbytes)
 
     def get_subcalls(self, tx_to=None, tx_data=None, tx_value=0):
@@ -264,59 +262,74 @@ class TxExplainer(ExtProcessor):
         selector = HexBytes(tx_data)[:4]
         if selector not in self.subcalls:
             return []
-        calls = [] # tag, to, data, value
+        calls = []  # tag, to, data, value
         pattern = self.subcalls[selector]
         if "count" in pattern:
             cnt_index = pattern["count"]
-            subcall_cnt = self.pattern_abi.extract_value_from_calldata(cnt_index, tx_data)
+            subcall_cnt = self.pattern_abi.extract_value_from_calldata(
+                cnt_index, tx_data
+            )
             for i in range(subcall_cnt):
                 if "to" in pattern:
                     to_idx = pattern["to"].replace("#", str(i))
                     to = self.pattern_abi.extract_value_from_calldata(to_idx, tx_data)
                 else:
                     to = tx_to
-                
+
                 assert "data" in pattern, 'Invalid subcall pattern: "data" not found'
                 data_idx = pattern["data"].replace("#", str(i))
                 data = self.pattern_abi.extract_value_from_calldata(data_idx, tx_data)
 
                 if "value" in pattern:
                     value_idx = pattern["value"].replace("#", str(i))
-                    value = self.pattern_abi.extract_value_from_calldata(value_idx, tx_data)
+                    value = self.pattern_abi.extract_value_from_calldata(
+                        value_idx, tx_data
+                    )
                 else:
                     value = tx_value
                 calls.append((data_idx, to, data, value))
         else:
             if "to" in pattern:
-                to = self.pattern_abi.extract_value_from_calldata(pattern["to"], tx_data)
+                to = self.pattern_abi.extract_value_from_calldata(
+                    pattern["to"], tx_data
+                )
             else:
                 to = tx_to
-            
+
             assert "data" in pattern, 'Invalid subcall pattern: "data" not found'
-            data = self.pattern_abi.extract_value_from_calldata(pattern["data"], tx_data)
+            data = self.pattern_abi.extract_value_from_calldata(
+                pattern["data"], tx_data
+            )
             if "value" in pattern:
-                value = self.pattern_abi.extract_value_from_calldata(pattern["value"], tx_data)
+                value = self.pattern_abi.extract_value_from_calldata(
+                    pattern["value"], tx_data
+                )
             else:
                 value = tx_value
             calls.append((pattern["data"], to, data, value))
         return calls
 
     def value_map_to_md(self, value_map, indent=0):
-        s = ''
+        s = ""
         for k, v in value_map:
             if type(v) in (tuple, list):
-                s += '  ' * indent + f"- **{k}**:\n"
-                s += self.value_map_to_md(v, indent+1) + "\n"
+                s += "  " * indent + f"- **{k}**:\n"
+                s += self.value_map_to_md(v, indent + 1) + "\n"
             else:
                 if type(v) is bytes:
                     v = v.hex()
                     if len(v) == 0:
                         v = "0x"
 
-                s += '  ' * indent + f"- **{k}**: " + str(self._fallback_process(v)) + '\n'
-       
+                s += (
+                    "  " * indent
+                    + f"- **{k}**: "
+                    + str(self._fallback_process(v))
+                    + "\n"
+                )
+
         # Remove last newline.
-        s = s.strip('\n')
+        s = s.strip("\n")
         return s
 
     def gen_full_md_from_call(self, to, data, value=0):

@@ -38,13 +38,13 @@ class ABI(object):
 
         assert type(self.raw) is list, f"Invalid ABI: {arg}"
 
-        self.functions: Dict[
-            str, ABIFunction
-        ] = {}  # name => func (without collisions ones)
+        self.functions: Dict[str, ABIFunction] = (
+            {}
+        )  # name => func (without collisions ones)
         self.signatures: Dict[str, ABIFunction] = {}  # sig => func (all functions)
-        self.selectors: Dict[
-            bytes, ABIFunction
-        ] = {}  # selector => func (all functions)
+        self.selectors: Dict[bytes, ABIFunction] = (
+            {}
+        )  # selector => func (all functions)
 
         self._name_collisions = {}
         for item in self.raw:

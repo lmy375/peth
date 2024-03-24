@@ -4,6 +4,8 @@ import os
 from peth.core import config
 
 _disable_format = False
+
+
 def format_solidity(code):
     global _disable_format
 
@@ -16,13 +18,16 @@ def format_solidity(code):
     path = config.DIFF_TMP_FILE
     open(path, "w").write(code)
 
-    ret = os.system('npx prettier -w %s >/dev/null' % path)
+    ret = os.system("npx prettier -w %s >/dev/null" % path)
     if ret != 0:
-        print("Run `npm install -g prettier prettier-plugin-solidity` to install solidity formatter to get better diff result.")
+        print(
+            "Run `npm install -g prettier prettier-plugin-solidity` to install solidity formatter to get better diff result."
+        )
         _disable_format = True
         return code
 
     return open(path).read()
+
 
 class ContractSource(object):
 
@@ -30,7 +35,6 @@ class ContractSource(object):
         self.contracts = {}  # name => source
         if code:
             self.parse_source(code)
-
 
     def parse_source(self, code: str):
         """
@@ -43,35 +47,35 @@ class ContractSource(object):
             # Find the line which starts with "contract"
 
             # TODO: abstract contract, interface ?
-            if not code.startswith('contract') and not code.startswith('library'):
-                i = code.find('\ncontract')
-                i2 = code.find('\nlibrary')
-                if i != -1 and i2 != -1 and i2 < i: # Search the nearest one.
+            if not code.startswith("contract") and not code.startswith("library"):
+                i = code.find("\ncontract")
+                i2 = code.find("\nlibrary")
+                if i != -1 and i2 != -1 and i2 < i:  # Search the nearest one.
                     i = i2
 
                 if i == -1:
                     # Not contract here.
                     break
-                code = code[i + 1:]  # skip \n
+                code = code[i + 1 :]  # skip \n
 
             # Find the end of contract.
             count = 0
             end = 0
             for i, c in enumerate(code):
-                if c == '{':
+                if c == "{":
                     count += 1
 
-                if c == '}':
+                if c == "}":
                     count -= 1
                     assert count >= 0, "Curly brackets do NOT match"
                     if count == 0:
                         end = i + 1  # skip }
                         break
 
-            contract_code = code[: end]
+            contract_code = code[:end]
 
             # format the code.
-            contract_code = format_solidity(contract_code) 
+            contract_code = format_solidity(contract_code)
 
             contract_name = contract_code[:100].split()[1]
 
@@ -84,8 +88,8 @@ class ContractSource(object):
     def __diff_file(self, a, b, output_filename):
         d = difflib.HtmlDiff()
         buf = d.make_file(a.splitlines(), b.splitlines())
-        open(output_filename + '.html', 'w').write(buf)
-        print("Written to " + output_filename+'.html')
+        open(output_filename + ".html", "w").write(buf)
+        print("Written to " + output_filename + ".html")
 
     def compare(self, other, output=None):
 
@@ -99,7 +103,10 @@ class ContractSource(object):
         dst_left = dict(other.contracts)
 
         to_comp = dict(other.contracts)
-        for name1, src1, in self.contracts.items():
+        for (
+            name1,
+            src1,
+        ) in self.contracts.items():
             if name1 in to_comp:
                 src2 = to_comp[name1]
                 s = difflib.SequenceMatcher(None, src1.splitlines(), src2.splitlines())
@@ -111,7 +118,7 @@ class ContractSource(object):
 
                 # Skip similarity-guided comparison for the contract.
                 del to_comp[name1]
-                continue 
+                continue
 
             for name2, src2 in to_comp.items():
                 s = difflib.SequenceMatcher(None, src1.splitlines(), src2.splitlines())
@@ -122,14 +129,11 @@ class ContractSource(object):
                     self.__diff_file(src1, src2, os.path.join(output, filename))
                     src_left[name1] = None
                     dst_left[name2] = None
-        
+
         src_left_names = list(filter(lambda x: src_left[x], src_left))
         dst_left_names = list(filter(lambda x: dst_left[x], dst_left))
         if src_left_names or dst_left_names:
             print("Non-matched contracts:")
-            print(','.join(src_left_names))
-            print('-'*10)
-            print(','.join(dst_left_names))
-
-        
-
+            print(",".join(src_left_names))
+            print("-" * 10)
+            print(",".join(dst_left_names))

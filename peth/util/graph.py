@@ -2,6 +2,7 @@ import json
 
 from peth.eth.sigs import Signature
 
+
 class ERC20Contract(object):
 
     def __init__(self, contract_name, contract) -> None:
@@ -9,19 +10,19 @@ class ERC20Contract(object):
         self.caller = contract.caller
         try:
             self.name = self.caller.name()
-        except Exception as e:
+        except Exception:
             self.name = contract_name
 
         try:
             self.symbol = self.caller.symbol()
-        except Exception as e:
+        except Exception:
             self.symbol = self.name
 
         self.decimals = self.caller.decimals()
-        self.totalSupply = self.caller.totalSupply()/(10**self.decimals)
+        self.totalSupply = self.caller.totalSupply() / (10**self.decimals)
 
     def balanceOf(self, addr):
-        return self.caller.balanceOf(addr)/(10**self.decimals)
+        return self.caller.balanceOf(addr) / (10**self.decimals)
 
     def __str__(self):
         return f"{self.name}({self.symbol}) {self.totalSupply}*(10**{self.decimals})"
@@ -50,8 +51,8 @@ class ContractRelationGraph(object):
         self.peth = peth
         self.web3 = peth.web3
 
-        self.addrs = {} # addr => name
-        self.erc20s = {} # addr => web3 contract instance
+        self.addrs = {}  # addr => name
+        self.erc20s = {}  # addr => web3 contract instance
 
     def get_contract_info(self, addr):
         return self.peth.scan.get_contract_info(addr)
@@ -78,7 +79,9 @@ class ContractRelationGraph(object):
 
     def add_contract_or_eoa(self, addr, name):
         self._add_node(
-            id=addr, text=name, fontColor="rgba(255, 140, 0, 1)",
+            id=addr,
+            text=name,
+            fontColor="rgba(255, 140, 0, 1)",
         )
         self.addrs[addr] = name
 
@@ -103,7 +106,9 @@ class ContractRelationGraph(object):
             print(f"{name} {addr}:")
             b = self.web3.eth.get_balance(addr)
             if b:
-                print("- %s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, 'ether'))))
+                print(
+                    "- %s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether")))
+                )
 
             for erc20 in self.erc20s.values():
                 amount = erc20.balanceOf(addr)
@@ -112,11 +117,7 @@ class ContractRelationGraph(object):
 
                 symbol = erc20.symbol
                 total = erc20.totalSupply
-                print("- %0.2f %s (%0.2f %%)" % (
-                    amount,
-                    symbol,
-                    amount * 100/total
-                ))
+                print("- %0.2f %s (%0.2f %%)" % (amount, symbol, amount * 100 / total))
 
     def _add_erc20(self, addr, contract_name, abi, contract):
         if addr in self.erc20s:
@@ -124,23 +125,23 @@ class ContractRelationGraph(object):
 
         count = 0
         for item in abi:
-            if item["type"] == "function" and item["name"] == 'balanceOf':
+            if item["type"] == "function" and item["name"] == "balanceOf":
                 count += 1
 
-            if item["type"] == "function" and item["name"] == 'transfer':
+            if item["type"] == "function" and item["name"] == "transfer":
                 count += 1
 
-            if item["type"] == "function" and item["name"] == 'transferFrom':
+            if item["type"] == "function" and item["name"] == "transferFrom":
                 count += 1
 
-            if item["type"] == "function" and item["name"] == 'approve':
+            if item["type"] == "function" and item["name"] == "approve":
                 count += 1
 
         if count == 4:
             try:
                 self.erc20s[addr] = ERC20Contract(contract_name, contract)
                 print("ERC20 Found. ", self.erc20s[addr])
-            except Exception as e:
+            except Exception:
                 print(f"{addr} may be not valid ERC20.")
 
     def _do_visit(self, addr, abi, contract_name, new_contacts, include_view):
@@ -148,7 +149,7 @@ class ContractRelationGraph(object):
 
         self._add_erc20(addr, contract_name, abi, contract)
 
-        print('=' * 20)
+        print("=" * 20)
         print(f"{contract_name}({addr}) ABI:")
 
         uncalled_view_sigs = []
@@ -208,11 +209,11 @@ class ContractRelationGraph(object):
                                 f"{func.function_identifier}[{i}]",
                                 ret[i],
                             )
-        
-        print('-' * 20)
+
+        print("-" * 20)
         for i in uncalled_view_sigs:
             print(i)
-        print('-' * 20)
+        print("-" * 20)
         for i in func_sigs:
             print(i)
 
@@ -239,10 +240,12 @@ class ContractRelationGraph(object):
                 proxy_addr = info["Implementation"]
                 proxy_info = self.get_contract_info(proxy_addr)
                 proxy_name = proxy_info["ContractName"]
-                print(f"[*] Proxy found. {contract_name}({addr})=>{proxy_name}({proxy_addr})")
+                print(
+                    f"[*] Proxy found. {contract_name}({addr})=>{proxy_name}({proxy_addr})"
+                )
 
                 contract_name = proxy_name or contract_name
-                abi = proxy_info.get('ABI', abi)
+                abi = proxy_info.get("ABI", abi)
 
         self.add_contract_or_eoa(addr, contract_name)
 

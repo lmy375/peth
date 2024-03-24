@@ -1,16 +1,17 @@
-import json
 import datetime
+import json
 import os
 
 from web3 import Web3
 
-from peth.eth.bytecode import Code
-from peth.eth.sigs import Signatures, Signature
-from peth.eth.utils import ZERO_ADDRESS, selector_to_sigs
 from peth.core import config
 from peth.core.log import logger
+from peth.eth.bytecode import Code
+from peth.eth.sigs import Signature, Signatures
+from peth.eth.utils import ZERO_ADDRESS, selector_to_sigs
 from peth.util.graph import ContractRelationGraph
 from peth.util.markdown import make_attr_table, make_table
+
 
 class AccountAnalysis(object):
 
@@ -23,7 +24,7 @@ class AccountAnalysis(object):
 
         # Values to set after analysis.
 
-        # For analyze_verified_contract(). 
+        # For analyze_verified_contract().
         self.name = None
         self.is_contract = False
 
@@ -38,11 +39,11 @@ class AccountAnalysis(object):
         self.flatten_source = None
 
         self.signatures = None
-        self.view_sigs = {} # sig => value
+        self.view_sigs = {}  # sig => value
         self.uncalled_view_sigs = []
         self.other_sigs = []
 
-        self.properties = {} # name => value
+        self.properties = {}  # name => value
 
         # For analyze_unverified_contract()
         self.selectors = []
@@ -67,8 +68,8 @@ class AccountAnalysis(object):
         code_bytes = bytes(self.peth.web3.eth.get_code(self.addr))
         if not code_bytes:
             self.is_contract = False
-            self.name = 'EOA'
-        
+            self.name = "EOA"
+
         else:
             # Contract account found.
             self.is_contract = True
@@ -79,7 +80,7 @@ class AccountAnalysis(object):
 
             if not self.verified:
                 self.name = "Unverified Contract"
-            
+
             self.analyze_unverified_contract()
             self.analyze_extra()
 
@@ -94,7 +95,7 @@ class AccountAnalysis(object):
         if info is None:
             self.verified = False
             return
-        
+
         # Process proxy issue.
         impl = info["Implementation"]
         while Web3.isAddress(impl):
@@ -106,7 +107,7 @@ class AccountAnalysis(object):
                 self.verified = False
                 return
             impl = info["Implementation"]
-        
+
         self.verified = True
         self.name = info["ContractName"]
         logger.debug("Verified contract: %s", self.name)
@@ -114,8 +115,8 @@ class AccountAnalysis(object):
         # Now we have the real source information.
         abi = info["ABI"]
         assert abi != "Contract source code not verified", "Bug found."
-       
-        abi = json.loads(abi) # This should be valid json.
+
+        abi = json.loads(abi)  # This should be valid json.
         self.signatures = Signatures()
 
         contract = self.peth.web3.eth.contract(address=self.addr, abi=abi)
@@ -131,11 +132,11 @@ class AccountAnalysis(object):
                 else:
                     self.other_sigs.append(sig)
                 continue
-            
+
             # Call view functions.
             try:
                 ret = func().call()
-            except Exception as e:
+            except Exception:
                 # Error in call, just skip this
                 continue
 
@@ -151,15 +152,18 @@ class AccountAnalysis(object):
                         self.properties[f"{sig.name}.{ret_name}"] = ret[i]
                     else:
                         self.properties[f"{sig.name}[{i}]"] = ret[i]
-    
+
     def analyze_unverified_contract(self):
         addr = self.addr
         if Web3.isAddress(self.implmentation):
             # If this is a proxy, analyze the implmentation code.
             addr = self.implmentation
         self.selectors, self.hardcoded_addresses = self.peth.analyze_bytecode(addr)
-        logger.debug("%d selectors, %s hardcode addresses", len(self.selectors), len(self.hardcoded_addresses))
-
+        logger.debug(
+            "%d selectors, %s hardcode addresses",
+            len(self.selectors),
+            len(self.hardcoded_addresses),
+        )
 
     def __collect_view_values(self, contract, sigs, do_check=True):
         ret = {}
@@ -168,10 +172,10 @@ class AccountAnalysis(object):
             value = self.peth.call_contract(contract, s, silent=True)
             if value is None and do_check:
                 return ret
-            
+
             if value is not None:
                 ret[s.name] = value
-            
+
         return ret
 
     def __add_extra_data(self, name, sigs, do_check=True):
@@ -180,11 +184,11 @@ class AccountAnalysis(object):
             self.extra_data[name] = data
 
     def __analyze_owner(self):
-        ret = self.__collect_view_values(self.addr, [
-            "owner()->(address)",
-            "admin()->(address)",
-            "gov()->(address)"
-        ], False)
+        ret = self.__collect_view_values(
+            self.addr,
+            ["owner()->(address)", "admin()->(address)", "gov()->(address)"],
+            False,
+        )
         if ret:
             self.extra_data["owner"] = ret
             for name, addr in ret.items():
@@ -194,28 +198,32 @@ class AccountAnalysis(object):
                     )
 
     def __analyze_erc20(self):
-        self.__add_extra_data("erc20",[
-            "totalSupply()->(uint256)",
-            "name()->(string)",
-            "symbol()->(string)",
-            "decimals()->(uint8)",
-        ])
-    
+        self.__add_extra_data(
+            "erc20",
+            [
+                "totalSupply()->(uint256)",
+                "name()->(string)",
+                "symbol()->(string)",
+                "decimals()->(uint8)",
+            ],
+        )
+
     def __analyze_proxy(self):
-        impl = self.peth.web3.eth.get_storage_at(self.addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
-        admin = self.peth.web3.eth.get_storage_at(self.addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
+        impl = self.peth.web3.eth.get_storage_at(
+            self.addr,
+            0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC,
+        )[12:].hex()
+        admin = self.peth.web3.eth.get_storage_at(
+            self.addr,
+            0xB53127684A568B3173AE13B9F8A6016E243E63B6E8EE1178D6A717850B5D6103,
+        )[12:].hex()
         if impl != ZERO_ADDRESS or admin != ZERO_ADDRESS:
-            self.extra_data["proxy"] = {
-                "implementation": impl,
-                "admin": admin
-            }
+            self.extra_data["proxy"] = {"implementation": impl, "admin": admin}
 
             self_link = self.get_addr_md_link(self.addr)
 
             if not self.peth.is_contract(admin):
-                self.risks.append(
-                    f"Proxy 合约 {self_link} 的 admin 是 EOA {admin}"
-                )
+                self.risks.append(f"Proxy 合约 {self_link} 的 admin 是 EOA {admin}")
             else:
                 if self.project:
                     # TODO: recursion may occur here?
@@ -228,32 +236,39 @@ class AccountAnalysis(object):
                             )
 
     def __analyze_gnosis(self):
-        self.__add_extra_data("gnosis", [
-            "getThreshold()->(uint)",
-            "getOwners()->(address[])"
-        ])
-    
+        self.__add_extra_data(
+            "gnosis", ["getThreshold()->(uint)", "getOwners()->(address[])"]
+        )
+
     def __analyze_timelock(self):
-        self.__add_extra_data("timelock", [
-            "delay()->(uint)",
-            "admin()->(address)",
-            "getMinDelay()->(uint)",
-            "MINIMUM_DELAY()->(uint)",
-            "MAXIMUM_DELAY()->(uint)"
-        ])
-    
+        self.__add_extra_data(
+            "timelock",
+            [
+                "delay()->(uint)",
+                "admin()->(address)",
+                "getMinDelay()->(uint)",
+                "MINIMUM_DELAY()->(uint)",
+                "MAXIMUM_DELAY()->(uint)",
+            ],
+        )
+
     def __analyze_oracle(self):
-        aggr = self.peth.call_contract(self.addr, "aggregator()->(address)", silent=True)
+        aggr = self.peth.call_contract(
+            self.addr, "aggregator()->(address)", silent=True
+        )
         if aggr:
-            data = self.__collect_view_values(aggr, [
-                "description()->(string)",
-                "owner()->(address)",
-                "decimals()->(uint8)",
-                "latestAnswer()->(int256)",
-                "maxAnswer()->(int192)",
-                "minAnswer()->(int192)",
-                "transmitters()->(address[])"
-            ])
+            data = self.__collect_view_values(
+                aggr,
+                [
+                    "description()->(string)",
+                    "owner()->(address)",
+                    "decimals()->(uint8)",
+                    "latestAnswer()->(int256)",
+                    "maxAnswer()->(int192)",
+                    "minAnswer()->(int192)",
+                    "transmitters()->(address[])",
+                ],
+            )
             data["aggregator"] = aggr
             self.extra_data["oracle"] = data
 
@@ -265,14 +280,13 @@ class AccountAnalysis(object):
         self.__analyze_timelock()
         self.__analyze_oracle()
 
-
     def analyze_slither(self):
         try:
             from peth.util.slither import slither_from_chain_addr
-        except:
+        except Exception:
             logger.error("Slither not installed: pip install slither-analyzer")
             return
-        
+
         if not self.verified:
             return
 
@@ -290,7 +304,7 @@ class AccountAnalysis(object):
 
     def related_addresses(self) -> list:
         added_addrs = []
-        r = [] # relation, address
+        r = []  # relation, address
         for name, value in self.properties.items():
             if Web3.isAddress(value) and value != ZERO_ADDRESS:
                 r.append((name, value))
@@ -304,11 +318,10 @@ class AccountAnalysis(object):
     def __str__(self) -> str:
         return f"{self.name} [{self.addr}]({self.url})"
 
-
     def get_addr_md_link(self, addr) -> str:
         if addr != self.addr and self.project:
             return self.project.get_addr_md_link(addr)
-        
+
         if addr == self.addr and self.name:
             txt = f"{self.name}({addr})"
             url = self.url
@@ -318,7 +331,7 @@ class AccountAnalysis(object):
         return f"[{txt}]({url})"
 
     def __json_to_markdown(self, data, depth=0) -> str:
-        txt = ''
+        txt = ""
         if isinstance(data, dict):
             txt += "\n"
             for k, v in data.items():
@@ -357,7 +370,7 @@ class AccountAnalysis(object):
             txt += "**合约已开源。** "
             if self.is_proxy:
                 txt += f"合约为 Proxy 合约，指向 {self.get_addr_md_link(self.implmentation)}。"
-            
+
             if self.view_sigs or self.uncalled_view_sigs or self.other_sigs:
                 txt += "ABI 如下：\n\n"
 
@@ -370,15 +383,12 @@ class AccountAnalysis(object):
                     elif isinstance(value, bytes):
                         value = value.hex()
                     data.append((sig.name, str(value)))
-                txt += make_table(
-                    ("名称", "值"),
-                    data
-                )
+                txt += make_table(("名称", "值"), data)
                 txt += "\n\n"
-            
+
             if self.uncalled_view_sigs:
                 # Not so useful information, compact them into single line.
-                func_names = ', '.join(sig.name for sig in self.uncalled_view_sigs)
+                func_names = ", ".join(sig.name for sig in self.uncalled_view_sigs)
                 txt += f"其他 View 函数: {func_names}\n\n"
 
             if self.other_sigs:
@@ -388,14 +398,14 @@ class AccountAnalysis(object):
                     data.append((sig.name, sig.modifiers))
                 txt += make_attr_table(data)
                 txt += "\n\n"
-        
+
         else:
             url = self.peth.get_decompile_url(self.addr)
             txt += f"**合约未开源** ，反编译代码见[此链接]({url})。\n\n"
             if self.selectors:
                 txt += "从 bytecode 分析出的 Selectors 如下:\n"
                 for selector in self.selectors:
-                    sig = '0x' + selector.hex()
+                    sig = "0x" + selector.hex()
                     sigs = selector_to_sigs(sig)
                     sigs = sigs[::-1]
                     txt += f"- {sig} {', '.join(sigs)}\n"
@@ -405,7 +415,7 @@ class AccountAnalysis(object):
             # Only print addresses not showed in views.
             addrs = []
             for tag, addr in self.related_addresses():
-                if tag == 'hardcode':
+                if tag == "hardcode":
                     addrs.append(addr)
 
             if addrs:
@@ -415,14 +425,14 @@ class AccountAnalysis(object):
 
         return txt
 
-        
+
 class Project(object):
 
     def __init__(self, peth, addresses=[]) -> None:
         self.peth = peth
         self.addresses = [Web3.toChecksumAddress(addr) for addr in addresses]
 
-        self.analyzed = {} # address => AccountAnalysis
+        self.analyzed = {}  # address => AccountAnalysis
         self.accounts = []
 
     def analyze_all(self) -> None:
@@ -448,7 +458,7 @@ class Project(object):
                 for _, addr in account.related_addresses():
                     if addr not in self.analyzed:
                         found_addrs.append(addr)
-            
+
             addrs_to_analyze = found_addrs
 
         logger.info(f"Project done. {len(self.analyzed)} addresses analyzed.")
@@ -457,7 +467,7 @@ class Project(object):
         addr = Web3.toChecksumAddress(addr)
         if addr in self.analyzed:
             return self.analyzed[addr]
-        
+
         account = AccountAnalysis(self.peth, addr, self)
         account.analyze()
         self.analyzed[addr] = account
@@ -480,7 +490,7 @@ class Project(object):
         for a in self.analyzed.values():
             risks += a.risks
         if risks:
-            txt += f"风险点：\n"
+            txt += "风险点：\n"
             for msg in risks:
                 txt += f"- {msg}\n"
             txt += "\n"
@@ -506,7 +516,7 @@ class Project(object):
         txt += f"- 未开源合约 {len(unverified)} 个。\n"
         for account in unverified:
             tag = "" if account.addr in self.addresses else "`新发现` "
-            txt += f"  - {tag}{account.to_markdown_summary()}\n"  
+            txt += f"  - {tag}{account.to_markdown_summary()}\n"
         txt += f"- EOA {len(eoas)} 个。\n"
         for account in eoas:
             tag = "" if account.addr in self.addresses else "`新发现` "
@@ -519,7 +529,9 @@ class Project(object):
             txt += "\n\n"
 
         txt += "# 合约关系图\n\n"
-        txt += "> Open http://relation-graph.com/#/options-tools and paste the json. \n\n"
+        txt += (
+            "> Open http://relation-graph.com/#/options-tools and paste the json. \n\n"
+        )
         txt += "```\n%s\n```\n\n" % self.to_graph().dump()
 
         return txt
@@ -533,9 +545,9 @@ class Project(object):
         return g
 
     def save(self) -> None:
-        time_tag = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        time_tag = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         filename = "Report_%s_%s.md" % (time_tag, self.addresses[0][:10])
-        
+
         report_dir = config.REPORT_PATH
         if not os.path.exists(report_dir):
             os.makedirs(report_dir)

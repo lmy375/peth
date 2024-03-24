@@ -1,22 +1,29 @@
 import cmd
+import codecs
+import difflib
 import json
 import os
-import difflib
 import re
-import codecs
 import time
 from datetime import datetime
 
-from web3 import Web3
-from hexbytes import HexBytes
-from eth_account import Account
 import requests
+from eth_account import Account
+from hexbytes import HexBytes
+from web3 import Web3
 
-from peth.eth.abi import ABI, ABIFunction
-from peth.eth.sigs import ERC20Signatures, Signature
-from peth.eth.utils import selector_to_sigs, sha3_256, SelectorDatabase, convert_value, hex2bytes, CoinPrice, guess_calldata_types
-from peth.eth.bytecode import Code
 from peth.core.peth import Peth
+from peth.eth.abi import ABI, ABIFunction
+from peth.eth.bytecode import Code
+from peth.eth.sigs import ERC20Signatures, Signature
+from peth.eth.utils import (
+    CoinPrice,
+    SelectorDatabase,
+    convert_value,
+    guess_calldata_types,
+    selector_to_sigs,
+    sha3_256,
+)
 from peth.util import diff
 from peth.util.graph import ContractRelationGraph
 
@@ -30,7 +37,7 @@ class PethConsole(cmd.Cmd):
     An interactive command console to use peth tools.
     """
 
-    prompt = 'peth > '
+    prompt = "peth > "
 
     def __init__(self, peth: Peth) -> None:
         super().__init__()
@@ -53,10 +60,10 @@ class PethConsole(cmd.Cmd):
         try:
             # ! run system shell.
             # ? eval python script.
-            if line.startswith('!'):
-                line = 'sh ' + line[1:]
-            elif line.startswith('?'):
-                line = 'py ' + line[1:]
+            if line.startswith("!"):
+                line = "sh " + line[1:]
+            elif line.startswith("?"):
+                line = "py " + line[1:]
 
             return super().onecmd(line)
         except Exception as e:
@@ -72,12 +79,12 @@ class PethConsole(cmd.Cmd):
         """
         Start a peth console. Catch Ctrl+C.
         """
-        print('Welcome to the peth shell. Type `help` to list commands.\n')
+        print("Welcome to the peth shell. Type `help` to list commands.\n")
         while True:
             try:
                 self.cmdloop()
                 return
-            except KeyboardInterrupt as e:
+            except KeyboardInterrupt:
                 print()  # new line.
 
     def single_command(self, cmd, debug=True):
@@ -85,7 +92,7 @@ class PethConsole(cmd.Cmd):
         Run single command. This will not catch call exception by default.
         """
         if type(cmd) is list:
-            cmd = ' '.join(cmd)
+            cmd = " ".join(cmd)
         else:
             cmd = str(cmd)
 
@@ -97,7 +104,7 @@ class PethConsole(cmd.Cmd):
             v = v.hex()
         v = str(v).splitlines()[0]
         if not full and len(v) > 80:
-            v = v[:80] + ' ...'
+            v = v[:80] + " ..."
         return v
 
     def __print_json(self, data, full=False):
@@ -111,7 +118,7 @@ class PethConsole(cmd.Cmd):
             for k, v in data.items():
                 if v:
                     v = self.__normal_str(v, full)
-                print(' ', k, ":\t", v)
+                print(" ", k, ":\t", v)
         else:
             print(self.__normal_str(data, full))
 
@@ -153,7 +160,7 @@ class PethConsole(cmd.Cmd):
             print("Address:", self.peth.address_url)
 
         else:
-            print("Supported chains: %s" % ', '.join(chain_config.keys()))
+            print("Supported chains: %s" % ", ".join(chain_config.keys()))
 
     def do_config(self, arg):
         """
@@ -184,17 +191,17 @@ class PethConsole(cmd.Cmd):
         """
         int <number> : Print number.
         """
-        arg = arg.replace(',', '')
-        if re.findall('[xXa-fA-f]', arg):
+        arg = arg.replace(",", "")
+        if re.findall("[xXa-fA-f]", arg):
             value = int(arg, 16)
         else:
             value = int(arg)
         print("Value: %s" % value)
-        print("Value: %e" % (value/1.0))
-        print("Value/1e6  (USDT): %s" % (value/1e6))
-        print("Value/1e8  (BTC): %s" % (value/1e8))
-        print("Value/1e9  (GWei): %s" % (value/1e9))
-        print("Value/1e18 (Ether): %s" % (value/1e18))
+        print("Value: %e" % (value / 1.0))
+        print("Value/1e6  (USDT): %s" % (value / 1e6))
+        print("Value/1e8  (BTC): %s" % (value / 1e8))
+        print("Value/1e9  (GWei): %s" % (value / 1e9))
+        print("Value/1e18 (Ether): %s" % (value / 1e18))
         print("Hex: %#x" % value)
         print("Hex(Address): %#0.40x" % value)
         print("Hex(Uint256): %0.64x" % value)
@@ -206,10 +213,10 @@ class PethConsole(cmd.Cmd):
         """
         db = SelectorDatabase.get()
 
-        if re.match('^[0-9A-Fa-fXx]*$', arg):  # selector
+        if re.match("^[0-9A-Fa-fXx]*$", arg):  # selector
             sigs = db.get_sig_from_selector(arg, False, True)
             if sigs:
-                print('\n'.join(sigs))
+                print("\n".join(sigs))
             else:
                 print("Selector not found in https://openchain.xyz/signatures.")
         else:
@@ -218,8 +225,8 @@ class PethConsole(cmd.Cmd):
             if ret:
                 for selector, sigs in ret:
                     if arg in sigs:
-                        full_match = (selector, ', '.join(sigs))
-                    print("0x%s %s" % (selector, ', '.join(sigs)))
+                        full_match = (selector, ", ".join(sigs))
+                    print("0x%s %s" % (selector, ", ".join(sigs)))
 
             print("%d item(s) found in 4byte.json." % len(ret))
             if full_match:
@@ -232,15 +239,16 @@ class PethConsole(cmd.Cmd):
         """
         args = arg.split()
         sig = args[0]
-        s = Signature.from_sig(sig)
+
+        f = ABIFunction(sig)
 
         if len(args) == 1:  # Only selector.
-            print('0x' + s.selector.hex())
+            print(f.selector.hex())
             return
 
         args = args[1:]
         args = list(map(convert_value, args))
-        print('0x' + s.encode_args(args, True).hex())
+        print(f.encode_input(args).hex())
 
     def _print_decoded_calldata(self, calldata, to=None, sig=None):
         func = self.peth.get_function(to, sig, calldata)
@@ -254,12 +262,12 @@ class PethConsole(cmd.Cmd):
             values = func.decode_input(calldata)
             value_map = func.map_values(values)
             ABI.print_value_map(value_map, 4)
-        
+
         else:
             data = HexBytes(calldata)
             print("No signature found for selector %s." % data[:4].hex())
             data = data[4:]
-            if not data: # No data.
+            if not data:  # No data.
                 return
             print("Guessing types ...")
             i = 0
@@ -274,14 +282,13 @@ class PethConsole(cmd.Cmd):
         """
         args = arg.split()
         hexdata = args[0]
-        assert re.match('^[0-9A-Fa-fXx]+$',
-                        hexdata), "Invalid hex data. %s" % hexdata
+        assert re.match("^[0-9A-Fa-fXx]+$", hexdata), "Invalid hex data. %s" % hexdata
 
         if len(args) == 2:
             sig = args[1]
         else:
             sig = None
-        
+
         self._print_decoded_calldata(hexdata, sig=sig)
 
     def do_common_addresses(self, arg):
@@ -308,7 +315,7 @@ class PethConsole(cmd.Cmd):
 
     def do_ipython(self, arg=None):
         """
-        Start ipython console, you can access `web3`, `eth`, `peth`, `console` 
+        Start ipython console, you can access `web3`, `eth`, `peth`, `console`
 
         In [1]: web3.eth.block_number
         Out[1]: 17091456
@@ -330,11 +337,14 @@ class PethConsole(cmd.Cmd):
         eth = web3.eth
         console = self
 
-        __import__("IPython").embed(colors='Linux')
+        # In ipython env.
+        [peth, web3, eth, console]
+
+        __import__("IPython").embed(colors="Linux")
 
     def do_open(self, arg):
         """
-        Open url or file. 
+        Open url or file.
         """
         self.do_sh("open " + arg)
 
@@ -343,7 +353,7 @@ class PethConsole(cmd.Cmd):
         Exit the shell.
         """
 
-        print('bye!')
+        print("bye!")
         return True
 
     do_exit = do_bye
@@ -367,35 +377,37 @@ class PethConsole(cmd.Cmd):
         if ts > 3600 * 24 * 365 * 10:
             # If ts > 10 yrs, it's a timestamp.
             import datetime
+
             print(datetime.datetime.fromtimestamp(ts))
         else:
             # else it's more likely a time interval.
             print("%d secs" % ts)
-            print("= %0.1f hours" % (ts/3600))
-            print("= %0.1f days" % (ts/3600/24))
+            print("= %0.1f hours" % (ts / 3600))
+            print("= %0.1f days" % (ts / 3600 / 24))
 
     def do_aes(self, arg):
         """
         aes enc <plain text> <password>: Encrypt with AES.
-        aes dec <hex secret> <password>: Decrypt with AES. 
+        aes dec <hex secret> <password>: Decrypt with AES.
 
         NOTE: IV used as MD5 of password, which is not so safe.
         """
         args = arg.split()
 
         # https://www.pycryptodome.org
+        import hashlib
+
         from Crypto.Cipher import AES
         from Crypto.Util.Padding import pad, unpad
-        import hashlib
 
         txt = args[1]
         password = args[2]
 
-        key = pad(bytes(password, 'utf-8'), 16)
-        iv = hashlib.md5(bytes(password, 'utf-8')).digest()
+        key = pad(bytes(password, "utf-8"), 16)
+        iv = hashlib.md5(bytes(password, "utf-8")).digest()
 
         def do_enc(plain):
-            plain = pad(bytes(plain, 'utf-8'), 16)
+            plain = pad(bytes(plain, "utf-8"), 16)
             aes = AES.new(key, AES.MODE_CBC, iv=iv)
             secret = aes.encrypt(plain)
             hex_secret = secret.hex()
@@ -444,7 +456,7 @@ class PethConsole(cmd.Cmd):
                     "from": self.web3.toChecksumAddress(sender),
                     "to": self.web3.toChecksumAddress(to),
                     "data": data,
-                    "value": value
+                    "value": value,
                 },
                 "latest",
             )
@@ -478,7 +490,7 @@ class PethConsole(cmd.Cmd):
                     "from": self.web3.toChecksumAddress(sender),
                     "to": self.web3.toChecksumAddress(to),
                     "data": data,
-                    "value": value
+                    "value": value,
                 },
                 "latest",
             )
@@ -524,8 +536,7 @@ class PethConsole(cmd.Cmd):
         """
         addr = self.web3.toChecksumAddress(arg)
         b = self.web3.eth.get_balance(addr)
-        print('%s Wei( %0.4f Ether)' %
-              (b, float(self.web3.fromWei(b, 'ether'))))
+        print("%s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether"))))
 
     def do_nonce(self, arg):
         """
@@ -545,12 +556,11 @@ class PethConsole(cmd.Cmd):
             slot_str = args[1]
             try:
                 slot = int(slot_str)
-            except:
+            except Exception:
                 try:
                     slot = int(slot_str, 16)
-                except:
-                    print(
-                        f"Error: Invalid slot (must be hex/dec number) {slot_str}")
+                except Exception:
+                    print(f"Error: Invalid slot (must be hex/dec number) {slot_str}")
                     return
         if slot is not None:
             print(hex(slot), ":", self.web3.eth.get_storage_at(addr, slot).hex())
@@ -639,7 +649,7 @@ class PethConsole(cmd.Cmd):
                 rcpt = self.web3.eth.get_transaction_receipt(tx_hash)
                 try:
                     self.do_tx(tx_hash)
-                except:
+                except Exception:
                     pass
                 print("Full Receipt:")
                 self.__print_json(rcpt, True)
@@ -660,7 +670,7 @@ class PethConsole(cmd.Cmd):
         step = 3000
         count = 50
         for arg in args.split():
-            if arg in ['-', 'null', 'None']:
+            if arg in ["-", "null", "None"]:
                 topics.append(None)
                 continue
 
@@ -669,11 +679,11 @@ class PethConsole(cmd.Cmd):
             elif len(arg) < 20:
                 count = int(arg)
             else:
-                if arg.startswith('0x'):
+                if arg.startswith("0x"):
                     arg = arg[2:]
                 if len(arg) != 64:
-                    arg = arg.rjust(64, '0')
-                arg = '0x' + arg
+                    arg = arg.rjust(64, "0")
+                arg = "0x" + arg
                 topics.append(arg)
 
         def print_log(log):
@@ -684,17 +694,13 @@ class PethConsole(cmd.Cmd):
             data = log.data
 
             print("txid", tx_hash)
-            print("\t address",address)
+            print("\t address", address)
             for i, topic in enumerate(log.topics):
                 print(f"\t topic[{i}] {topic.hex()}")
             print("\t data", data)
 
         print(f"Search log address {address} topics {topics}:")
-        logs = self.peth.get_logs(
-            address, topics,
-            step=step,
-            count=count
-        )
+        logs = self.peth.get_logs(address, topics, step=step, count=count)
         for log in logs:
             print_log(log)
 
@@ -712,7 +718,7 @@ class PethConsole(cmd.Cmd):
                     return eth.get_block(number, True)
                 except Exception as e:
                     if time.time() - start > 20:  # Error for long time.
-                        raise(e)
+                        raise (e)
                     else:
                         time.sleep(0.5)
 
@@ -748,14 +754,19 @@ class PethConsole(cmd.Cmd):
                 if tx.gasPrice < gas_price_min:
                     gas_price_min = tx.gasPrice
 
-            gas_used_avg = gas_used_total/tx_cnt
-            gas_price_avg = gas_price_total/tx_cnt
+            gas_used_avg = gas_used_total / tx_cnt
+            gas_price_avg = gas_price_total / tx_cnt
 
             gas_desc = "%d/%d/%d" % (gas_used_avg, gas_used_min, gas_used_max)
             GWEI = 10**9
-            gas_price_desc = "%d/%d/%d" % (gas_price_avg /
-                                           GWEI, gas_price_min/GWEI, gas_price_max/GWEI)
-            print(f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used rate, price {gas_price_desc} gwei")
+            gas_price_desc = "%d/%d/%d" % (
+                gas_price_avg / GWEI,
+                gas_price_min / GWEI,
+                gas_price_max / GWEI,
+            )
+            print(
+                f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used rate, price {gas_price_desc} gwei"
+            )
 
         cur = get_block("latest")
 
@@ -766,7 +777,9 @@ class PethConsole(cmd.Cmd):
             while True:
                 pending = get_block("pending")
 
-                if pending.number and pending.number <= cur.number:  # Not valid pending.
+                if (
+                    pending.number and pending.number <= cur.number
+                ):  # Not valid pending.
                     continue
 
                 print_block("pending", pending)
@@ -776,7 +789,7 @@ class PethConsole(cmd.Cmd):
                     cur = new_cur
                     break
                 else:
-                    if self.peth.chain == 'eth':
+                    if self.peth.chain == "eth":
                         time.sleep(1)
                     else:
                         time.sleep(0.2)
@@ -797,15 +810,15 @@ class PethConsole(cmd.Cmd):
                 //////////////////////
                 // ADD YOUR CODE HERE.
                 // It's OK to change the return type or add more functions
-                // or contract. 
-                // But the `Executor` contract and `run()` function must be 
-                // reserved. 
+                // or contract.
+                // But the `Executor` contract and `run()` function must be
+                // reserved.
                 //////////////////////
                 return (msg.sender, tx.origin, address(this));
             }
         }
         """
-        assert arg.endswith('.sol'), ".sol file needed but get %s." % arg
+        assert arg.endswith(".sol"), ".sol file needed but get %s." % arg
         assert os.path.exists(arg), "File %s not exists." % arg
         code = open(arg).read()
         r = self.peth.run_solidity(code)
@@ -833,12 +846,12 @@ class PethConsole(cmd.Cmd):
                     length = int(length)
                 except Exception:
                     length = self.peth.get_view_value(to, name, "uint256")
-                
+
                 sig = f"{name}(uint256)->({typ})"
                 for i in range(length):
                     value = self.peth.call_contract(to, sig, [i])
                     print(f"[{i}]\t{value}")
-                    
+
                     if not value:
                         print("None found. Stop.")
                         return
@@ -861,7 +874,7 @@ class PethConsole(cmd.Cmd):
             ]
             for sig in sigs:
                 value = self.peth.call_contract(arg, sig)
-                print(sig, '=>', value)
+                print(sig, "=>", value)
         else:
             addr = args[0]
             func = args[1]
@@ -874,25 +887,29 @@ class PethConsole(cmd.Cmd):
         """
         proxy <address> [<address>]: Print ERC1967 proxy information
         """
-        def _print_slot_as_address(name,slot):
+
+        def _print_slot_as_address(name, slot):
             bytes32 = self.web3.eth.get_storage_at(addr, slot)
-            if(int(bytes32.hex(), 16) != 0):
+            if int(bytes32.hex(), 16) != 0:
                 _addr = bytes32[12:].hex()
                 print(f"{name}: {self._get_full_name(_addr)}")
 
         for arg in args.split():
             addr = self.web3.toChecksumAddress(arg)
             impl = self.web3.eth.get_storage_at(
-                addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
+                addr, 0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC
+            )[12:].hex()
             admin = self.web3.eth.get_storage_at(
-                addr, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)[12:].hex()
+                addr, 0xB53127684A568B3173AE13B9F8A6016E243E63B6E8EE1178D6A717850B5D6103
+            )[12:].hex()
             beacon = self.web3.eth.get_storage_at(
-                addr, 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50)[12:].hex()
+                addr, 0xA3F0AD74E5423AEBFD80D3EF4346578335A9A72AEAEE59FF6CB3582B35133D50
+            )[12:].hex()
 
             if int(impl, 16) == 0 and int(beacon, 16) == 0:
                 print(f"{addr} may be not an ERC-1967 Proxy")
                 print("Implementation:", self._get_full_name(impl))
-                print("Admin:",  self._get_full_name(admin))
+                print("Admin:", self._get_full_name(admin))
                 # Print first slots, may be used as customized proxy.
                 _print_slot_as_address("Slot[0]", 0)
                 _print_slot_as_address("Slot[1]", 1)
@@ -901,9 +918,18 @@ class PethConsole(cmd.Cmd):
             else:
                 print(f"{addr} is an ERC-1967 Proxy")
                 print("Implementation:", self._get_full_name(impl))
-                print("Admin:",  self._get_full_name(admin))
-                print("Beacon:",  self._get_full_name(beacon))
-                _print_slot_as_address("Rollback", 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143)
+
+                name = self._get_full_name(admin)
+                print("Admin:", name)
+                print("Beacon:", self._get_full_name(beacon))
+                _print_slot_as_address(
+                    "Rollback",
+                    0x4910FDFA16FED3260ED0E7147F7CC6DA11A60208B5B9406D12A635614FFD9143,
+                )
+
+                if "ProxyAdmin" in name:
+                    print("ProxyAdmin owner:")
+                    self.do_owner(admin)
 
     def do_proxy_all(self, args):
         """
@@ -912,7 +938,8 @@ class PethConsole(cmd.Cmd):
         for arg in args.split():
             addr = self.web3.toChecksumAddress(arg)
             impl = self.web3.eth.get_storage_at(
-                addr, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)[12:].hex()
+                addr, 0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC
+            )[12:].hex()
             if int(impl, 16) != 0:
                 name = self.peth.scan.get_contract_name(addr)
                 if not name:
@@ -928,7 +955,7 @@ class PethConsole(cmd.Cmd):
             owner = self.peth.call_contract(addr, "owner()->(address)")
             print("Owner: %s" % self._get_full_name(owner))
         except Exception as e:
-            print("Failed. Ensure your input is a Ownable contract address.")
+            print(f"Ensure your input is a Ownable contract address. {e}")
 
     def do_gnosis(self, arg):
         """
@@ -949,13 +976,16 @@ class PethConsole(cmd.Cmd):
         print("Impl:", self.peth.call_contract(addr, "masterCopy()->(address)"))
 
         modules = self.peth.call_contract(
-            addr, "getModulesPaginated(address,uint256)->(address[],address)",
-            ["0x0000000000000000000000000000000000000001", 100]
-            )[0]
+            addr,
+            "getModulesPaginated(address,uint256)->(address[],address)",
+            ["0x0000000000000000000000000000000000000001", 100],
+        )[0]
         if modules:
             print("Modules:")
             for m in modules:
                 print(" ", self._get_full_name(m))
+
+    do_safe = do_gnosis
 
     def do_timelock(self, arg):
         """
@@ -964,32 +994,32 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         try:
             secs = self.peth.call_contract(addr, "getMinDelay()->(uint)")
-            print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
-        except Exception as e:
+            print("Min Delay: %ds = %0.2fh" % (secs, secs / 3600))
+        except Exception:
             pass
 
         try:
             secs = self.peth.call_contract(addr, "MINIMUM_DELAY()->(uint)")
-            print("Min Delay: %ds = %0.2fh" % (secs, secs/3600))
-        except Exception as e:
+            print("Min Delay: %ds = %0.2fh" % (secs, secs / 3600))
+        except Exception:
             pass
 
         try:
             secs = self.peth.call_contract(addr, "MAXIMUM_DELAY()->(uint)")
-            print("Max Delay: %ds = %0.2fh" % (secs, secs/3600))
-        except Exception as e:
+            print("Max Delay: %ds = %0.2fh" % (secs, secs / 3600))
+        except Exception:
             pass
 
         try:
             secs = self.peth.call_contract(addr, "delay()->(uint)")
-            print("Current Delay: %ds = %0.2fh" % (secs, secs/3600))
-        except Exception as e:
+            print("Current Delay: %ds = %0.2fh" % (secs, secs / 3600))
+        except Exception:
             pass
 
         try:
             admin = self.peth.call_contract(addr, "admin()->(address)")
             print("Admin: %s" % self._get_full_name(admin))
-        except Exception as e:
+        except Exception:
             pass
 
     def do_pair(self, arg):
@@ -1013,15 +1043,22 @@ class PethConsole(cmd.Cmd):
             addr2 = self.peth.call_contract(pair_addr, "token1()->(address)")
         else:
             if factory is None:
-                if self.peth.chain == 'eth':
-                    factory = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'  # Uniswap Factory
-                elif self.peth.chain == 'bsc':
-                    factory = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73'  # Pancake Factory
+                if self.peth.chain == "eth":
+                    factory = (
+                        "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"  # Uniswap Factory
+                    )
+                elif self.peth.chain == "bsc":
+                    factory = (
+                        "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"  # Pancake Factory
+                    )
 
             assert factory, "Factory address not specified."
             pair_addr = self.peth.call_contract(
-                factory, "getPair(address,address)->(address)", [addr1, addr2])
-            assert pair_addr != "0x0000000000000000000000000000000000000000", "Token pair not found."
+                factory, "getPair(address,address)->(address)", [addr1, addr2]
+            )
+            assert (
+                pair_addr != "0x0000000000000000000000000000000000000000"
+            ), "Token pair not found."
 
         print("TokenPair:", pair_addr)
 
@@ -1036,25 +1073,22 @@ class PethConsole(cmd.Cmd):
 
         # r0, r1, _ = self.peth.call_contract(
         #     pair_addr, "getReserves()->(uint112,uint112,uint32)")
-        r0 = self.peth.call_contract(
-            addr1, "balanceOf(address)->(uint)", [pair_addr])
-        r1 = self.peth.call_contract(
-            addr2, "balanceOf(address)->(uint)", [pair_addr])
+        r0 = self.peth.call_contract(addr1, "balanceOf(address)->(uint)", [pair_addr])
+        r1 = self.peth.call_contract(addr2, "balanceOf(address)->(uint)", [pair_addr])
 
         fee = self.peth.call_contract(pair_addr, "fee()->(uint)", silent=True)
         if fee:
-            print("V3 Fee: %0.2f%%" % (fee/1e4))
+            print("V3 Fee: %0.2f%%" % (fee / 1e4))
 
-        r0 = r0/(10**token0_decimal)
-        r1 = r1/(10**token1_decimal)
-        print("Reseves: %0.4f %s, %0.4f %s" %
-              (r0, token0_name, r1, token1_name))
+        r0 = r0 / (10**token0_decimal)
+        r1 = r1 / (10**token1_decimal)
+        print("Reseves: %0.4f %s, %0.4f %s" % (r0, token0_name, r1, token1_name))
 
         if fee is None:
             # Only for V2.
             print("V2 Price:")
-            print("1 %s = %0.4f %s" % (token0_name, r1/r0, token1_name))
-            print("1 %s = %0.4f %s" % (token1_name, r0/r1, token0_name))
+            print("1 %s = %0.4f %s" % (token0_name, r1 / r0, token1_name))
+            print("1 %s = %0.4f %s" % (token1_name, r0 / r1, token0_name))
 
     def do_factory(self, arg):
         """
@@ -1066,24 +1100,25 @@ class PethConsole(cmd.Cmd):
         for i in range(size):
             try:
                 pair = self.peth.call_contract(
-                    factory, "allPairs(uint256)->(address)", [i])
+                    factory, "allPairs(uint256)->(address)", [i]
+                )
                 print("[%d] %s" % (i, pair))
                 self.do_pair(pair)
             except Exception as e:
-                print('[*] %s' % e)
+                print("[*] %s" % e)
 
     def do_oracle(self, arg):
         """
         oracle <EACAggregatorProxy>[,<EACAggregatorProxy>] : Print ChainLink oracle aggregator information.
         """
         i = 1
-        cnt = len(arg.split(','))
-        for addr in arg.split(','):
+        cnt = len(arg.split(","))
+        for addr in arg.split(","):
             addr = addr.strip()
             addr = self.web3.toChecksumAddress(addr)
             try:
                 if cnt > 1:
-                    print('---- [%s] ----' % i)
+                    print("---- [%s] ----" % i)
                     i += 1
 
                 aggr = self.peth.call_contract(addr, "aggregator()->(address)")
@@ -1091,37 +1126,45 @@ class PethConsole(cmd.Cmd):
                     aggr = addr
                 else:
                     print("Aggregator:", aggr)
-                    print("Proxy Owner:", self.peth.call_contract(
-                        addr, "owner()->(address)"))
+                    print(
+                        "Proxy Owner:",
+                        self.peth.call_contract(addr, "owner()->(address)"),
+                    )
 
-                print("Aggregator Owner:", self.peth.call_contract(
-                    aggr, "owner()->(address)"))
+                print(
+                    "Aggregator Owner:",
+                    self.peth.call_contract(aggr, "owner()->(address)"),
+                )
 
-                print("Version:", self.peth.call_contract(
-                    aggr, "typeAndVersion()->(string)"))
-                print("Description:", self.peth.call_contract(
-                    aggr, "description()->(string)"))
+                print(
+                    "Version:",
+                    self.peth.call_contract(aggr, "typeAndVersion()->(string)"),
+                )
+                print(
+                    "Description:",
+                    self.peth.call_contract(aggr, "description()->(string)"),
+                )
 
                 dec = self.peth.call_contract(aggr, "decimals()->(uint8)")
                 print("Decimals:", dec)
 
-                latest = self.peth.call_contract(
-                    aggr, "latestAnswer()->(int256)")
-                print("Latest Answer: %d (%0.2f)" % (latest, latest/(10**dec)))
+                latest = self.peth.call_contract(aggr, "latestAnswer()->(int256)")
+                print("Latest Answer: %d (%0.2f)" % (latest, latest / (10**dec)))
 
                 max = self.peth.call_contract(aggr, "maxAnswer()->(int192)")
-                print("Max Answer: %d (%0.2f)" % (max, max/(10**dec)))
+                print("Max Answer: %d (%0.2f)" % (max, max / (10**dec)))
 
                 min = self.peth.call_contract(aggr, "minAnswer()->(int192)")
-                print("Min Answer: %d (%0.2f)" % (min, min/(10**dec)))
+                print("Min Answer: %d (%0.2f)" % (min, min / (10**dec)))
 
                 transmitters = self.peth.call_contract(
-                    aggr, "transmitters()->(address[])")
+                    aggr, "transmitters()->(address[])"
+                )
                 print("%d Transmitters:" % len(transmitters))
                 for addr in transmitters:
                     print(" ", addr)
 
-            except Exception as e:
+            except Exception:
                 pass
 
     ##################################################################
@@ -1155,13 +1198,14 @@ class PethConsole(cmd.Cmd):
 
             erc20_trans = []
             for item in r.logs:
-                address_names = {
-                    sender: "sender",
-                    to: "to"
-                }
+                address_names = {sender: "sender", to: "to"}
 
                 # Transfer event.
-                if len(item.topics) == 3 and item.topics[0].hex() == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef":
+                if (
+                    len(item.topics) == 3
+                    and item.topics[0].hex()
+                    == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                ):
                     src = self.web3.toChecksumAddress(item.topics[1][-20:])
                     src = address_names.get(src, src)
                     dst = self.web3.toChecksumAddress(item.topics[2][-20:])
@@ -1170,12 +1214,12 @@ class PethConsole(cmd.Cmd):
                     amount = self.web3.toInt(hexstr=item.data)
                     token = item.address
                     symbol = self.peth.call_contract(
-                        token, "symbol()->(string)", silent=True)
+                        token, "symbol()->(string)", silent=True
+                    )
                     if symbol is None:
                         symbol = "Unknown"
-                    token = '%s(%s)' % (symbol, token)
-                    msg = ' '.join(
-                        map(str, (token, '%s->%s' % (src, dst), amount)))
+                    token = "%s(%s)" % (symbol, token)
+                    msg = " ".join(map(str, (token, "%s->%s" % (src, dst), amount)))
                     erc20_trans.append(msg)
 
             if erc20_trans:
@@ -1211,13 +1255,14 @@ class PethConsole(cmd.Cmd):
         if len(args) >= 2:
             count = int(args[1])
         if len(args) >= 3:
-            reverse = args[2] == 'desc'
+            reverse = args[2] == "desc"
         if len(args) >= 5:
             startblock = int(args[3])
             endblock = int(args[4])
 
         txs = self.peth.scan.get_txs_by_account(
-            addr, startblock, endblock, count, reverse)
+            addr, startblock, endblock, count, reverse
+        )
 
         if not txs:
             print("No txs.")
@@ -1232,7 +1277,7 @@ class PethConsole(cmd.Cmd):
             value = int(tx["value"])
 
             data = data[2:]  # remove 0x
-            if len(data) <= 8 or '00' in data:
+            if len(data) <= 8 or "00" in data:
                 continue
 
             if sender == addr:
@@ -1241,13 +1286,12 @@ class PethConsole(cmd.Cmd):
                 to = "Hacker"
 
             i += 1
-            print("---- [%d] %s to %s (%0.4f)----" %
-                  (i, sender, to, value/1e18))
+            print("---- [%d] %s to %s (%0.4f)----" % (i, sender, to, value / 1e18))
 
             try:
-                msg = codecs.decode(data, 'hex').decode('utf-8')
+                msg = codecs.decode(data, "hex").decode("utf-8")
                 print(msg)
-            except:
+            except Exception:
                 print("Decode failed.")
 
     def do_txs(self, arg):
@@ -1268,13 +1312,14 @@ class PethConsole(cmd.Cmd):
         if len(args) >= 2:
             count = int(args[1])
         if len(args) >= 3:
-            reverse = args[2] == 'desc'
+            reverse = args[2] == "desc"
         if len(args) >= 5:
             startblock = int(args[3])
             endblock = int(args[4])
 
         txs = self.peth.scan.get_txs_by_account(
-            addr, startblock, endblock, count, reverse)
+            addr, startblock, endblock, count, reverse
+        )
 
         if not txs:
             print("No txs.")
@@ -1302,7 +1347,7 @@ class PethConsole(cmd.Cmd):
             if contract:
                 print("%s creates contract %s" % (sender, contract))
                 continue
-            
+
             if value:
                 print("%s -> %s value %s" % (sender, to_name, value))
             else:
@@ -1339,7 +1384,7 @@ class PethConsole(cmd.Cmd):
 
                 print(f"[{i}] {sender} calls contract {name}({to}) in {txid}")
 
-                if 'Tornado' in name:
+                if "Tornado" in name:
                     # Tornado.cash found, no sense to continue searching.
                     break
             else:
@@ -1366,21 +1411,26 @@ class PethConsole(cmd.Cmd):
             assert Web3.isAddress(sender), "Invalid address %s" % sender
         else:
             # Just a random selected new address with no ETH.
-            sender = '0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f'
+            sender = "0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f"
 
         tx = self.web3.eth.get_transaction(txid)
         block_number = tx["blockNumber"] - 1
-        print("Replay(eth_call) %s at block %s with sender %s:" %
-              (txid, block_number, sender))
+        print(
+            "Replay(eth_call) %s at block %s with sender %s:"
+            % (txid, block_number, sender)
+        )
 
         try:
-            r = self.web3.eth.call({
-                # Just a random selected new address with no ETH.
-                'from': '0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f',
-                'to': tx['to'],
-                'data': tx['input'],
-                'value': tx['value']
-            }, block_number)
+            r = self.web3.eth.call(
+                {
+                    # Just a random selected new address with no ETH.
+                    "from": "0x4459cD4ef34A3DCeC05b32e4f76A6e4306176e6f",
+                    "to": tx["to"],
+                    "data": tx["input"],
+                    "value": tx["value"],
+                },
+                block_number,
+            )
             print("Replay succeeded. eth_call returns:")
             print(r)
         except Exception as e:  # revert or other errors.
@@ -1397,7 +1447,7 @@ class PethConsole(cmd.Cmd):
         addr = Web3.toChecksumAddress(arg)
         selectors = self.peth.get_selectors(addr)
         for selector in selectors:
-            sig = '0x' + selector.hex()
+            sig = "0x" + selector.hex()
             sigs = selector_to_sigs(sig)
             sigs = sigs[::-1]
             value = ""
@@ -1407,8 +1457,8 @@ class PethConsole(cmd.Cmd):
                     value = self.peth.call_contract(addr, func_sig, silent=True)
                     if value is None:
                         value = ""
-               
-            print(sig, ', '.join(sigs), ' ' * 10, '\t', value)
+
+            print(sig, ", ".join(sigs), " " * 10, "\t", value)
 
     def do_disasm(self, arg):
         """
@@ -1433,18 +1483,22 @@ class PethConsole(cmd.Cmd):
         similarity = s.ratio()
         d = difflib.HtmlDiff()
         buf = d.make_file(asm1, asm2)
-        output_filename = '%s_%s_%s_%s_%0.2f' % (
-            chain1, addr1, chain2, addr2, similarity
+        output_filename = "%s_%s_%s_%s_%0.2f" % (
+            chain1,
+            addr1,
+            chain2,
+            addr2,
+            similarity,
         )
-        if not os.path.isdir('diff'):
-            os.makedirs('diff')
-        output_filename = os.path.join('diff', output_filename)
-        open(output_filename + '.html', 'w').write(buf)
-        print("Written to " + output_filename+'.html')
+        if not os.path.isdir("diff"):
+            os.makedirs("diff")
+        output_filename = os.path.join("diff", output_filename)
+        open(output_filename + ".html", "w").write(buf)
+        print("Written to " + output_filename + ".html")
 
     ##################################################################
     # Contract source tools.
-        
+
     def _get_name(self, addr):
         addr = self.web3.toChecksumAddress(addr)
         codesize = len(self.web3.eth.get_code(addr))
@@ -1464,12 +1518,10 @@ class PethConsole(cmd.Cmd):
             else:
                 return f"Contract {codesize} bytes"
         else:
-            return f"EOA"
-        
+            return "EOA"
+
     def _get_full_name(self, addr):
         return f"{addr} {self._get_name(addr)}"
-
-
 
     def do_name(self, arg):
         """
@@ -1497,7 +1549,7 @@ class PethConsole(cmd.Cmd):
         abis = info["ABI"]
         try:
             abi_json = json.loads(abis)
-            print(' ', "=== VIEWS ===")
+            print(" ", "=== VIEWS ===")
             contract = self.web3.eth.contract(address=addr, abi=abi_json)
 
             others = []
@@ -1523,9 +1575,9 @@ class PethConsole(cmd.Cmd):
                 else:
                     others.append(sig)
 
-            print(' ', "=== OTHERS ===")
+            print(" ", "=== OTHERS ===")
             for s in others:
-                print(' ', s)
+                print(" ", s)
 
         except Exception as e:
             print(e)
@@ -1538,8 +1590,7 @@ class PethConsole(cmd.Cmd):
         if arg:
             addrOrList = arg.split()
             if type(addrOrList) is list:
-                assert len(
-                    addrOrList) > 0, "peth.print_contract_graph: addrs is empty."
+                assert len(addrOrList) > 0, "peth.print_contract_graph: addrs is empty."
                 root = addrOrList[0]
                 addrs = addrOrList
             else:
@@ -1578,7 +1629,7 @@ class PethConsole(cmd.Cmd):
         """
         args = arg.split()
         if args[0] in diff.PATTERNS:
-            args = [None if i == '0' else i for i in args]
+            args = [None if i == "0" else i for i in args]
             diff.diff_pattern(*args)
             return
 
@@ -1593,7 +1644,7 @@ class PethConsole(cmd.Cmd):
             addr2 = args[3]
             diff.diff_chain_src(chain1, addr1, chain2, addr2)
         else:
-            print('[!] Invalid args.')
+            print("[!] Invalid args.")
             return
 
     def do_download_json(self, arg):
@@ -1605,7 +1656,7 @@ class PethConsole(cmd.Cmd):
         assert Web3.isAddress(addr), f"{addr} is not a valid address."
         if len(args) > 1:
             output_dir = args[1]
-            if '/' not in output_dir:
+            if "/" not in output_dir:
                 output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
         else:
             output_dir = None
@@ -1625,7 +1676,7 @@ class PethConsole(cmd.Cmd):
         assert Web3.isAddress(addr), f"{addr} is not a valid address."
         if len(args) > 1:
             output_dir = args[1]
-            if '/' not in output_dir:
+            if "/" not in output_dir:
                 output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
         else:
             output_dir = None
@@ -1642,19 +1693,18 @@ class PethConsole(cmd.Cmd):
         if Web3.isAddress(arg):
             addr = self.web3.toChecksumAddress(arg)
             code = self.web3.eth.get_code(addr).hex()
-            if code.startswith('0x'):
+            if code.startswith("0x"):
                 code = code[2:]
         elif os.path.exists(arg):
             solc_out = json.load(open(arg))
             code = solc_out["deployedBytecode"]
         else:
-            assert re.match("[a-fA-F0-9xX]+",
-                            arg), f"{arg[:10]} is not valid bytecode."
-            if arg.startswith('0x'):
+            assert re.match("[a-fA-F0-9xX]+", arg), f"{arg[:10]} is not valid bytecode."
+            if arg.startswith("0x"):
                 arg = arg[2:]
             code = arg
         # https://docs.soliditylang.org/en/v0.8.10/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode
-        if code.endswith('0033'):
+        if code.endswith("0033"):
             code = code[:106]
             code += "<metadata>"
         return code
@@ -1664,7 +1714,7 @@ class PethConsole(cmd.Cmd):
         i = 0
         while i < len(code):
             # add blanks so we have prettier diff file.
-            r.append(code[i:i+64] + ' ' * 10)
+            r.append(code[i : i + 64] + " " * 10)
             i += 64
         return r
 
@@ -1691,7 +1741,7 @@ class PethConsole(cmd.Cmd):
             os.makedirs(config.DIFF_PATH)
 
         path = os.path.join(config.DIFF_PATH, "bytecode_diff.html")
-        open(path, 'w').write(buf)
+        open(path, "w").write(buf)
         print("Written to " + path)
 
     def do_url(self, arg):
@@ -1707,7 +1757,7 @@ class PethConsole(cmd.Cmd):
             "arb": "arbitrum",
             "matic": "polygon",
             "avax": "avalanche",
-            "ftm": "fantom"
+            "ftm": "fantom",
         }
 
         if Web3.isAddress(arg):
@@ -1716,11 +1766,9 @@ class PethConsole(cmd.Cmd):
             chain = _chains_alias[self.peth.chain]
             url = "https://phalcon.blocksec.com/explorer/tx/%s/%s" % (chain, arg)
         elif self.peth.address_url:
-            url = self.peth.address_url.replace(
-                "address/", "search?f=0&q=") + arg
+            url = self.peth.address_url.replace("address/", "search?f=0&q=") + arg
         else:
-            print('[!] peth.address_url not set for chain %s' %
-                  self.peth.chain)
+            print("[!] peth.address_url not set for chain %s" % self.peth.chain)
             return
 
         print(url)
@@ -1732,7 +1780,11 @@ class PethConsole(cmd.Cmd):
         """
         addr = addr.strip()
         if not Web3.isAddress(addr):
-            print("%s is not valid address." % addr)
+            print(f"{addr} is not a valid address.")
+            return
+
+        if not self.peth.is_contract(addr):
+            print(f"{addr} is an EOA address.")
             return
 
         url = self.peth.get_decompile_url(addr)
@@ -1749,10 +1801,10 @@ class PethConsole(cmd.Cmd):
             return
 
         url = self.peth.get_address_url(addr)
-        if '.io/' in url:
-            url = url.replace('.io/', '.deth.net/')
-        elif '.com/' in url:
-            url = url.replace('.com/', '.deth.net/')
+        if ".io/" in url:
+            url = url.replace(".io/", ".deth.net/")
+        elif ".com/" in url:
+            url = url.replace(".com/", ".deth.net/")
         else:
             print("URL type not supported")
         print(url)
@@ -1776,26 +1828,31 @@ class PethConsole(cmd.Cmd):
         chains = d["data"]["used_chains"]
 
         for chain in chains:
-            time.sleep(1) # Debank API limit.
+            time.sleep(1)  # Debank API limit.
             r = requests.get(
-                "https://api.debank.com/token/balance_list?user_addr=%s&chain=%s" % (addr, chain))
+                "https://api.debank.com/token/balance_list?user_addr=%s&chain=%s"
+                % (addr, chain)
+            )
             d = r.json()
             assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
-            print('-', chain.upper())
-            print(f"\t%-5s %-30s\t%-12s\t$ %-12s\t%-10s\t%-20s" %
-                  ("Symbol", "Name", "Balance", "USD Value", "Raw balance", "Price")
-                  )
+            print("-", chain.upper())
+            print(
+                "\t%-5s %-30s\t%-12s\t$ %-12s\t%-10s\t%-20s"
+                % ("Symbol", "Name", "Balance", "USD Value", "Raw balance", "Price")
+            )
             for token in d["data"]:
                 name = token["name"].strip()
                 symbol = token["symbol"].strip()
                 decimals = token["decimals"]
                 price = token["price"] if token["price"] else 0
                 raw_balance = token["balance"]
-                balance = token["balance"]/(10**decimals)
+                balance = token["balance"] / (10**decimals)
 
-                if balance*price > 1:  # Only print asset more than $1.0
-                    print(f"\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s" %
-                          (symbol, name, balance, balance*price, raw_balance, price))
+                if balance * price > 1:  # Only print asset more than $1.0
+                    print(
+                        "\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s"
+                        % (symbol, name, balance, balance * price, raw_balance, price)
+                    )
 
     def do_price(self, arg):
         """
@@ -1809,13 +1866,16 @@ class PethConsole(cmd.Cmd):
             tokens = coin.get_token(chain, *args)
             for token in tokens:
                 if token:
-                    print("%s %s decimals %s price %s confidence %s" % (
-                        token["symbol"],
-                        token["address"],
-                        token["decimals"],
-                        token["price"],
-                        token["confidence"]
-                    ))
+                    print(
+                        "%s %s decimals %s price %s confidence %s"
+                        % (
+                            token["symbol"],
+                            token["address"],
+                            token["decimals"],
+                            token["price"],
+                            token["confidence"],
+                        )
+                    )
                 else:
                     print("Unknown")
         else:

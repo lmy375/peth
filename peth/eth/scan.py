@@ -1,12 +1,13 @@
-import time
-import requests
 import json
 import os
 import re
+import time
 
+import requests
 from web3 import Web3
 
-from peth.core.config import chain_config, DEFAULT_API_INTERVAL, CACHE_PATH, OUTPUT_PATH
+from ..core.config import CACHE_PATH, DEFAULT_API_INTERVAL, OUTPUT_PATH, chain_config
+
 
 class ScanAPI(object):
 
@@ -14,14 +15,12 @@ class ScanAPI(object):
 
     def __init__(self, api_url) -> None:
         """
-        Do NOT use this, use get_or_create instead to 
+        Do NOT use this, use get_or_create instead to
         bypass API rate.
         """
         self.api_url = api_url
-        self.has_api_key = 'apikey' in api_url
-        self._last_scan_call = 0
 
-        self._cache_path = os.path.join(CACHE_PATH, re.findall('//(.*)?/', api_url)[0])
+        self._cache_path = os.path.join(CACHE_PATH, re.findall("//(.*)?/", api_url)[0])
         if not os.path.exists(self._cache_path):
             os.makedirs(self._cache_path)
 
@@ -49,23 +48,17 @@ class ScanAPI(object):
 
     def _cache_set(self, id: str, data: str):
         path = os.path.join(self._cache_path, id)
-        open(path, 'w').write(data)
+        open(path, "w").write(data)
 
     def get(self, url):
-        # print(url)
-        now = time.time()
-        if not self.has_api_key:
-            interval = now - self._last_scan_call
-            if interval < DEFAULT_API_INTERVAL:
-                # API request limit.
-                time.sleep(DEFAULT_API_INTERVAL - interval)
         try:
             r = requests.get(url)
-            self._last_scan_call = time.time()
             d = r.json()
 
             # retry.
-            if "Max rate limit reached" in d["result"]: 
+            if "Max rate limit reached" in d["result"]:
+                # API request limit.
+                time.sleep(DEFAULT_API_INTERVAL)
                 return self.get(url)
 
             assert d["status"] == "1", d
@@ -73,7 +66,7 @@ class ScanAPI(object):
             return d["result"]
         except Exception as e:
             print("[!] Etherscan API fail.", e, url)
-            return None      
+            return None
 
     def get_contract_info(self, addr, auto_proxy=True):
         addr = addr.lower()
@@ -84,19 +77,21 @@ class ScanAPI(object):
             d = json.loads(d)
         else:
             url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
-            d = self.get(url)[0] # The first.
+            d = self.get(url)[0]  # The first.
             # Un-verified.
             if not d.get("ContractName", None):
                 return None
 
-            if d: 
+            if d:
                 self._cache_set(addr + ".json", json.dumps(d))
 
         # Handle proxy
         if d:
             if "Implementation" in d:
                 impl = d["Implementation"]
-                if auto_proxy and Web3.isAddress(impl) and impl.lower() != addr: # Proxy found.
+                if (
+                    auto_proxy and Web3.isAddress(impl) and impl.lower() != addr
+                ):  # Proxy found.
                     return self.get_contract_info(impl)
         return d
 
@@ -120,7 +115,7 @@ class ScanAPI(object):
 
     def get_contract_name(self, addr):
         if not Web3.isAddress(addr):
-            return None 
+            return None
 
         info = self.get_contract_info(addr)
         if info is None:
@@ -140,7 +135,7 @@ class ScanAPI(object):
             ret = ""
         else:
             ret = {}
-            
+
         info = self.get_contract_info(addr)
         assert info, "ScanAPI.get_source: get_contract_info failed."
 
@@ -166,8 +161,8 @@ class ScanAPI(object):
                         name = info.get("ContractName", "Main") + ".sol"
                         ret[name] = src
 
-            except Exception as e:
-                print('[!] get_source: SourceCode may be not properly handled.')
+            except Exception:
+                print("[!] get_source: SourceCode may be not properly handled.")
                 ret += "%s\n" % src
 
         if "AdditionalSources" in info:
@@ -177,28 +172,30 @@ class ScanAPI(object):
                     ret += "%s\n" % item["SourceCode"]
                 else:
                     ret[item["Filename"]] = item["SourceCode"]
-        
+
         assert ret, "ScanAPI.get_source: source not found in info: %s" % (list(info))
         return ret
 
     def _normal_file_path(self, path):
-        if path.startswith("@"): # Skip npm package.
+        if path.startswith("@"):  # Skip npm package.
             pass
-        elif 'contracts/' in path: # locate to contracts dir.
-            path = path[path.index('contracts/'):]
+        elif "contracts/" in path:  # locate to contracts dir.
+            path = path[path.index("contracts/") :]
 
-        path = path.replace('..', '_') # Protect from path travel attack.
-        
-        if path.startswith('/'):
+        path = path.replace("..", "_")  # Protect from path travel attack.
+
+        if path.startswith("/"):
             path = path[1:]
-        
+
         return path
 
     def download_source(self, addr, output_dir=None):
 
         if not output_dir:
-            output_dir = os.path.join(OUTPUT_PATH, "source", re.findall('//(.*)?/', self.api_url)[0], addr)
-        
+            output_dir = os.path.join(
+                OUTPUT_PATH, "source", re.findall("//(.*)?/", self.api_url)[0], addr
+            )
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
@@ -211,9 +208,9 @@ class ScanAPI(object):
             parent_dir = os.path.dirname(path)
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-                
-            open(path, 'w').write(src)
-        
+
+            open(path, "w").write(src)
+
         return path_list
 
     def get_standard_json_input(self, addr):
@@ -223,38 +220,29 @@ class ScanAPI(object):
             return
 
         contract_name = info["ContractName"]
-        if not contract_name: # Skip un-verified contract.
+        if not contract_name:  # Skip un-verified contract.
             return
 
         version = info["CompilerVersion"]
-        if "vyper" in version: # Skip vyper.
+        if "vyper" in version:  # Skip vyper.
             return
 
-        version = re.findall(r'\d+\.\d+\.\d+', version)[0]
+        version = re.findall(r"\d+\.\d+\.\d+", version)[0]
         optimization_used = info["OptimizationUsed"] == "1"
         if optimization_used:
             runs = int(info["Runs"])
-            opt = {
-                "enabled": True,
-                "runs":runs
-            }
+            opt = {"enabled": True, "runs": runs}
         else:
-            opt = {
-                "enabled": False
-            }
+            opt = {"enabled": False}
 
-        src = info["SourceCode"]
-        if src.startswith("{{"): # Json input format.
+        src: str = info["SourceCode"]
+        if src.startswith("{{"):  # Json input format.
             return contract_name, version, json.loads(src[1:-1])
 
-        if src.startswith("{"): # Multi-files.
+        if src.startswith("{"):  # Multi-files.
             src = json.loads(src)
-        else: # Single file.
-            src = {
-                f"{contract_name}.sol": {
-                    "content" : src
-                }
-            }
+        else:  # Single file.
+            src = {f"{contract_name}.sol": {"content": src}}
 
         json_input = {
             "language": "Solidity",
@@ -263,28 +251,30 @@ class ScanAPI(object):
                 "optimizer": opt,
                 "outputSelection": {
                     "*": {
-                            "*": [
-                                "abi",
-                                "metadata",
-                                "devdoc",
-                                "userdoc",
-                                "evm.bytecode",
-                                "evm.deployedBytecode",
-                            ],
-                            "": ["ast"],
+                        "*": [
+                            "abi",
+                            "metadata",
+                            "devdoc",
+                            "userdoc",
+                            "evm.bytecode",
+                            "evm.deployedBytecode",
+                        ],
+                        "": ["ast"],
                     }
-                }
-            }
+                },
+            },
         }
         return contract_name, version, json_input
 
     def download_json(self, addr, output_dir=None):
         if not output_dir:
-            output_dir = os.path.join(OUTPUT_PATH, "json", re.findall('//(.*)?/', self.api_url)[0])
-        
+            output_dir = os.path.join(
+                OUTPUT_PATH, "json", re.findall("//(.*)?/", self.api_url)[0]
+            )
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        
+
         ret = self.get_standard_json_input(addr)
         if ret:
             contract_name, version, json_input = ret
@@ -293,32 +283,40 @@ class ScanAPI(object):
             json.dump(json_input, open(final_path, "w"))
             return final_path
 
-    def get_txs_by_account(self, sender, startblock=None, endblock=None, count=10, reverse=False, internal=False):
+    def get_txs_by_account(
+        self,
+        sender,
+        startblock=None,
+        endblock=None,
+        count=10,
+        reverse=False,
+        internal=False,
+    ):
         url = f"{self.api_url}module=account"
-        
+
         if internal:
             url += "&action=txlistinternal"
         else:
             url += "&action=txlist"
-        
+
         url += f"&address={sender}"
-        
+
         if startblock is not None:
             url += f"&startblock={startblock}"
         if endblock is not None:
             url += f"&endblock={endblock}"
-        
+
         url += f"&page=1&offset={count}"
-        
+
         if reverse:
             url += "&sort=desc"
         else:
             url += "&sort=asc"
-        
+
         txs = self.get(url)
         return txs
 
-    def get_first_tx(self, addr:str):
+    def get_first_tx(self, addr: str):
         addr = addr.lower()
         try:
             txs = self.get_txs_by_account(addr, count=1, internal=False)
@@ -338,10 +336,12 @@ class ScanAPI(object):
             if first_tx is None:
                 return True, tx
 
-            if int(tx["blockNumber"]) <= int(first_tx["blockNumber"]) and tx["from"] != addr:
+            if (
+                int(tx["blockNumber"]) <= int(first_tx["blockNumber"])
+                and tx["from"] != addr
+            ):
                 return True, tx
         except Exception:
-            pass 
+            pass
 
-        return None, None        
-
+        return None, None

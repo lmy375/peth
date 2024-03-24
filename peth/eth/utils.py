@@ -1,6 +1,6 @@
+import atexit
 import json
 import os
-import atexit
 import re
 from typing import Any, Dict
 
@@ -10,7 +10,7 @@ from web3 import Web3
 from peth.core.config import SIG_DB_PATH, SIG_DB_URL
 from peth.core.log import logger
 
-ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 try:
     from Crypto.Hash import keccak
@@ -24,8 +24,10 @@ except ImportError:
     def sha3_256(x):
         return _sha3.keccak_256(x).digest()
 
+
 def func_selector(func_sig: str):
     return sha3_256(bytes(func_sig, "ascii", "ignore"))[:4]
+
 
 # from: https://github.com/ethereum/eth-utils/blob/master/eth_utils/abi.py
 def collapse_if_tuple(abi: Dict[str, Any]) -> str:
@@ -60,6 +62,7 @@ def collapse_if_tuple(abi: Dict[str, Any]) -> str:
 
     return collapsed
 
+
 class SelectorDatabase(object):
 
     single_instance = None
@@ -81,31 +84,31 @@ class SelectorDatabase(object):
             logger.debug("Load sig db from %s" % SIG_DB_PATH)
 
         atexit.register(self.save)
-    
+
     def _normalize_selector(self, selector, with_prefix=False):
         """
         Return hex format.
         """
         if type(selector) is int:
-            selector = '%08x' % selector
+            selector = "%08x" % selector
         elif isinstance(selector, bytes):
             selector = selector.hex()
         else:
             selector = str(selector).lower()
-        
-        if selector.startswith('0x'):
+
+        if selector.startswith("0x"):
             if not with_prefix:
                 selector = selector[2:]
         else:
             if with_prefix:
-                selector = '0x' + selector
+                selector = "0x" + selector
 
         return selector
 
     def get_sig_from_selector(self, selector, only_one=False, online=True):
 
         selector = self._normalize_selector(selector, False)
-        
+
         # No 0x prefix in DB.
         if selector in self.db:
             sigs = self.db[selector]
@@ -116,8 +119,8 @@ class SelectorDatabase(object):
             if sigs:
                 self.db[selector] = sigs
         else:
-            sigs = [] # Off-line empty result.
-        
+            sigs = []  # Off-line empty result.
+
         assert type(sigs) is list, "get_sig: should always be list here."
         if only_one:
             if sigs:
@@ -128,13 +131,13 @@ class SelectorDatabase(object):
             return sigs
 
     def get_sig_from_text(self, text):
-        ret = [] # (selector, [sigs])
+        ret = []  # (selector, [sigs])
         for selector, sig in self.db.items():
             if type(sig) is str:
                 sigs = [sig]
             else:
                 sigs = sig
-            
+
             if any([(text in i) for i in sigs]):
                 ret.append((selector, sigs))
         return ret
@@ -168,7 +171,7 @@ class SelectorDatabase(object):
             # }
 
             selector = self._normalize_selector(selector, True)
-            assert selector.startswith('0x')
+            assert selector.startswith("0x")
             typ = "function" if len(selector) == 10 else "event"
 
             url = f"https://api.openchain.xyz/signature-database/v1/lookup?&filter=true&{typ}={selector}"
@@ -176,13 +179,12 @@ class SelectorDatabase(object):
             results = res["result"][typ][selector]
             if only_one:
                 if results:
-                    return results[0]['name']
+                    return results[0]["name"]
                 else:
                     return None
             else:
                 return [i["name"] for i in results]
 
-            
             # Get sig from 4byte.directory
             # if selector.startswith('0x'):
             #     selector = selector[2:]
@@ -190,7 +192,7 @@ class SelectorDatabase(object):
             # url = 'https://www.4byte.directory/api/v1/signatures/?hex_signature=%s' % selector
             # r = requests.get(url)
             # results = r.json()["results"]
-            
+
             # if only_one:
             #     if results:
             #         return results[0]["text_signature"]
@@ -198,17 +200,16 @@ class SelectorDatabase(object):
             #         return None
             # else:
             #     return [i["text_signature"] for i in results]
-        
+
         except Exception:
             if only_one:
                 return None
             else:
-                return []  
-        
+                return []
+
     def save(self):
         json.dump(self.db, open(SIG_DB_PATH, "w"))
         logger.debug("Save sig db to %s" % SIG_DB_PATH)
-
 
     @classmethod
     def get(cls):
@@ -235,39 +236,42 @@ def process_args(args):
         if Web3.isAddress(arg):
             r.append(Web3.toChecksumAddress(arg))
             continue
-            
+
         try:
-            if arg.startswith('0x'):
+            if arg.startswith("0x"):
                 r.append(int(arg, 16))
             else:
                 r.append(int(arg))
-        except Exception as e:
+        except Exception:
             r.append(arg)
     return r
-    
+
+
 def hex2bytes(hex_data):
-    if hex_data.startswith('0x'):
+    if hex_data.startswith("0x"):
         hex_data = hex_data[2:]
     return bytes.fromhex(hex_data)
+
 
 def convert_value(value):
     """
     Guess value type and convert.
     """
-    STR_PATTERN = '^[\'"](.*)[\'"]$'
-    DEC_PATTERN = '^\d+$'
-    HEX_PATTERN = '^[0-9A-Fa-fXx]+$'
-    
-    if Web3.isAddress(value): # address
+    STR_PATTERN = r"^['\"](.*)['\"]$"
+    DEC_PATTERN = r"^\d+$"
+    HEX_PATTERN = r"^[0-9A-Fa-fXx]+$"
+
+    if Web3.isAddress(value):  # address
         return value
-    elif re.match(STR_PATTERN, value): # string.
+    elif re.match(STR_PATTERN, value):  # string.
         return re.findall(STR_PATTERN, value)[0]
-    elif re.match(DEC_PATTERN, value): # decimal
+    elif re.match(DEC_PATTERN, value):  # decimal
         return int(value)
-    elif re.match(HEX_PATTERN, value): # hexcimal
+    elif re.match(HEX_PATTERN, value):  # hexcimal
         return int(value, 16)
     else:
         raise NotImplementedError("Can not convert value: %s" % value)
+
 
 def guess_calldata_types(data):
     """
@@ -281,40 +285,50 @@ def guess_calldata_types(data):
 
     if len(buf) % 32 != 0:
         buf += b"\x00" * (32 - (len(buf) % 32))
-    
-    results = []
-    for i in range(len(buf)//32):
 
-        value = buf[i*32: (i+1)*32]
-        uint256 = int.from_bytes(value, 'big')
+    results = []
+    for i in range(len(buf) // 32):
+
+        value = buf[i * 32 : (i + 1) * 32]
+        uint256 = int.from_bytes(value, "big")
 
         if uint256 < len(buf) - 32 and uint256 > i * 32:
             offset = uint256
-            length_bytes = buf[offset: offset + 32]
-            length = int.from_bytes(length_bytes, 'big')
+            length_bytes = buf[offset : offset + 32]
+            length = int.from_bytes(length_bytes, "big")
             if offset + 32 + length <= len(buf):
-                bytes_data = buf[offset + 32: offset + 32 + length]
-                if '\\' not in repr(bytes_data): # Printable.
-                    results.append((
-                        "%#x" % (i*32), 
-                        "string",
-                        bytes_data.decode('utf-8') + '\t' + "// offset %#x length %d" % (offset, length)
-                    ))
+                bytes_data = buf[offset + 32 : offset + 32 + length]
+                if "\\" not in repr(bytes_data):  # Printable.
+                    results.append(
+                        (
+                            "%#x" % (i * 32),
+                            "string",
+                            bytes_data.decode("utf-8")
+                            + "\t"
+                            + "// offset %#x length %d" % (offset, length),
+                        )
+                    )
                 else:
-                    results.append((
-                        "%#x" % (i*32), 
-                        "bytes",  
-                        str(bytes_data) + '\t' + "// offset %#x length %d" % (offset, length)
-                    ))
+                    results.append(
+                        (
+                            "%#x" % (i * 32),
+                            "bytes",
+                            str(bytes_data)
+                            + "\t"
+                            + "// offset %#x length %d" % (offset, length),
+                        )
+                    )
 
-                continue # This is an offset for bytes/string, just end processing. .
+                continue  # This is an offset for bytes/string, just end processing. .
 
-        if uint256 < 2**112: # Small value as uint
-            results.append(("%#x" % (i*32), "uint256", "%d (%#x)" %(uint256, uint256)))
-        elif len('%x' % uint256) in range(29, 41): # 12-18 Prefix zero as address.
-            results.append(("%#x" % (i*32), "address", '%0#42x' % uint256))
+        if uint256 < 2**112:  # Small value as uint
+            results.append(
+                ("%#x" % (i * 32), "uint256", "%d (%#x)" % (uint256, uint256))
+            )
+        elif len("%x" % uint256) in range(29, 41):  # 12-18 Prefix zero as address.
+            results.append(("%#x" % (i * 32), "address", "%0#42x" % uint256))
         else:
-            results.append(("%#x" % (i*32), "unknown", value.hex()))
+            results.append(("%#x" % (i * 32), "unknown", value.hex()))
 
     return results
 
@@ -332,7 +346,7 @@ class CoinPrice(object):
             "ftm": "fantom",
             "arbi": "ethereum",
             "op": "ethereum",
-            "matic": "matic-network"
+            "matic": "matic-network",
         }
         # arbitrum, avalanche, bsc, celo, ethereum, fantom, optimism, polygon, tron
         self.chain_id = {
@@ -342,15 +356,14 @@ class CoinPrice(object):
             "avax": "avax",
             "ftm": "fantom",
             "op": "optimism",
-            "matic": "polygon"
+            "matic": "polygon",
         }
 
         self.url = "https://coins.llama.fi/prices/current/"
 
-
     # https://coins.llama.fi/prices/current/coingecko:binancecoin
     # {"coins":{"coingecko:binancecoin":{"price":344.74,"symbol":"BNB","timestamp":1667551373,"confidence":0.99}}}
-    
+
     def get_native(self, chain):
         gecko_id = "coingecko:%s" % self.chain_coin_id.get(chain, chain)
         ret = requests.get(self.url + gecko_id).json()["coins"]
@@ -361,20 +374,20 @@ class CoinPrice(object):
 
     # https://coins.llama.fi/prices/current/ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2,ethereum:0x419d0d8bdd9af5e606ae2232ed285aff190e711b
     # {"coins":{"ethereum:0x419d0d8bdd9af5e606ae2232ed285aff190e711b":{"decimals":8,"symbol":"FUN","price":0.00756368,"timestamp":1667555283,"confidence":0.99},"ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2":{"decimals":18,"symbol":"WETH","price":1582.85,"timestamp":1667555277,"confidence":0.99}}}
-    
+
     def get_token(self, chain, *addresses):
         chain = self.chain_id.get(chain, chain)
         tokens = []
         for address in addresses:
-            tokens.append('%s:%s' % (chain, address))
-        url = self.url + ','.join(tokens)
+            tokens.append("%s:%s" % (chain, address))
+        url = self.url + ",".join(tokens)
         ret = requests.get(url).json()["coins"]
 
         prices = []
         for token in tokens:
             if token in ret:
                 info = ret[token]
-                info["address"] = token.split(':')[1]
+                info["address"] = token.split(":")[1]
                 prices.append(info)
             else:
                 prices.append(None)

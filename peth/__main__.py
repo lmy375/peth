@@ -2,22 +2,22 @@ import json
 import logging
 from argparse import ArgumentParser
 
-from peth.core.config import chain_config, CHAIN_CONFIG_PATH, OUTPUT_PATH
-from peth.core.peth import Peth
-from peth.core.log import logger
 from peth.console import PethConsole
+from peth.core.config import CHAIN_CONFIG_PATH, OUTPUT_PATH, chain_config
+from peth.core.log import logger
+from peth.core.peth import Peth
+
 
 def get_args():
     parser = ArgumentParser(
-        prog='peth',
-        description="A python Ethereum utilities command-line tool."
+        prog="peth", description="A python Ethereum utilities command-line tool."
     )
 
     parser.add_argument(
         "-c",
         "--chain",
         choices=list(chain_config.keys()),
-        default='eth',
+        default="eth",
         help="Chain of the contract.",
     )
 
@@ -38,22 +38,19 @@ def get_args():
 
     parser.add_argument(
         "-e",
-        "--eth-call", 
+        "--eth-call",
         metavar="ARG",
         nargs="+",
-        help="Ethereum RPC eth_call: signature arg1 [...]"
+        help="Ethereum RPC eth_call: signature arg1 [...]",
     )
 
     parser.add_argument(
         "--sender",
         default="0x0000000000000000000000000000000000000000",
-        help="Use as `from` in eth_call transactions."
+        help="Use as `from` in eth_call transactions.",
     )
 
-    parser.add_argument(
-        "--to",
-        help="Use as `to` in eth_call transactions."
-    )
+    parser.add_argument("--to", help="Use as `to` in eth_call transactions.")
 
     parser.add_argument(
         "--rpc-url",
@@ -102,7 +99,7 @@ def get_args():
     args = parser.parse_args()
     return args
 
-    
+
 def main():
     global peth
 
@@ -138,17 +135,17 @@ def main():
         project.save()
     elif args.cmd:
         c = PethConsole(peth)
-        cmd_str = ' '.join(args.cmd)
+        cmd_str = " ".join(args.cmd)
         for cmd in cmd_str.split(";"):
-            c.single_command(cmd) 
+            c.single_command(cmd)
     else:
         logger.debug("Config file: %s" % CHAIN_CONFIG_PATH)
         logger.debug("Output path: %s" % OUTPUT_PATH)
-        
+
         # Default: Open console.
         c = PethConsole(peth)
         c.start_console()
-    
+
 
 if __name__ == "__main__":
     main()

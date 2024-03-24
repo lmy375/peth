@@ -1,10 +1,10 @@
 import json
 import re
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import eth_abi
 
-from .utils import func_selector, hex2bytes, collapse_if_tuple
+from .utils import collapse_if_tuple, func_selector, hex2bytes
 
 
 class Signature(object):
@@ -14,12 +14,11 @@ class Signature(object):
     Ref: https://docs.soliditylang.org/en/v0.8.12/abi-spec.html#json
     """
 
-
     FUNCTION = "function"
     CONSTRUCTOR = "constructor"
     RECEIVE = "receive"
     FALLBACK = "fallback"
-    
+
     EVENT = "event"
     ERROR = "error"
 
@@ -59,22 +58,16 @@ class Signature(object):
             Signature.FUNCTION,
             Signature.CONSTRUCTOR,
             Signature.RECEIVE,
-            Signature.FALLBACK
-        ]
-    
-    @property
-    def is_event(self) -> bool:
-        return self.type in [
-            Signature.EVENT,
-            Signature.ERROR
+            Signature.FALLBACK,
         ]
 
     @property
+    def is_event(self) -> bool:
+        return self.type in [Signature.EVENT, Signature.ERROR]
+
+    @property
     def is_view(self) -> bool:
-        return self.is_function and self.mode in [
-            Signature.VIEW,
-            Signature.PURE
-        ]
+        return self.is_function and self.mode in [Signature.VIEW, Signature.PURE]
 
     @property
     def inputs_sig(self) -> str:
@@ -96,7 +89,7 @@ class Signature(object):
         return "%s(%s)" % (self.name, ",".join(i[1] for i in self.inputs))
 
     def encode_args(self, args, with_selector=True):
-        buf = b''
+        buf = b""
         if with_selector:
             buf += self.selector
         if self.inputs:
@@ -110,9 +103,11 @@ class Signature(object):
         if has_selector:
             selector = data[:4]
             data = data[4:]
-            if(selector != self.selector):
-                print("[!] selector mismatch: expected %s but get %s" %
-                      (self.selector.hex(), selector.hex()))
+            if selector != self.selector:
+                print(
+                    "[!] selector mismatch: expected %s but get %s"
+                    % (self.selector.hex(), selector.hex())
+                )
 
         if self.inputs:
             return eth_abi.decode_single(self.inputs_sig, data)
@@ -122,7 +117,7 @@ class Signature(object):
     def decode_ret(self, data):
         if type(data) is str:
             data = hex2bytes(data)
-        
+
         if self.outputs:
             ret_values = eth_abi.decode_single(self.outputs_sig, data)
             if len(ret_values) == 1:
@@ -133,29 +128,31 @@ class Signature(object):
             return None
 
     def __str__(self) -> str:
-        buf = ''
+        buf = ""
 
         if self.is_function:
-            buf += '0x' + self.selector.hex() + ' '
+            buf += "0x" + self.selector.hex() + " "
 
         if self.type:
-            buf += self.type + ' '
+            buf += self.type + " "
 
         if self.name:
             buf += self.name
 
         buf += "("
-        buf += ", ".join("%s%s" % (typ, ' ' + name if name else "")
-                         for name, typ in self.inputs)
+        buf += ", ".join(
+            "%s%s" % (typ, " " + name if name else "") for name, typ in self.inputs
+        )
         buf += ")"
 
         if self.mode and self.mode != Signature.NONPAYABLE:
             buf += " " + self.mode
 
         if self.outputs:
-            buf += " returns ("   
-            buf += ", ".join("%s%s" % (typ, ' ' + name if name else "")
-                         for name, typ in self.outputs)
+            buf += " returns ("
+            buf += ", ".join(
+                "%s%s" % (typ, " " + name if name else "") for name, typ in self.outputs
+            )
             buf += ")"
 
         return buf
@@ -163,30 +160,30 @@ class Signature(object):
     @classmethod
     def split_sig(cls, sig: str) -> list:
         sig = re.sub(r"\s", "", sig)  # remove blank chars.
-        if sig.startswith('(') and sig.endswith(')'):
-            sig = sig[1:-1] # Remove ()
+        if sig.startswith("(") and sig.endswith(")"):
+            sig = sig[1:-1]  # Remove ()
 
         types = []
         left = 0
 
-        type_str = ''
+        type_str = ""
         for c in sig:
-            if c == ',' and left == 0:
+            if c == "," and left == 0:
                 types.append(type_str)
-                type_str = ''
+                type_str = ""
                 continue
 
-            elif c == '(':
+            elif c == "(":
                 left += 1
 
-            elif c == ')':
+            elif c == ")":
                 left -= 1
                 assert left >= 0, "Invalid sig: %s" % sig
-            
+
             type_str += c
 
         if type_str:
-            types.append(type_str) # Append the last one.
+            types.append(type_str)  # Append the last one.
 
         return types
 
@@ -236,7 +233,6 @@ class Signature(object):
         for arg in item.get("inputs", []):
             sig.inputs.append((arg["name"], collapse_if_tuple(arg)))
 
-       
         for arg in item.get("outputs", []):
             sig.outputs.append((arg["name"], collapse_if_tuple(arg)))
 
@@ -264,8 +260,7 @@ class Signatures(object):
         if type(abi_list) is str:
             abi_list = json.loads(abi_list)
 
-        assert type(
-            abi_list) is list, "JSON ABI or human-readable ABI list needed."
+        assert type(abi_list) is list, "JSON ABI or human-readable ABI list needed."
 
         for item in abi_list:
             if type(item) is str:  # human-readable ABI
@@ -283,6 +278,7 @@ class Signatures(object):
     def find_by_selector(self, selector):
         return self.selector_map.get(bytes(selector))
 
+
 ERC20Signatures = Signatures(
     [
         "totalSupply() -> (uint256)",
@@ -294,8 +290,4 @@ ERC20Signatures = Signatures(
     ]
 )
 
-UniswapV2PairSignatures = Signatures(
-    [
-        "getReserves() -> (uint112, uint112, uint32)"
-    ]
-)
+UniswapV2PairSignatures = Signatures(["getReserves() -> (uint112, uint112, uint32)"])

@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
@@ -9,8 +9,8 @@ setup(
     url="https://github.com/lmy375/peth",
     author="Moon",
     version="0.1.6",
-    packages=find_packages(exclude=['tests',"peth/4byte.json"]),
-    package_data={'peth': ['*.json'] },
+    packages=find_packages(exclude=["tests", "peth/4byte.json"]),
+    package_data={"peth": ["*.json"]},
     python_requires=">=3.8",
     install_requires=[
         "crytic_compile==0.2.3",
@@ -21,14 +21,10 @@ setup(
         "requests==2.28.1",
         "sha3==0.2.1",
         "web3==5.31.1",
-        "eth_account==0.5.9"
+        "eth_account==0.5.9",
     ],
     license="AGPL-3.0",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    entry_points={
-        "console_scripts": [
-            "peth = peth.__main__:main"
-        ]
-    }
+    entry_points={"console_scripts": ["peth = peth.__main__:main"]},
 )

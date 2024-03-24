@@ -1,8 +1,7 @@
 import solcx
 
-'''
-
-Eg: 
+"""
+Eg:
 
 pragma solidity ^0.8.13;
 
@@ -14,14 +13,14 @@ contract Executor {
     }
 }
 
-ETHCALL_CONTRACT will add to the tail. The EthCall contructor code will just
+WRAPPER_CONTRACT will add to the tail. The Wrapper contructor code will just
 call Executor.run() and return the same return data, which we can decode with
 the ABI of Executor.run().
-'''
+"""
 
-ETHCALL_CONTRACT = '''
+WRAPPER_CONTRACT = """
 
-contract EthCall {
+contract Wrapper {
     constructor() public payable {
         Executor e = new Executor();
         e.run();
@@ -33,13 +32,15 @@ contract EthCall {
         }
     }
 }
-'''
+"""
+
 
 def compile(code):
     return solcx.compile_source(code, output_values=["abi", "bin"])
     # return solcx.compile_source(code, output_values=["abi", "bin"], optimize=True)
     # return solcx.main._compile_combined_json(stdin=code, output_values=["abi", "bin"], optimize=True, via_ir=True)
 
+
 def compile_with_eth_call(code):
-    code += ETHCALL_CONTRACT
+    code += WRAPPER_CONTRACT
     return compile(code)

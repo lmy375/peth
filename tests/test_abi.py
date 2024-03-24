@@ -1,10 +1,10 @@
-from hexbytes import HexBytes
-from os import path
 import json
+from os import path
 
-from peth.eth.abi import ABI, ABIFunction, ABIType
+from hexbytes import HexBytes
+
 from peth.core.peth import Peth
-
+from peth.eth.abi import ABI, ABIFunction, ABIType
 
 BAL_VAULT = "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
 
@@ -15,10 +15,11 @@ BATCH_SWAP_DATA = HexBytes(
 
 ABI_PATH = path.join(path.dirname(__file__), "bal.json")
 if not path.exists(ABI_PATH):
-    abi = Peth.get_or_create('eth').scan.get_abi(BAL_VAULT)
+    abi = Peth.get_or_create("eth").scan.get_abi(BAL_VAULT)
     json.dump(abi, open(ABI_PATH, "w"))
 
 BAL_ABI = ABI(json.load(open(ABI_PATH)))
+
 
 def test_ABIType():
     a = ABIType(typ="uint256[2][3]")
