@@ -3,6 +3,9 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
+requires = open("requirements.txt").read().splitlines()
+requires = filter(lambda x: not x.startswith("#"), requires)
+
 setup(
     name="peth",
     description="A python Ethereum utilities command-line tool.",
@@ -12,17 +15,7 @@ setup(
     packages=find_packages(exclude=["tests", "peth/4byte.json"]),
     package_data={"peth": ["*.json"]},
     python_requires=">=3.8",
-    install_requires=[
-        "crytic_compile==0.2.3",
-        "eth_abi==2.2.0",
-        "py_solc_x==1.1.1",
-        "pycryptodome==3.16.0",
-        "pysha3==1.0.2",
-        "requests==2.28.1",
-        "sha3==0.2.1",
-        "web3==5.31.1",
-        "eth_account==0.5.9",
-    ],
+    install_requires=requires,
     license="AGPL-3.0",
     long_description=long_description,
     long_description_content_type="text/markdown",
