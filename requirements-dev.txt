@@ -1,3 +1,6 @@
 sphinx>=7.1,<7.2
+sphinx-autobuild
 myst_parser
 sphinx-book-theme
+sphinx_rtd_theme
+pre-commit

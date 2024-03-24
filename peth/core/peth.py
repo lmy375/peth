@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from web3 import Web3
 
@@ -52,7 +52,7 @@ class Peth(Web3Ex):
 
         return url
 
-    def analyze_bytecode(self, addr=None, code=None) -> List[bytes, str]:
+    def analyze_bytecode(self, addr=None, code=None) -> List[Tuple[bytes, str]]:
 
         if code is None:
             addr = Web3.toChecksumAddress(addr)

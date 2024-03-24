@@ -1,11 +1,11 @@
 =======
-Brownie
+Peth
 =======
 
 .. toctree::
     :maxdepth: 2
 
-    Overview <index.rst>
+    Overview <overview.md>
     quickstart.rst
 
 

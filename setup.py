@@ -8,7 +8,7 @@ requires = filter(lambda x: not x.startswith("#"), requires)
 
 setup(
     name="peth",
-    description="A python Ethereum utilities command-line tool.",
+    description="An all-in-one Ethereum SDK and command-line tool written in python.",
     url="https://github.com/lmy375/peth",
     author="Moon",
     version="0.1.6",

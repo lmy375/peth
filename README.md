@@ -1,6 +1,6 @@
 # Peth
 
-A python Ethereum utilities command-line tool.
+An all-in-one Ethereum SDK and command-line tool written in python.
 
 `Peth`, pronounced like `Peace`, wishes to become the *Swiss Army Knife* guarding the Ethereum space.
 
