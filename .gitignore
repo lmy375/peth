@@ -14,7 +14,10 @@ crytic-export/
 # Downloaded resource.
 4byte.json
 
-# setup
+# Setup
 build/
 dist/
 peth.egg-info/
+
+# Docs
+_build
