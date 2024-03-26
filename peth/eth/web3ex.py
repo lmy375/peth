@@ -130,15 +130,26 @@ class Web3Ex(object):
         # No signature found.
         return None
 
-    def eth_call_raw(self, to, data, sender=None, value="0x0"):
+    def eth_call_raw(self, to, data, sender=None, value: int = 0):
         if not sender:
             sender = self.sender
 
-        tx = {"from": sender, "to": to, "data": HexBytes(data).hex(), "value": value}
+        tx = {
+            "from": sender,
+            "to": to,
+            "data": HexBytes(data).hex(),
+            "value": hex(value),
+        }
         return self.rpc_call("eth_call", [tx, "latest"])
 
     def eth_call(
-        self, to, sig_or_name, args=[], sender=None, value="0x0", silent=False
+        self,
+        to,
+        sig_or_name,
+        args=[],
+        sender=None,
+        value: int = 0,
+        silent: bool = False,
     ):
         """
         Construct tx data and perform eth_call RPC call.
@@ -167,7 +178,7 @@ class Web3Ex(object):
                 raise e
 
     def call_contract(
-        self, contract, sig_or_name, args=[], sender=None, value="0x0", silent=False
+        self, contract, sig_or_name, args=[], sender=None, value: int = 0, silent=False
     ):
         """
         If tx reverts, print error message and return None.
@@ -208,20 +219,14 @@ class Web3Ex(object):
         # print(tx)
         r = self.rpc_call("eth_call", [tx, "latest"])
         # print(r)
-        if "error" in r:
-            return r
-
-        if "result" in r:
-            try:
-                ret = func.decode_output(r["result"])
-                if ret is not None:
-                    return ret
-                else:
-                    # If no output sig, return raw data.
-                    return r["result"]
-            except Exception:
+        try:
+            ret = func.decode_output(r)
+            if ret is not None:
+                return ret
+            else:
                 return r
-        return r
+        except Exception:
+            return r
 
     def send_transaction(self, data=None, to=None, value=None, dry_run=False):
         assert self.signer, "send_transaction: signer not set."
@@ -253,7 +258,7 @@ class Web3Ex(object):
         return r
 
     def get_logs(
-        self, address=None, topics=[], start=None, end=None, step=3000, count=50
+        self, address=None, topics=[], start=None, end=None, step=100, count=100
     ):
         eth = self.web3.eth
         if end is None:

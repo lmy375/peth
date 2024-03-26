@@ -106,6 +106,10 @@ class ABIFunction(object):
         return HexBytes(abi_encode(self.output_types, rets))
 
     def decode_output(self, retdata, auto_one=True):
+        if len(self.outputs) == 0:
+            # If no output type, return the entire bytes.
+            return retdata
+
         ret = abi_decode(self.output_types, HexBytes(retdata))
         if auto_one and len(self.outputs) == 1:
             return ret[0]

@@ -1,0 +1,162 @@
+# DApp
+
+## view
+
+查看某个合约的变量值，可以指定数据类型。
+
+```
+peth > view 0xdAC17F958D2ee523a2206206994597C13D831ec7 symbol
+0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045553445400000000000000000000000000000000000000000000000000000000
+
+peth > view 0xdAC17F958D2ee523a2206206994597C13D831ec7 symbol string
+USDT
+```
+
+## erc20
+
+打印 ERC20 Token 的各类信息。
+```
+peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 
+Name: Tether USD
+Symbol: USDT
+decimals: 6
+totalSupply: 48999156520373530
+```
+
+也可用于调用 ERC20 合约方法
+```
+peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 symbol
+USDT
+
+peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 s
+USDT
+
+peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 balanceOf 0xdAC17F958D2ee523a2206206994597C13D831ec7
+229943573161
+
+peth > erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7 b 0xdAC17F958D2ee523a2206206994597C13D831ec7
+229943573161
+```
+
+## proxy
+
+打印 ERC-1967 proxy 信息
+
+```
+peth > proxy 0x858646372CC42E1A627fcE94aa7A7033e7CF075A
+0x858646372CC42E1A627fcE94aa7A7033e7CF075A is an ERC-1967 Proxy
+Implementation: 0x5d25eef8cfedaa47d31fe2346726de1c21e342fb StrategyManager
+Admin: 0x8b9566ada63b64d1e1dcf1418b43fd1433b72444 ProxyAdmin
+Beacon: 0x0000000000000000000000000000000000000000 EOA
+ProxyAdmin owner:
+Owner: 0x369e6f597e22eab55ffb173c6d9cd234bd699111 GnosisSafe 1/2
+```
+
+## owner
+
+调用合约的 `owner()` 方法
+
+```
+peth > owner 0x8b9566ada63b64d1e1dcf1418b43fd1433b72444
+Owner: 0x369e6f597e22eab55ffb173c6d9cd234bd699111 GnosisSafe 1/2
+```
+
+## safe
+
+打印 Safe{Wallet} （原 Gnosis Safe）信息
+
+```
+peth > safe 0x369e6f597e22eab55ffb173c6d9cd234bd699111
+Version: 1.3.0
+Policy: 1/2
+Owners:
+  0xa6db1a8c5a981d1536266d2a393c5f8ddb210eaf Timelock
+  0xfea47018d632a77ba579846c840d5706705dc598 GnosisSafe 9/13
+Impl: 0xd9db270c1b5e3bd161e8c8503c55ceabee709552
+```
+
+## timelock
+
+打印 timelock 信息
+
+```
+peth > timelock 0xa6db1a8c5a981d1536266d2a393c5f8ddb210eaf
+Min Delay: 172800s = 48.00h
+Max Delay: 2592000s = 720.00h
+Current Delay: 864000s = 240.00h
+Admin: 0xbe1685c81aa44ff9fb319dd389addd9374383e90 GnosisSafe 3/6
+```
+
+## pair
+
+打印 Uniswap V2 Pair 信息。
+```
+peth > pair 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852
+TokenPair: 0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852
+WETH 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 18
+USDT 0xdac17f958d2ee523a2206206994597c13d831ec7 6
+Reseves: 18603.8263 WETH, 67971743.3326 USDT
+V2 Price:
+1 WETH = 3653.6432 USDT
+1 USDT = 0.0003 WETH
+```
+
+## factory
+
+打印 Uniswap V2 Factory 中所有 pair 信息。
+
+```
+peth > factory 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
+313954 pairs found.
+[0] 0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc
+TokenPair: 0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc
+USDC 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 6
+WETH 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 18
+Reseves: 47013378.5775 USDC, 12860.4069 WETH
+V2 Price:
+1 USDC = 0.0003 WETH
+1 WETH = 3655.6681 USDC
+[1] 0x3139ffc91b99aa94da8a2dc13f1fc36f9bdc98ee
+TokenPair: 0x3139ffc91b99aa94da8a2dc13f1fc36f9bdc98ee
+USDP 0x8e870d67f660d95d5be530380d0ec0bd388289e1 18
+USDC 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 6
+Reseves: 6.7295 USDP, 6.7772 USDC
+V2 Price:
+1 USDP = 1.0071 USDC
+1 USDC = 0.9930 USDP
+...
+```
+
+## oracle
+
+打印 ChainLink oracle 的信息
+
+```
+peth > oracle 0xdeb288f737066589598e9214e782fa5a8ed689e8
+Aggregator: 0x81076d6ff2620ea9dd7ba9c1015f0d09a3a732e6
+Proxy Owner: 0x21f73d42eb58ba49ddb685dc29d3bf5c0f0373ca
+Aggregator Owner: 0x21f73d42eb58ba49ddb685dc29d3bf5c0f0373ca
+Version: 4
+Description: BTC / ETH
+Decimals: 18
+Latest Answer: 19452809156463572000 (19.45)
+Max Answer: 10000000000000000000000 (10000.00)
+Min Answer: 100000000000000000 (0.10)
+16 Transmitters:
+  0x57cd4848b12469618b689163f507817940acca02
+  0xcc29be4ca92d4ecc43c8451fba94c200b83991f6
+  0x64c735d72eab90c04da523b6b9895773acb60f5d
+  0xa938d77590af1d98bab7dc4a0bde594fc3f9c403
+  0x2a4a7afa40a9d03b425752fb4cfd5f0ff5b3964c
+  0x9cfab1513ffa293e7023159b3c7a4c984b6a3480
+  0x3ae9d0b74e3968cfcf89a4de4f0d8b2a326a1dfd
+  0xf16e77a989529aa4c58318acee8a1548df3fccc1
+  0x8b1d49a93a84b5da0917a1ed42d8a3e191c28524
+  0x7bfb89db2d7217c57c3ad3d4b55826efd17dc2e9
+  0xbbf078a8849d74623e36e6dbbdc8e0a35e657c26
+  0x43793ee58e0a3d920e3e4a115a9fa07dc4b09715
+  0x0312ea121df0a323ff535b753172736cc9d53d13
+  0xc4b732fd121f2f3783a9ac2a6c62fd535fd13fda
+  0x5a6fcc02d8c50ea58a22115a7c4608b723030016
+  0xe3e0596ac55ae6044b757bab27426f7dc9e018d4
+```

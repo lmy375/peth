@@ -98,7 +98,11 @@ def explain_call(chain, to, data, value=0):
     return MD_DATA.replace("#MARKDOWN", str(msg))
 
 
-if __name__ == "__main__":
+def main():
     import uvicorn
 
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
+if __name__ == "__main__":
+    main()

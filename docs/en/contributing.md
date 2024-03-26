@@ -1,8 +1,8 @@
-# 贡献代码
+# Contributing
 
-1. 在 Github 中 Fork https://github.com/lmy375/peth.
+1. Fork https://github.com/lmy375/peth on Github.
 
-2. 克隆仓库并安装相应依赖。
+2. Clone the repository and install the corresponding dependencies.
 
 ```sh
 $ python -m venv pethenv
@@ -18,7 +18,7 @@ $ pip install -r requirements-dev.txt
 $ pre-commit install --install-hooks
 ```
 
-3. 修改代码，添加单元测试。保证单元测试完整通过
+3. Modify the code or add new code, add unit tests. Ensure that all unit tests pass.
 
 ```sh
 $ pytest
@@ -34,4 +34,6 @@ tests/test_source.py .                                                          
 ============================ 11 passed, 2 warnings in 10.05s ============================
 ```
 
-4. 在 Github 上提交 Pull request.
+4. Update the corresponding documentation.
+
+5. Submit a Pull request on Github.

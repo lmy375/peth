@@ -6,10 +6,15 @@ docs:
 cn_docs:
 	sphinx-autobuild docs/cn docs/cn/_build
 
-publish:
-	rm -r dist
+release:
+	rm -rf dist
 	python -m build
+
+publish:
 	twine upload dist/*
+
+test:
+	pytest
 
 install:
 	python setup.py install

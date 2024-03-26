@@ -1,50 +1,75 @@
 
-# Install 安装
+# Installation
 
-## From pip 
+## Preparation
 
-1. Install with pip. 通过 pip 安装。
+It is recommended to create a Python virtual environment before installation.
+```sh
+$ python -m venv pethenv
+$ source pethenv/bin/activate
 ```
-$ python -m venv test
-$ source test/bin/activate
 
+## From pypi
+
+```sh
+# install
 $ pip install peth
-# or
-$ pip install git+https://github.com/lmy375/peth
+
+# run
+$ peth -h
 ```
 
-2. Run peth。运行 peth。
-```
+## From github
+
+The recommended way to get the latest release.
+
+```sh
+# install
+$ pip install git+https://github.com/lmy375/peth
+
+# run
 $ peth -h
 ```
 
 ## From source
 
-1. Clone the repo. 克隆本仓库。
+```sh
+# download
+$ git clone https://github.com/lmy375/peth
+$ pip install -r requirements.txt
 
+# run
+$ cd peth
+$ python main.py -h
 ```
-git clone https://github.com/lmy375/peth
-```
-2. (Optional) Edit `config.json` with new EVM network RPC endpoints and your Etherscan API keys. （可选的）编辑根目录下的 `config.json` 文件，添加自定义的 RPC 地址。添加 API Key 可以提高执行速度（否则限频时会自动等待）。
 
-```json
+## Customized RPC and API Key
+
+Edit the config.json file in the peth directory. If installed via pip, the file is located in the corresponding package in `site-packages`.
+
+Add custom RPC addresses to support new EVM chains, and you are welcome to submit a Github Pull Request.
+
+Adding an API Key can speed up execution, otherwise it will automatically wait when encountering API rate limits.
+
+```js
 {
     "chains": {
         "eth": [
-            // RPC endpoint URL.
-            "https://rpc.ankr.com/eth",  
+            // Node RPC address
+            "https://rpc.ankr.com/eth",
 
-            // Etherscan-style API URL.
-            // Get better experience if you have an API key.
-            // https://api.etherscan.io/api?apikey=<Your API Key>&
-            // Do NOT forget the '?' or '&' in the URL.
+            // Etherscan API URL, be careful not to miss the trailing ?
+            // Only supports Etherscan compatible blockchain explorers
             "https://api.etherscan.io/api?",
-            
-            // Etherscan address page URL.
+
+            // If you want to add an API Key, use this format
+            // https://api.etherscan.io/api?apikey=<Your API Key>&
+
+            // URL for opening a specific address
             "https://etherscan.io/address/"
         ],
 
-      //...
+       // You can continue to add new chains
     }
 }
 ```

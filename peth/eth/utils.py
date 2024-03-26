@@ -2,7 +2,7 @@ import atexit
 import json
 import os
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 import requests
 from web3 import Web3
@@ -249,6 +249,10 @@ def convert_value(value):
         return int(value)
     elif re.match(HEX_PATTERN, value):  # hexcimal
         return int(value, 16)
+    elif value.strip().lower() == "true":
+        return True
+    elif value.strip().upper() == "false":
+        return False
     else:
         return value
 
@@ -257,10 +261,10 @@ def convert_value_list(values):
     return [convert_value(v) for v in values]
 
 
-def guess_calldata_types(data):
+def guess_calldata_types(data) -> List[Tuple[str, str, str]]:
     """
     data: hex data without selector.
-    return [(type, value),..]
+    return [(offset, type, value),..]
     """
     if type(data) is str:
         buf = hex2bytes(data)
@@ -315,6 +319,16 @@ def guess_calldata_types(data):
             results.append(("%#x" % (i * 32), "unknown", value.hex()))
 
     return results
+
+
+def guess_single_calldata(data):
+    results = guess_calldata_types(data)
+    if len(results) == 1:
+        return results[0][1], results[0][2]
+    if len(results) == 3:
+        if results[0][1] in ["bytes", "string"]:
+            return results[0][1], results[0][2].split("// offset")[0]
+    return "bytes", data
 
 
 class CoinPrice(object):

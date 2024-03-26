@@ -6,7 +6,7 @@ import time
 import requests
 from web3 import Web3
 
-from ..core.config import CACHE_PATH, DEFAULT_API_INTERVAL, OUTPUT_PATH, chain_config
+from ..core.config import CACHE_PATH, OUTPUT_PATH, SCAN_API_INTERVAL, chain_config
 
 
 class ScanAPI(object):
@@ -23,6 +23,10 @@ class ScanAPI(object):
         self._cache_path = os.path.join(CACHE_PATH, re.findall("//(.*)?/", api_url)[0])
         if not os.path.exists(self._cache_path):
             os.makedirs(self._cache_path)
+
+        self._source_path = os.path.join(
+            OUTPUT_PATH, "source", re.findall("//(.*)?/", self.api_url)[0]
+        )
 
     @classmethod
     def get_or_create(cls, api_url):
@@ -58,7 +62,7 @@ class ScanAPI(object):
             # retry.
             if "Max rate limit reached" in d["result"]:
                 # API request limit.
-                time.sleep(DEFAULT_API_INTERVAL)
+                time.sleep(SCAN_API_INTERVAL)
                 return self.get(url)
 
             assert d["status"] == "1", d
@@ -177,24 +181,16 @@ class ScanAPI(object):
         return ret
 
     def _normal_file_path(self, path):
-        if path.startswith("@"):  # Skip npm package.
-            pass
-        elif "contracts/" in path:  # locate to contracts dir.
-            path = path[path.index("contracts/") :]
-
-        path = path.replace("..", "_")  # Protect from path travel attack.
-
-        if path.startswith("/"):
-            path = path[1:]
-
+        # Protect from path travel attack.
+        path = path.strip("/")
+        path = path.strip("~")
+        path = path.replace("..", "_")
         return path
 
     def download_source(self, addr, output_dir=None):
 
         if not output_dir:
-            output_dir = os.path.join(
-                OUTPUT_PATH, "source", re.findall("//(.*)?/", self.api_url)[0], addr
-            )
+            output_dir = os.path.join(self._source_path, addr)
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)

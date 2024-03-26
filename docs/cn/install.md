@@ -36,13 +36,14 @@ $ peth -h
 ```sh
 # download
 $ git clone https://github.com/lmy375/peth
+$ pip install -r requirements.txt
 
 # run
 $ cd peth
 $ python main.py -h
 ```
 
-## （可选）配置自定义的 RPC 及 API Key
+## 配置 RPC 及 API Key
 
 编辑 peth 目录下的 `config.json` 文件。如果是通过 pip 形式安装，则文件位于 `site-packages` 中对应的包中。
 

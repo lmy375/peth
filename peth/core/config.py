@@ -22,7 +22,7 @@ DIFF_TMP_FILE = os.path.join(OUTPUT_PATH, "diff", "tmp.sol")
 REPORT_PATH = os.path.join(OUTPUT_PATH, "report")
 SOURCE_PATH = os.path.join(OUTPUT_PATH, "sources")
 
-DEFAULT_API_INTERVAL = 6
+SCAN_API_INTERVAL = 6
 
 user_config = json.load(open(CHAIN_CONFIG_PATH))
 chain_config = user_config["chains"]

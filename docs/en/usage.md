@@ -1,8 +1,8 @@
-# 使用
+# Usage
 
-## 命令行
+## Command Line
 
-直接通过命令行进行调用。
+Execute directly with the `peth` command line.
 
 ```sh
 $ peth -c eth --cmd erc20 0xdAC17F958D2ee523a2206206994597C13D831ec7
@@ -12,15 +12,14 @@ decimals: 6
 totalSupply: 48999156520373530
 ```
 
-查看完整命令行选项
+View the complete command line options
 ```sh
 $ peth -h
 ```
 
-## 控制台
+## Console
 
-进入 peth 控制台。
-
+Enter the `peth` console.
 ```
 Welcome to the peth shell. Type `help` to list commands.
 
@@ -31,9 +30,10 @@ decimals: 6
 totalSupply: 48999156520373530
 ```
 
-控制台中的命令均可以通过 `peth --cmd` 通过命令行调用。
+Commands in the console can be invoked through the command line using `peth --cmd`.
 
-可通过 `help` 命令查看命令帮助。
+You can view command help by using the `help` command.
+
 ```
 peth > help
 
@@ -57,9 +57,9 @@ peth > help erc20
         erc20 <address> <function> <args> : call ERC20 function.
 ```
 
-## 脚本
+## Script
 
-通过脚本使用 peth python 库，示例：
+Use `peth` as a python library through a script, example:
 
 ```sh
 ➜ ipython

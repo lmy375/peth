@@ -16,13 +16,14 @@ from web3 import Web3
 from peth.core.peth import Peth
 from peth.eth.abi import ABI, ABIFunction
 from peth.eth.bytecode import Code
-from peth.eth.sigs import ERC20Signatures, Signature
+from peth.eth.sigs import Signature
 from peth.eth.utils import (
     CoinPrice,
     SelectorDatabase,
     convert_value,
     convert_value_list,
     guess_calldata_types,
+    guess_single_calldata,
     selector_to_sigs,
     sha3_256,
 )
@@ -154,7 +155,6 @@ class PethConsole(cmd.Cmd):
             assert type(arg) is list
             args = arg
 
-        assert len(args) > 0, "Empty args"
         if typ == "auto":
             return convert_value_list(args)
         elif typ == "address":
@@ -197,51 +197,86 @@ class PethConsole(cmd.Cmd):
 
     def do_chain(self, arg):
         """
-        chain : Print current chain config.
-        chain <chain> : Change chain.
+        chain : Print configuration of the connected chain.
+        chain <name> : Change to new chain.
         """
 
         print("Current:")
-        print("Chain:", self.peth.chain)
-        print("RPC:", self.peth.rpc_url)
-        print("API:", self.peth.api_url)
-        print("Address:", self.peth.address_url)
+        print("  Chain:", self.peth.chain)
+        try:
+            print("     Chain ID:", self.peth.web3.eth.chain_id)
+            print("     Block number:", self.peth.web3.eth.block_number)
+        except Exception:
+            pass
+        print("  RPC:", self.peth.rpc_url)
+        print("  API:", self.peth.api_url)
+        print("  Address:", self.peth.address_url)
 
         if arg in chain_config:
             old_sender = self.peth.sender
             self.peth = Peth.get_or_create(arg)
             self.peth.sender = old_sender  # Keep the sender value.
             print("Changed:")
-            print("Chain:", self.peth.chain)
-            print("RPC:", self.peth.rpc_url)
-            print("API:", self.peth.api_url)
-            print("Address:", self.peth.address_url)
+            print("  Chain:", self.peth.chain)
+            try:
+                print("     Chain ID:", self.peth.web3.eth.chain_id)
+                print("     Block number:", self.peth.web3.eth.block_number)
+            except Exception:
+                pass
+            print("  RPC:", self.peth.rpc_url)
+            print("  API:", self.peth.api_url)
+            print("  Address:", self.peth.address_url)
 
         else:
             print("Supported chains: %s" % ", ".join(chain_config.keys()))
 
     def do_config(self, arg):
         """
-        config: Print current config settings.
+        config: Print current settings.
+        config <key> <value>: Change settings.
         """
-        config.print_config()
-        print("Use ? exec('config.xxx = xxx') to change.")
+        args = self._parse_args(arg)
+        if len(args) == 0:
+            config.print_config()
+            print("\nUse `config key value` to change settings.")
+        else:
+            k, v = args
+            if k in config.__dict__:
+                config.__dict__[k] = v
+            else:
+                print("Not valid config key.")
 
     def do_sender(self, arg):
         """
         sender <addr> : Set default sender in eth_call.
         """
-        print("Old:", self.peth.sender)
+        print("Current:", self.peth.sender)
         if Web3.isAddress(arg):
             self.peth.sender = arg
-            print("New:", self.peth.sender)
+            print("New:    ", self.peth.sender)
+
+    def do_signer(self, arg):
+        """
+        signer <private-key>: Set signer for send_tx. DANGEROUS!
+        """
+        if self.peth.signer:
+            print("Current:", self.peth.signer.address)
+        else:
+            print("Current: Not set.")
+
+        if not arg:
+            return
+
+        signer = Account.from_key(arg)
+        self.peth.signer = signer
+        print("New:    ", self.peth.signer.address)
 
     ##################################################################
-    # Chain-independent commands.
+    # Chain-independent utility commands.
 
-    def do_sha3(self, arg):
+    def do_keccak256(self, arg):
         """
-        sha3 <string> : Calculate Keccak256 hash.
+        keccak256 <string> : Calculate Keccak256 hash.
         """
         print(sha3_256(bytes(arg.strip(), "ascii", "ignore")).hex())
 
@@ -263,91 +298,6 @@ class PethConsole(cmd.Cmd):
         print("Hex: %#x" % value)
         print("Hex(Address): %#0.40x" % value)
         print("Hex(Uint256): %0.64x" % value)
-
-    def do_sig(self, arg):
-        """
-        sig <selector> : query text signature in https://openchain.xyz/signatures.
-        sig <text> : query text signature which includes such text in local database.
-        """
-        db = SelectorDatabase.get()
-
-        if re.match("^[0-9A-Fa-fXx]*$", arg):  # selector
-            sigs = db.get_sig_from_selector(arg, False, True)
-            if sigs:
-                print("\n".join(sigs))
-            else:
-                print("Selector not found in https://openchain.xyz/signatures.")
-        else:
-            ret = db.get_sig_from_text(arg)
-            full_match = None
-            if ret:
-                for selector, sigs in ret:
-                    if arg in sigs:
-                        full_match = (selector, ", ".join(sigs))
-                    print("0x%s %s" % (selector, ", ".join(sigs)))
-
-            print("%d item(s) found in 4byte.json." % len(ret))
-            if full_match:
-                print("Full match: 0x%s %s" % full_match)
-
-    def do_abi_encode(self, arg):
-        """
-        abi_encode <sig> <args1> <args2> ...
-        eg: abi_encode func(uint256,address) 1 0xEEEEE...
-        """
-        args = arg.split()
-        sig = args[0]
-
-        f = ABIFunction(sig)
-
-        if len(args) == 1:  # Only selector.
-            print(f.selector.hex())
-            return
-
-        args = args[1:]
-        args = list(map(convert_value, args))
-        print(f.encode_input(args).hex())
-
-    def _print_decoded_calldata(self, calldata, to=None, sig=None):
-        func = self.peth.get_function(to, sig, calldata)
-
-        if func:
-            values = func.decode_input(calldata)
-            value_map = func.map_values(values)
-
-            print("Method:", func.full)
-            print("Arguments:")
-            values = func.decode_input(calldata)
-            value_map = func.map_values(values)
-            ABI.print_value_map(value_map, 4)
-
-        else:
-            data = HexBytes(calldata)
-            print("No signature found for selector %s." % data[:4].hex())
-            data = data[4:]
-            if not data:  # No data.
-                return
-            print("Guessing types ...")
-            i = 0
-            for offset, typ, value in guess_calldata_types(data):
-                print("[%d] +%s   %s   %s" % (i, offset, typ, value))
-                i += 1
-
-    def do_calldata_decode(self, arg):
-        """
-        calldata_decode <hex>
-        calldata_decode <hex> <sig>
-        """
-        args = arg.split()
-        hexdata = args[0]
-        assert re.match("^[0-9A-Fa-fXx]+$", hexdata), "Invalid hex data. %s" % hexdata
-
-        if len(args) == 2:
-            sig = args[1]
-        else:
-            sig = None
-
-        self._print_decoded_calldata(hexdata, sig=sig)
 
     def do_common_addresses(self, arg):
         """
@@ -402,25 +352,22 @@ class PethConsole(cmd.Cmd):
 
     def do_open(self, arg):
         """
-        Open url or file.
+        open <path>: Open url or file.
         """
         self.do_sh("open " + arg)
 
-    def do_bye(self, arg=None):
+    def do_exit(self, arg):
         """
-        Exit the shell.
+        exit: Exit the console.
         """
 
         print("bye!")
         return True
 
-    do_exit = do_bye
-    do_quit = do_bye
-
-    def do_timestamp(self, arg):
+    def do_time(self, arg):
         """
-        timestamp <timestamp> : Convert UNIX timestamp to local datetime.
-        timestamp <seconds> : Convert seconds to hours / days.
+        time <timestamp> : Convert UNIX timestamp to local datetime.
+        time <seconds> : Convert seconds to hours / days.
         """
         if not arg:
             print("Current:", int(time.time()))
@@ -488,16 +435,105 @@ class PethConsole(cmd.Cmd):
                 print("[!] %s (Password may be wrong)" % e)
 
     ##################################################################
+    # ABI utility commands.
+
+    def do_4byte(self, arg):
+        """
+        4byte <selector> : query text signature in https://openchain.xyz/signatures.
+        4byte <text> : query text signature which includes such text in local database.
+        """
+        db = SelectorDatabase.get()
+
+        if re.match("^[0-9A-Fa-fXx]*$", arg):  # selector
+            sigs = db.get_sig_from_selector(arg, False, True)
+            if sigs:
+                print("\n".join(sigs))
+            else:
+                print("Selector not found in https://openchain.xyz/signatures.")
+        else:
+            ret = db.get_sig_from_text(arg)
+            full_match = None
+            if ret:
+                for selector, sigs in ret:
+                    if arg in sigs:
+                        full_match = (selector, ", ".join(sigs))
+                    print("0x%s %s" % (selector, ", ".join(sigs)))
+
+            print("%d item(s) found in 4byte.json." % len(ret))
+            if full_match:
+                print("Full match: 0x%s %s" % full_match)
+
+    def do_abi_encode(self, arg):
+        """
+        abi_encode <sig> <args1> <args2> ...
+        eg: abi_encode func(uint256,address) 1 0xEEEEE...
+        """
+        args = arg.split()
+        sig = args[0]
+
+        f = ABIFunction(sig)
+
+        if len(args) == 1:  # Only selector.
+            print(f.selector.hex())
+            return
+
+        args = args[1:]
+        args = list(map(convert_value, args))
+        print(f.encode_input(args).hex())
+
+    def _print_decoded_calldata(self, calldata, to=None, sig=None):
+        func = self.peth.get_function(to, sig, calldata)
+
+        if func:
+            values = func.decode_input(calldata)
+            value_map = func.map_values(values)
+
+            print("Method:", func.full)
+            print("Arguments:")
+            values = func.decode_input(calldata)
+            value_map = func.map_values(values)
+            ABI.print_value_map(value_map, 4)
+
+        else:
+            data = HexBytes(calldata)
+            print("No signature found for selector %s." % data[:4].hex())
+            data = data[4:]
+            if not data:  # No data.
+                return
+            print("Guessing types ...")
+            i = 0
+            for offset, typ, value in guess_calldata_types(data):
+                print("[%d] +%s   %s   %s" % (i, offset, typ, value))
+                i += 1
+
+    def do_abi_decode(self, arg):
+        """
+        abi_decode <hex>
+        abi_decode <hex> <sig>
+        """
+        args = arg.split()
+        hexdata = args[0]
+        assert re.match("^[0-9A-Fa-fXx]+$", hexdata), "Invalid hex data. %s" % hexdata
+
+        if len(args) == 2:
+            sig = args[1]
+        else:
+            sig = None
+
+        self._print_decoded_calldata(hexdata, sig=sig)
+
+    ##################################################################
     # Basic ETH commands.
 
-    def do_eth_call_raw(self, arg):
+    def do_eth_call(self, arg):
         """
-        eth_call_raw <calldata> [<to>] [<sender>] [<value>]
+        eth_call <to> <calldata>  [<sender>] [<value>]
         """
         args = arg.split()
 
-        data = args[0]
-        to = args[1]
+        to = args[0]
+        data = args[1]
+
         if len(args) >= 3:
             sender = args[2]
         else:
@@ -506,7 +542,7 @@ class PethConsole(cmd.Cmd):
         if len(args) >= 4:
             value = args[4]
         else:
-            value = "0"
+            value = "0x0"
 
         try:
             ret = self.web3.eth.call(
@@ -526,12 +562,12 @@ class PethConsole(cmd.Cmd):
 
     def do_estimate_gas(self, arg):
         """
-        estimate_gas <calldata> [<to>] [<sender>] [<value>]
+        estimate_gas <to> <calldata> [<sender>] [<value>]
         """
         args = arg.split()
 
-        data = args[0]
-        to = args[1]
+        to = args[0]
+        data = args[1]
         if len(args) >= 3:
             sender = args[2]
         else:
@@ -558,9 +594,9 @@ class PethConsole(cmd.Cmd):
             print("error:")
             print(e)
 
-    def do_eth_call(self, arg):
+    def do_call(self, arg):
         """
-        eth_call <to> <sig_or_name> <arg1> <arg2> ... : Call contract.
+        call <to> <sig_or_name> <arg1> <arg2> ... : Call contract.
         """
         args = arg.split()
         to = args[0]
@@ -571,6 +607,18 @@ class PethConsole(cmd.Cmd):
     def do_rpc_call(self, arg):
         """
         rpc_call <method> <arg1> <arg2> ...
+
+        eg:
+            eth_getBalance <address> latest
+            eth_chainId
+            eth_blockNumber
+            web3_clientVersion
+            eth_gasPrice
+            txpool_status
+
+        Ref:
+        - https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_protocolversion
+        - https://geth.ethereum.org/docs/interacting-with-geth/rpc
         """
         args = arg.split()
         method = args[0]
@@ -588,20 +636,20 @@ class PethConsole(cmd.Cmd):
         print("Receipt:")
         self._print_json(self.web3.eth.get_transaction_receipt(arg), True)
 
-    def do_balance(self, arg):
+    def do_address(self, arg):
         """
-        balance <address> : Get the balance of address.
+        address <address> : Print information of the account.
         """
         addr = self.web3.toChecksumAddress(arg)
         b = self.web3.eth.get_balance(addr)
-        print("%s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether"))))
+        print(
+            "Balance: %s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether")))
+        )
 
-    def do_nonce(self, arg):
-        """
-        nonce <address> : Get the nonce
-        """
-        addr = self.web3.toChecksumAddress(arg)
-        print(self.web3.eth.get_transaction_count(addr))
+        print("Nonce:", self.web3.eth.get_transaction_count(addr))
+
+        code_size = len(self.web3.eth.get_code(addr))
+        print("Code Size:", code_size)
 
     def do_storage(self, arg):
         """
@@ -626,48 +674,19 @@ class PethConsole(cmd.Cmd):
             for slot in range(0, 0x10):
                 print(hex(slot), ":", self.web3.eth.get_storage_at(addr, slot).hex())
 
-    def do_number(self, arg=None):
-        """
-        number : Get the current block number.
-        """
-        print(self.web3.eth.get_block_number())
-
-    def do_code(self, arg):
-        """
-        code <address> : Get code of address.
-        """
-        addr = self.web3.toChecksumAddress(arg)
-        print(self.web3.eth.get_code(addr).hex())
-
-    def do_codesize(self, arg):
-        """
-        codesize <address> : Get code size of address.
-        """
-        addr = self.web3.toChecksumAddress(arg)
-        print("Size", len(self.web3.eth.get_code(addr)))
-
-    def do_signer(self, arg):
-        """
-        signer <private-key>: Set signer for send_tx. DANGEROUS!
-        """
-        if self.peth.signer:
-            print("Old:", self.peth.signer.address)
-        else:
-            print("Old: Not set.")
-
-        if not arg:
-            return
-
-        signer = Account.from_key(arg)
-        self.peth.signer = signer
-        print("New:", self.peth.signer.address)
-
     def do_send_tx(self, arg):
         """
-        send_tx <data> [<to>] [<value>] : Send tx. DANGEROUS!
+        send_tx <data> [<to>] [<value>] : Send an transaction.
+
+        TAKE CARE! YOU MAY GET LOSS!
+
+        Only for test and is NOT replacement for secure wallet such
+        as Metamask, Rabby, etc.
+
+        Use `signer` to set your key before `send_tx`.
         """
         assert self.peth.signer, "Use `signer` to set your key."
-        args = arg.split()
+        args = self._parse_args(arg)
         data = args[0]
         to = None
         value = None
@@ -717,16 +736,19 @@ class PethConsole(cmd.Cmd):
 
     def do_log(self, args):
         """
-        log [<address>] [<topic 0>] [<topic 1>] [<topic 2>] [<topic 3>] [count]
+        log [<address>] [<topic 0>] [<topic 1>] [<topic 2>] [<topic 3>] [loop_count] [block_count]
            Print raw event log:
               tx_hash, address, topics, data
-           `count` is count of fetch which once scan 3000 blocks (Default 50)
-           The search starts from the latest block.
+
+           The search starts from the latest block. Run a loop:
+           - Each step scans `block_count` blocks. (Default: 100)
+           - Repeat `loop_count` times. (Default: 100)
         """
         address = None
         topics = []
-        step = 3000
-        count = 50
+        step = -1
+        count = -1
+
         for arg in args.split():
             if arg in ["-", "null", "None"]:
                 topics.append(None)
@@ -735,7 +757,10 @@ class PethConsole(cmd.Cmd):
             if address is None and len(arg) in (40, 42):
                 address = arg
             elif len(arg) < 20:
-                count = int(arg)
+                if count == -1:
+                    count = int(arg)
+                else:
+                    step = int(arg)
             else:
                 if arg.startswith("0x"):
                     arg = arg[2:]
@@ -744,9 +769,18 @@ class PethConsole(cmd.Cmd):
                 arg = "0x" + arg
                 topics.append(arg)
 
-        def print_log(log):
+        step = 100 if step == -1 else step
+        count = 100 if count == -1 else count
+        print("Search start")
+        print(f" - log {step} blocks * {count} times")
+        print(f" - address {address}")
+        print(f" - topics {' '.join(topics)}:")
+
+        logs = self.peth.get_logs(address, topics, step=step, count=count)
+        for log in logs:
             if log.removed:
-                return
+                continue
+
             tx_hash = log.transactionHash.hex()
             address = log.address
             data = log.data
@@ -757,14 +791,9 @@ class PethConsole(cmd.Cmd):
                 print(f"\t topic[{i}] {topic.hex()}")
             print("\t data", data)
 
-        print(f"Search log address {address} topics {topics}:")
-        logs = self.peth.get_logs(address, topics, step=step, count=count)
-        for log in logs:
-            print_log(log)
-
-    def do_loop(self, arg=None):
+    def do_status(self, arg=None):
         """
-        loop: Run a infinite loop and print block and txs information.
+        status: Run a infinite loop and print block and txs information.
         """
 
         eth = self.web3.eth
@@ -940,8 +969,19 @@ class PethConsole(cmd.Cmd):
             func = args[1]
             call_args = convert_value_list(args[2:])
 
-            sig = ERC20Signatures.find_by_name(func)
-            assert sig, "Unknown ERC20 view function"
+            sigs = [
+                "totalSupply() -> (uint256)",
+                "balanceOf(address) -> (uint256)",
+                "allowance(address, address) -> (uint256)",
+                "name() -> (string)",
+                "symbol() -> (string)",
+                "decimals() -> (uint8)",
+            ]
+            try:
+                sig = next(s for s in sigs if s.startswith(func))
+            except StopIteration:
+                print(f"{func} not a valid ERC20 method")
+                return
 
             value = self.peth.call_contract(addr, sig, call_args)
             print(value)
@@ -1020,9 +1060,9 @@ class PethConsole(cmd.Cmd):
         except Exception as e:
             print(f"Ensure your input is a Ownable contract address. {e}")
 
-    def do_gnosis(self, arg):
+    def do_safe(self, arg):
         """
-        gnosis <gnosis-proxy-address>: Print Gnosis information.
+        safe <gnosis-proxy-address>: Print Gnosis information.
         """
         addr = self.web3.toChecksumAddress(arg)
 
@@ -1048,39 +1088,37 @@ class PethConsole(cmd.Cmd):
             for m in modules:
                 print(" ", self._get_full_name(m))
 
-    do_safe = do_gnosis
-
     def do_timelock(self, arg):
         """
         timelock <address>: Print TimelockController min delay.
         """
         addr = self.web3.toChecksumAddress(arg)
         try:
-            secs = self.peth.call_contract(addr, "getMinDelay()->(uint)")
+            secs = self.peth.call_contract(addr, "getMinDelay()->(uint)", silent=True)
             print("Min Delay: %ds = %0.2fh" % (secs, secs / 3600))
         except Exception:
             pass
 
         try:
-            secs = self.peth.call_contract(addr, "MINIMUM_DELAY()->(uint)")
+            secs = self.peth.call_contract(addr, "MINIMUM_DELAY()->(uint)", silent=True)
             print("Min Delay: %ds = %0.2fh" % (secs, secs / 3600))
         except Exception:
             pass
 
         try:
-            secs = self.peth.call_contract(addr, "MAXIMUM_DELAY()->(uint)")
+            secs = self.peth.call_contract(addr, "MAXIMUM_DELAY()->(uint)", silent=True)
             print("Max Delay: %ds = %0.2fh" % (secs, secs / 3600))
         except Exception:
             pass
 
         try:
-            secs = self.peth.call_contract(addr, "delay()->(uint)")
+            secs = self.peth.call_contract(addr, "delay()->(uint)", silent=True)
             print("Current Delay: %ds = %0.2fh" % (secs, secs / 3600))
         except Exception:
             pass
 
         try:
-            admin = self.peth.call_contract(addr, "admin()->(address)")
+            admin = self.peth.call_contract(addr, "admin()->(address)", silent=True)
             print("Admin: %s" % self._get_full_name(admin))
         except Exception:
             pass
@@ -1201,8 +1239,9 @@ class PethConsole(cmd.Cmd):
 
                 print(
                     "Version:",
-                    self.peth.call_contract(aggr, "typeAndVersion()->(string)"),
+                    self.peth.call_contract(aggr, "version()->(uint256)"),
                 )
+
                 print(
                     "Description:",
                     self.peth.call_contract(aggr, "description()->(string)"),
@@ -1513,6 +1552,7 @@ class PethConsole(cmd.Cmd):
             sig = "0x" + selector.hex()
             sigs = selector_to_sigs(sig)
             sigs = sigs[::-1]
+            typ = ""
             value = ""
             if sigs:
                 func_sig = sigs[0]
@@ -1520,8 +1560,10 @@ class PethConsole(cmd.Cmd):
                     value = self.peth.call_contract(addr, func_sig, silent=True)
                     if value is None:
                         value = ""
+                    else:
+                        typ, value = guess_single_calldata(value)
 
-            print(sig, ", ".join(sigs), " " * 10, "\t", value)
+            print(sig, ", ".join(sigs), " " * 10, "\t", typ, value)
 
     def do_disasm(self, arg):
         """
@@ -1530,7 +1572,7 @@ class PethConsole(cmd.Cmd):
         addr = self.web3.toChecksumAddress(arg)
         print(Code.disasm(self.web3.eth.get_code(addr)))
 
-    def __get_asm_lines(self, chain, addr):
+    def _get_asm_lines(self, chain, addr):
         peth = Peth.get_or_create(chain)
         addr = peth.web3.toChecksumAddress(addr)
         return Code.disasm(peth.web3.eth.get_code(addr)).splitlines()
@@ -1540,8 +1582,8 @@ class PethConsole(cmd.Cmd):
         diffasm <chain1> <addr1> <chain2> <addr2> : diff bytecode.
         """
         chain1, addr1, chain2, addr2 = arg.split()
-        asm1 = self.__get_asm_lines(chain1, addr1)
-        asm2 = self.__get_asm_lines(chain2, addr2)
+        asm1 = self._get_asm_lines(chain1, addr1)
+        asm2 = self._get_asm_lines(chain2, addr2)
         s = difflib.SequenceMatcher(None, asm1, asm2)
         similarity = s.ratio()
         d = difflib.HtmlDiff()
@@ -1553,9 +1595,10 @@ class PethConsole(cmd.Cmd):
             addr2,
             similarity,
         )
-        if not os.path.isdir("diff"):
-            os.makedirs("diff")
-        output_filename = os.path.join("diff", output_filename)
+
+        if not os.path.isdir(config.DIFF_PATH):
+            os.makedirs(config.DIFF_PATH)
+        output_filename = os.path.join(config.DIFF_PATH, output_filename)
         open(output_filename + ".html", "w").write(buf)
         print("Written to " + output_filename + ".html")
 
@@ -1670,7 +1713,7 @@ class PethConsole(cmd.Cmd):
             print("=====================")
             print("Open http://relation-graph.com/#/options-tools and paste the json.")
 
-    def __check_alias(self, alias):
+    def _check_alias(self, alias):
         if alias in contracts_config:
             return contracts_config[alias]
         else:
@@ -1697,8 +1740,8 @@ class PethConsole(cmd.Cmd):
             return
 
         if len(args) == 2:
-            chain1, addr1 = self.__check_alias(args[0])
-            chain2, addr2 = self.__check_alias(args[1])
+            chain1, addr1 = self._check_alias(args[0])
+            chain2, addr2 = self._check_alias(args[1])
             diff.diff_chain_src(chain1, addr1, chain2, addr2)
         elif len(args) == 4:
             chain1 = args[0]

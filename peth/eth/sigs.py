@@ -9,6 +9,8 @@ from .utils import collapse_if_tuple, func_selector, hex2bytes
 
 class Signature(object):
     """
+    Deprecated class. Use `ABIFunction` instead.
+
     Signature a.k.a ABI item.
 
     Ref: https://docs.soliditylang.org/en/v0.8.12/abi-spec.html#json
@@ -272,7 +274,7 @@ class Signatures(object):
                     s = Signature.from_abi(item)
                     self.add_sig(s)
 
-    def find_by_name(self, name):
+    def find_by_name(self, name) -> Signature:
         return self.name_map.get(name)
 
     def find_by_selector(self, selector):

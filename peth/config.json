@@ -10,11 +10,6 @@
             "https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&",
             "https://etherscan.io/address/"
         ],
-        "ethcn": [
-            "https://rpc.ankr.com/eth",
-            "https://api-cn.etherscan.com/api?",
-            "https://cn.etherscan.com/address/"
-        ],
         "ethw": [
             "https://mainnet.ethereumpow.org",
             null,
@@ -80,11 +75,6 @@
             "https://explorer.emerald.oasis.dev/api?",
             "https://explorer.emerald.oasis.dev/address/"
         ],
-        "aoa2": [
-            "https://mainnet.aurora.dev",
-            "https://explorer.mainnet.aurora.dev/api?",
-            "https://explorer.mainnet.aurora.dev/address/"
-        ],
         "aoa": [
             "https://mainnet.aurora.dev",
             "https://api.aurorascan.dev/api?",
@@ -119,11 +109,6 @@
             "https://mainnet.era.zksync.io",
             null,
             "https://explorer.zksync.io/address/"
-        ],
-        "zkstest": [
-            "https://zksync2-testnet.zksync.dev",
-            null,
-            "https://goerli.explorer.zksync.io/address/"
         ],
         "zkfair": [
             "https://rpc.zkfair.io",

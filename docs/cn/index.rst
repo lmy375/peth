@@ -49,16 +49,21 @@ Peth 是一款由 Python 语言开发的 Ethereum SDK 及脚本工具，为智�
     usage.md
 
 .. toctree::
-    :caption: 控制台
+    :caption: 命令
     :maxdepth: 2
 
-.. toctree::
-    :caption: SDK
-    :maxdepth: 2
+    cmd_eth.md
+    cmd_dapp.md
+    cmd_abi.md
+    cmd_source.md
+    cmd_bytecode.md
+    cmd_tx.md
+    cmd_conf.md
+    cmd_utils.md
 
 .. toctree::
     :caption: 其他
     :maxdepth: 2
 
-    contribute.md
+    contributing.md
 
