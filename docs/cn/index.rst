@@ -66,4 +66,5 @@ Peth 是一款由 Python 语言开发的 Ethereum SDK 及脚本工具，为智�
     :maxdepth: 2
 
     contributing.md
+    buymeacoffee.md
 

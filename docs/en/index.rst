@@ -60,4 +60,5 @@ Features include:
     :maxdepth: 2
 
     contributing.md
+    buymeacoffee.md
 
