@@ -9,7 +9,7 @@ build:
     python: "3.10"
 
 sphinx:
-  configuration: docs/cn/conf.py
+  configuration: docs/en/conf.py
 
 python:
   install:
