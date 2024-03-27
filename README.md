@@ -3,7 +3,7 @@
 `Peth` is an all-in-one Ethereum SDK and command-line tool, written in Python. It is designed for developers, smart contract auditors, web3 security researchers, and anyone interested in interacting with EVM-compatible chains with ease.
 
 ```
-➜  peth
+➜ peth
 
 
      ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄         ▄ 
@@ -43,12 +43,12 @@ Features include:
 
 From pypi
 ```
-$ pip install peth
+➜ pip install peth
 ```
 
 From github
 ```
-$ pip install git+https://github.com/lmy375/peth
+➜ pip install git+https://github.com/lmy375/peth
 ```
 
 # Quick Usage
@@ -60,7 +60,7 @@ $ peth -h
 
 Console mode:
 ```sh
-$ peth
+➜ peth
 Welcome to the peth shell. Type `help` to list commands.
 
 peth > help
@@ -110,7 +110,7 @@ Please check out the [Contribution Guide](./docs/en/contribute.md) prior to open
 
 # Buy me a coffee
 
-Send everything to [0x2aa75a41805E47eCd94fbBaD84eeF6d1BF21a019](https://debank.com/profile/0x2aa75a41805E47eCd94fbBaD84eeF6d1BF21a019)
+Send any tokens to [0x2aa75a41805E47eCd94fbBaD84eeF6d1BF21a019](https://debank.com/profile/0x2aa75a41805E47eCd94fbBaD84eeF6d1BF21a019)
 
 # License
 
