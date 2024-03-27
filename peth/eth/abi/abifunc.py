@@ -32,6 +32,7 @@ class ABIFunction(object):
         self.raw = raw
 
         self.name = self.raw["name"]
+        self.func_type = self.raw["stateMutability"]
 
         self.inputs: List[ABIType] = []
         for item in self.raw["inputs"]:
@@ -43,20 +44,24 @@ class ABIFunction(object):
 
     @property
     def is_view(self):
-        return self.raw["stateMutability"] in ["view", "pure"]
+        return self.func_type in ["view", "pure"]
+
+    @property
+    def is_payable(self):
+        return self.func_type == "payable"
 
     @property
     def full(self):
         s = f"function {self.name}("
         s += ", ".join(str(i) for i in self.inputs)
-        s += ") returns ("
+        s += f") {self.func_type} returns ("
         s += ", ".join(str(i) for i in self.outputs)
         s += ")"
         return s
 
     @property
     def simple(self):
-        return f"{self.signature}->{self.output_type_str}"
+        return f"{self.signature}->{self.output_type_str} {self.func_type}"
 
     @property
     def input_types(self):

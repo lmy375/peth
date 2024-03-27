@@ -68,7 +68,7 @@ def convert_typ_to_abi_item(type_str):
 
 def parse_simple_to_json(sig):
     """
-    "balanceOf(address)->(uin256)"
+    "balanceOf(address)->(uin256) view"
     =>
     {
         "name": "balanceOf",
@@ -94,6 +94,17 @@ def parse_simple_to_json(sig):
     }
 
     sig = re.sub(r"\s", "", sig)  # remove blank chars.
+
+    for state_typ in [
+        "nonpayable",  # This must be checked before payable
+        "payable",
+        "view",
+        "pure",
+    ]:
+        if sig.endswith(state_typ):  # Add stateMutability
+            sig = sig[: -len(state_typ)]
+            a["stateMutability"] = state_typ
+
     sigs = sig.split("->")
     func_sig = sigs[0]
 

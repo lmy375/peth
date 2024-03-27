@@ -8,6 +8,7 @@ from peth.util.solc import compile_with_eth_call
 
 from . import utils
 from .abi import ABI, ABIFunction
+from .contract import Contract
 from .scan import ScanAPI
 
 
@@ -280,3 +281,8 @@ class Web3Ex(object):
             for log in eth.get_logs(filter_params):
                 yield log
             end = temp_start - 1
+
+    def contract(self, address, abi=None):
+        if abi is None:
+            abi = self.scan.get_abi(address)
+        return Contract(self, address, abi)

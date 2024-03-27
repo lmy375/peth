@@ -55,7 +55,7 @@ From github
 
 Command-line mode:
 ```
-$ peth -h
+➜ peth -h
 ```
 
 Console mode:
