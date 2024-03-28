@@ -58,6 +58,7 @@ Peth 是一款由 Python 语言开发的 Ethereum SDK 及脚本工具，为智�
     cmd_source.md
     cmd_bytecode.md
     cmd_tx.md
+    cmd_url.md
     cmd_conf.md
     cmd_utils.md
 

@@ -14,6 +14,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from peth.core.peth import Peth
+from peth.core.tracer import GethTracer, TxTrace
 from peth.eth.abi import ABI, ABIFunction
 from peth.eth.bytecode import Code
 from peth.eth.sigs import Signature
@@ -434,6 +435,34 @@ class PethConsole(cmd.Cmd):
             except Exception as e:
                 print("[!] %s (Password may be wrong)" % e)
 
+    def do_brain(self, arg):
+        """
+        brain <password>: Generate brain wallet.
+        brain <password> <hash times>: Specify hash times. (Default: 10000000)
+        """
+
+        args = arg.split()
+
+        password = args[0]
+        if len(args) >= 2:
+            count = int(args[1])
+        else:
+            count = 10000000  # Use a big number.
+
+        print("Key:", repr(password))
+        print("Count:", count)
+
+        password = password.encode("utf-8")
+        for i in range(count):
+            if (i % 100000) == 0:
+                print("    %d %% \r" % (100 * i / count), end="")
+            password = sha3_256(password)
+
+        pk = HexBytes(password).hex()
+
+        print("Private Key:", pk)
+        print("Address:", Account.from_key(pk).address)
+
     ##################################################################
     # ABI utility commands.
 
@@ -601,7 +630,7 @@ class PethConsole(cmd.Cmd):
         args = arg.split()
         to = args[0]
         sig_or_name = args[1]
-        arg_list = args[2:]
+        arg_list = self._parse_args(args[2:])
         print(self.peth.call_contract(to, sig_or_name, arg_list, silent=False))
 
     def do_rpc_call(self, arg):
@@ -1539,6 +1568,44 @@ class PethConsole(cmd.Cmd):
             print("Replay failed.")
             print(e)
 
+    def do_trace_tx(self, arg):
+        """
+        trace_tx <txid>: Print transaction trace. Note: A Debug RPC is required.
+        """
+        txid = arg.strip()
+        js = "legacy_tracer.js"
+        tracer = GethTracer(self.peth.rpc_url, js)
+        result = tracer.trace_transaction(txid)
+        trace = TxTrace(self.peth.chain, result)
+        trace.print()
+
+    def do_trace_call(self, arg):
+        """
+        trace_call <to> <calldata>  [<sender>] [<value>]: Perform a call and print trace. Note: A Debug RPC is required.
+        """
+        args = arg.split()
+
+        to = args[0]
+        data = args[1]
+
+        if len(args) >= 3:
+            sender = args[2]
+        else:
+            sender = self.peth.sender
+
+        if len(args) >= 4:
+            value = args[4]
+        else:
+            value = "0x0"
+
+        js = "legacy_tracer.js"
+        tracer = GethTracer(self.peth.rpc_url, js)
+        result = tracer.trace_call(
+            {"to": to, "from": sender, "data": data, "value": value}
+        )
+        trace = TxTrace(self.peth.chain, result)
+        trace.print()
+
     ##################################################################
     # Bytecode tools.
 
@@ -1966,10 +2033,9 @@ class PethConsole(cmd.Cmd):
         price <address> [<address> ...] : Print token addresses.
         """
         args = arg.split()
-        coin = CoinPrice.get()
         chain = self.peth.chain
         if args:
-            tokens = coin.get_token(chain, *args)
+            tokens = CoinPrice.get_token(chain, *args)
             for token in tokens:
                 if token:
                     print(
@@ -1985,7 +2051,7 @@ class PethConsole(cmd.Cmd):
                 else:
                     print("Unknown")
         else:
-            native = coin.get_native(chain)
+            native = CoinPrice.get_native(chain)
             if native:
                 print("%s %s" % (native["symbol"], native["price"]))
             else:

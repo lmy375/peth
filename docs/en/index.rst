@@ -52,6 +52,7 @@ Features include:
     cmd_source.md
     cmd_bytecode.md
     cmd_tx.md
+    cmd_url.md
     cmd_conf.md
     cmd_utils.md
 

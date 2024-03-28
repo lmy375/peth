@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Union
+from typing import Dict
 
 from hexbytes import HexBytes
 
@@ -10,7 +10,7 @@ from .utils import normal_indexes, parse_simple_to_json
 
 
 class ABI(object):
-    def __init__(self, arg: Union[str, list], name: str = "Default") -> None:
+    def __init__(self, arg: str | list, name: str = "Default") -> None:
         """
         arg:
             - List of ABI item

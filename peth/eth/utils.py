@@ -233,7 +233,7 @@ def hex2bytes(hex_data):
     return bytes.fromhex(hex_data)
 
 
-def convert_value(value):
+def convert_value(value: str):
     """
     Guess value type and convert.
     """
@@ -248,7 +248,10 @@ def convert_value(value):
     elif re.match(DEC_PATTERN, value):  # decimal
         return int(value)
     elif re.match(HEX_PATTERN, value):  # hexcimal
-        return int(value, 16)
+        if len(value) in [64, 66]:
+            return hex2bytes(value)
+        else:
+            return int(value, 16)
     elif value.strip().lower() == "true":
         return True
     elif value.strip().upper() == "false":
@@ -333,38 +336,35 @@ def guess_single_calldata(data):
 
 class CoinPrice(object):
 
-    single_instance = None
+    chain_coin_id = {
+        "eth": "ethereum",
+        "bsc": "binancecoin",
+        "avax": "avalanche-2",
+        "ftm": "fantom",
+        "arbi": "ethereum",
+        "op": "ethereum",
+        "matic": "matic-network",
+    }
 
-    def __init__(self) -> None:
+    chain_id = {
+        "eth": "ethereum",
+        "bsc": "bsc",
+        "arbi": "arbitrum",
+        "avax": "avax",
+        "ftm": "fantom",
+        "op": "optimism",
+        "matic": "polygon",
+    }
 
-        self.chain_coin_id = {
-            "eth": "ethereum",
-            "bsc": "binancecoin",
-            "avax": "avalanche-2",
-            "ftm": "fantom",
-            "arbi": "ethereum",
-            "op": "ethereum",
-            "matic": "matic-network",
-        }
-        # arbitrum, avalanche, bsc, celo, ethereum, fantom, optimism, polygon, tron
-        self.chain_id = {
-            "eth": "ethereum",
-            "bsc": "bsc",
-            "arbi": "arbitrum",
-            "avax": "avax",
-            "ftm": "fantom",
-            "op": "optimism",
-            "matic": "polygon",
-        }
-
-        self.url = "https://coins.llama.fi/prices/current/"
+    url = "https://coins.llama.fi/prices/current/"
 
     # https://coins.llama.fi/prices/current/coingecko:binancecoin
     # {"coins":{"coingecko:binancecoin":{"price":344.74,"symbol":"BNB","timestamp":1667551373,"confidence":0.99}}}
 
-    def get_native(self, chain):
-        gecko_id = "coingecko:%s" % self.chain_coin_id.get(chain, chain)
-        ret = requests.get(self.url + gecko_id).json()["coins"]
+    @classmethod
+    def get_native(cls, chain):
+        gecko_id = "coingecko:%s" % cls.chain_coin_id.get(chain, chain)
+        ret = requests.get(cls.url + gecko_id).json()["coins"]
         if gecko_id in ret:
             return ret[gecko_id]
         else:
@@ -373,12 +373,13 @@ class CoinPrice(object):
     # https://coins.llama.fi/prices/current/ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2,ethereum:0x419d0d8bdd9af5e606ae2232ed285aff190e711b
     # {"coins":{"ethereum:0x419d0d8bdd9af5e606ae2232ed285aff190e711b":{"decimals":8,"symbol":"FUN","price":0.00756368,"timestamp":1667555283,"confidence":0.99},"ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2":{"decimals":18,"symbol":"WETH","price":1582.85,"timestamp":1667555277,"confidence":0.99}}}
 
-    def get_token(self, chain, *addresses):
-        chain = self.chain_id.get(chain, chain)
+    @classmethod
+    def get_token(cls, chain, *addresses):
+        chain = cls.chain_id.get(chain, chain)
         tokens = []
         for address in addresses:
             tokens.append("%s:%s" % (chain, address))
-        url = self.url + ",".join(tokens)
+        url = cls.url + ",".join(tokens)
         ret = requests.get(url).json()["coins"]
 
         prices = []
@@ -390,9 +391,3 @@ class CoinPrice(object):
             else:
                 prices.append(None)
         return prices
-
-    @classmethod
-    def get(cls):
-        if CoinPrice.single_instance is None:
-            CoinPrice.single_instance = CoinPrice()
-        return CoinPrice.single_instance
