@@ -11,7 +11,7 @@ setup(
     description="An all-in-one Ethereum SDK and command-line tool, written in Python.",
     url="https://github.com/lmy375/peth",
     author="Moon",
-    version="1.0.3",
+    version="1.0.4",
     packages=find_packages(exclude=["tests", "peth/4byte.json"]),
     python_requires=">=3.8",
     install_requires=requires,

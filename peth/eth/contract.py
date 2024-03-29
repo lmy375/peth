@@ -33,7 +33,10 @@ class ContractFunction(object):
 
     def send(self, *args: Any, **kwds: Any) -> Any:
         tx = self.build(*args, **kwds)
-        return self.contract.web3ex.send_transaction(tx["data"], tx["to"], tx["value"])
+        wait = kwds.get("wait", 10)
+        return self.contract.web3ex.send_transaction(
+            tx["data"], tx["to"], tx["value"], wait=wait
+        )
 
     def build(self, *args: Any, **kwds: Any) -> dict:
         to = self.contract.address

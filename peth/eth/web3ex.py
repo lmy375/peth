@@ -1,3 +1,5 @@
+import time
+
 from eth_account import Account
 from hexbytes import HexBytes
 from web3 import Web3
@@ -31,10 +33,10 @@ class Web3Ex(object):
         self.api_url = api_url
         self.address_url = address_url
         self.sender = sender
+        self.signer = None
+
         if private_key:
-            self.signer = Account.from_key(private_key)
-        else:
-            self.signer = None
+            self.bind_signer(private_key)
 
         if rpc_url.startswith("http"):
             self.provider = Web3.HTTPProvider(rpc_url)
@@ -63,6 +65,9 @@ class Web3Ex(object):
             self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
         else:
             self.scan = None
+
+    def bind_signer(self, private_key):
+        self.signer = Account.from_key(private_key)
 
     def is_contract(self, addr):
         addr = self.web3.toChecksumAddress(addr)
@@ -143,6 +148,20 @@ class Web3Ex(object):
         }
         return self.rpc_call("eth_call", [tx, "latest"])
 
+    def _sig_name_to_func(self, to, sig_or_name):
+        if type(sig_or_name) is str:
+            if "(" in sig_or_name:
+                func = ABIFunction(sig_or_name)
+            else:
+                # Auto load.
+                abi = ABI(self.scan.get_abi(to))
+                func = abi.get_func_abi(sig_or_name)
+        elif type(sig_or_name) is ABIFunction:
+            func = sig_or_name
+        else:
+            raise ValueError(f"Invalid sig_or_name {sig_or_name}")
+        return func
+
     def eth_call(
         self,
         to,
@@ -156,17 +175,8 @@ class Web3Ex(object):
         Construct tx data and perform eth_call RPC call.
         If silent=False raise exceptions when tx reverts or return data is not properly decodes.
         """
-        if type(sig_or_name) is str:
-            if "(" in sig_or_name:
-                func = ABIFunction(sig_or_name)
-            else:
-                # Auto load.
-                abi = ABI(self.scan.get_abi(to))
-                func = abi.get_func_abi(sig_or_name)
-        elif type(sig_or_name) is ABIFunction:
-            func = sig_or_name
-        else:
-            assert False, f"Invalid sig_or_name {sig_or_name}"
+        func = self._sig_name_to_func(to, sig_or_name)
+
         try:
 
             input = func.encode_input(args)
@@ -193,6 +203,9 @@ class Web3Ex(object):
                     "Web3Ex.call_contract Call %s %s %s" % (contract, sig_or_name, e)
                 )
             return None
+
+    # Alias
+    call = call_contract
 
     def run_solidity(self, code):
         """
@@ -229,7 +242,7 @@ class Web3Ex(object):
         except Exception:
             return r
 
-    def send_transaction(self, data=None, to=None, value=None, dry_run=False):
+    def send_transaction(self, data=None, to=None, value=None, dry_run=False, wait=0):
         assert self.signer, "send_transaction: signer not set."
 
         tx = {"from": self.signer.address}
@@ -255,8 +268,33 @@ class Web3Ex(object):
         if dry_run:
             return tx, signed_tx
 
-        r = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        return r
+        current_block = self.web3.eth.block_number
+        txid = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        if not wait:
+            return txid
+
+        wait_sec = 15
+        if type(wait) in (float, int) and wait > 0:
+            wait_sec = wait
+
+        start_time = time.time()
+        while True:
+            if time.time() - start_time > wait_sec:
+                raise TimeoutError(f"{wait_sec} s timeout. No receipt get.")
+
+            new_block = self.web3.eth.block_number
+            if new_block == current_block:
+                time.sleep(0.1)
+                continue
+
+            return self.web3.eth.get_transaction_receipt(txid)
+
+    def send(
+        self, contract, sig_or_name, args=[], value: int = 0, dry_run=False, wait=0
+    ):
+        func = self._sig_name_to_func(contract, sig_or_name)
+        data = func.encode_input(args)
+        return self.send_transaction(data, contract, value, dry_run, wait)
 
     def get_logs(
         self, address=None, topics=[], start=None, end=None, step=100, count=100
@@ -282,7 +320,10 @@ class Web3Ex(object):
                 yield log
             end = temp_start - 1
 
-    def contract(self, address, abi=None):
+    def contract(self, address, abi: str | ABI | dict = None):
         if abi is None:
             abi = self.scan.get_abi(address)
+        elif self.web3.isAddress(str(abi)):
+            abi = self.scan.get_abi(str(abi))
+
         return Contract(self, address, abi)

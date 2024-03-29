@@ -57,6 +57,12 @@ Features include:
     cmd_utils.md
 
 .. toctree::
+    :caption: Script
+    :maxdepth: 2
+
+    api.md
+
+.. toctree::
     :caption: Others
     :maxdepth: 2
 
