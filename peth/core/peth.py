@@ -2,8 +2,8 @@ from typing import List, Tuple
 
 from web3 import Web3
 
+from peth.core import config
 from peth.core.analysis import AccountAnalysis, Project
-from peth.core.config import chain_config
 from peth.eth.bytecode import Code
 from peth.eth.opcodes import OpCode
 from peth.eth.web3ex import Web3Ex
@@ -23,11 +23,12 @@ class Peth(Web3Ex):
         """
         Better entry to create the Peth instance.
         """
-        assert chain in chain_config.keys(), f"Invalid chain {chain}. See config.json."
+        cfg = config.chain_config
+        assert chain in cfg.keys(), f"Invalid chain {chain}. See config.json."
         if chain not in cls.__cache__:
-            rpc_url = chain_config[chain][0]
-            api_url = chain_config[chain][1]
-            address_url = chain_config[chain][2]
+            rpc_url = cfg[chain][0]
+            api_url = cfg[chain][1]
+            address_url = cfg[chain][2]
             cls.__cache__[chain] = cls(rpc_url, api_url, address_url, chain)
         return cls.__cache__[chain]
 

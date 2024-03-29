@@ -153,3 +153,17 @@ class ABI(object):
                         v = "0x"
 
                 print(" " * indent, k, ":", v)
+
+
+ERC20_ABI = ABI(
+    [
+        "totalSupply() -> (uint256) view",
+        "balanceOf(address) -> (uint256) view ",
+        "allowance(address, address) -> (uint256) view",
+        "name() -> (string) view",
+        "symbol() -> (string) view",
+        "decimals() -> (uint8) view",
+        "transfer(address, uint256) nonpayable",
+        "approve(address, uint256) nonpayable",
+    ]
+)

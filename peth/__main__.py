@@ -2,7 +2,7 @@ import logging
 from argparse import ArgumentParser
 
 from peth.console import PethConsole
-from peth.core.config import CHAIN_CONFIG_PATH, OUTPUT_PATH, chain_config
+from peth.core import config
 from peth.core.log import logger
 from peth.core.peth import Peth
 from peth.eth.utils import convert_value_list
@@ -16,7 +16,7 @@ def get_args():
     parser.add_argument(
         "-c",
         "--chain",
-        choices=list(chain_config.keys()),
+        choices=list(config.chain_config.keys()),
         default="eth",
         help="Chain of the contract.",
     )
@@ -126,8 +126,8 @@ def main():
         for cmd in cmd_str.split(";"):
             c.single_command(cmd)
     else:
-        logger.debug("Config file: %s" % CHAIN_CONFIG_PATH)
-        logger.debug("Output path: %s" % OUTPUT_PATH)
+        logger.debug("Config file: %s" % config.CHAIN_CONFIG_PATH)
+        logger.debug("Output path: %s" % config.OUTPUT_PATH)
 
         # Default: Open console.
         c = PethConsole(peth)

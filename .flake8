@@ -1,0 +1,14 @@
+[flake8]
+exclude = .git,__init__.py
+ignore = E203, E501, W503, C901, E402, F402
+; E203: Whitespace before ':'
+;       - Conflict with black
+; W503: Line break occurred before a binary operator
+;       - Conflict with black
+; E501: Line too long
+; C901: Function is too complex
+; E402: Module level import not at top of file
+; F402: Import module from line n shadowed by loop variable
+max-line-length = 88
+max-complexity = 18
+select = B,C,E,F,W,T4,B9

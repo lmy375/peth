@@ -10,7 +10,7 @@ config.DIFF_PATH = os.path.join(config.OUTPUT_PATH, "diff")
 config.DIFF_TMP_FILE = os.path.join(config.OUTPUT_PATH, "diff", "tmp.sol")
 config.REPORT_PATH = os.path.join(config.OUTPUT_PATH, "report")
 config.SOURCE_PATH = os.path.join(config.OUTPUT_PATH, "sources")
-
+config.EVM_OUTPUT_PATH = os.path.join(config.OUTPUT_PATH, "evm")
 
 # Start.
 main()

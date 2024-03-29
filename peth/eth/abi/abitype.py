@@ -101,6 +101,10 @@ class ABIType(object):
         return self._is_dynamic
 
     @property
+    def is_basic(self):
+        return not self.is_array and not self.is_tuple
+
+    @property
     def static_size(self) -> int:
         if self.is_dynamic:
             return ALIGN_SIZE

@@ -33,7 +33,6 @@ from peth.util.graph import ContractRelationGraph
 from peth.util.logos import random_logo
 
 from .core import config
-from .core.config import chain_config, contracts_config
 from .core.log import logger, logging
 
 
@@ -213,7 +212,7 @@ class PethConsole(cmd.Cmd):
         print("  API:", self.peth.api_url)
         print("  Address:", self.peth.address_url)
 
-        if arg in chain_config:
+        if arg in config.chain_config:
             old_sender = self.peth.sender
             self.peth = Peth.get_or_create(arg)
             self.peth.sender = old_sender  # Keep the sender value.
@@ -229,7 +228,7 @@ class PethConsole(cmd.Cmd):
             print("  Address:", self.peth.address_url)
 
         else:
-            print("Supported chains: %s" % ", ".join(chain_config.keys()))
+            print("Supported chains: %s" % ", ".join(config.chain_config.keys()))
 
     def do_config(self, arg):
         """
@@ -306,8 +305,8 @@ class PethConsole(cmd.Cmd):
         """
 
         print("%-40s %-10s %s" % ("Name", "Chain", "Address"))
-        for name in contracts_config:
-            chain, addr = contracts_config[name]
+        for name in config.contracts_config:
+            chain, addr = config.contracts_config[name]
             print("%-40s %-10s %s" % (name, chain, addr))
 
     def do_sh(self, arg):
@@ -1781,8 +1780,8 @@ class PethConsole(cmd.Cmd):
             print("Open http://relation-graph.com/#/options-tools and paste the json.")
 
     def _check_alias(self, alias):
-        if alias in contracts_config:
-            return contracts_config[alias]
+        if alias in config.contracts_config:
+            return config.contracts_config[alias]
         else:
             return self.peth.chain, alias
 

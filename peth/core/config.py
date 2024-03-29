@@ -21,6 +21,7 @@ DIFF_PATH = os.path.join(OUTPUT_PATH, "diff")
 DIFF_TMP_FILE = os.path.join(OUTPUT_PATH, "diff", "tmp.sol")
 REPORT_PATH = os.path.join(OUTPUT_PATH, "report")
 SOURCE_PATH = os.path.join(OUTPUT_PATH, "sources")
+EVM_OUTPUT_PATH = os.path.join(OUTPUT_PATH, "evm")
 
 SCAN_API_INTERVAL = 6
 
