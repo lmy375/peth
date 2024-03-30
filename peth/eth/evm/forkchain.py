@@ -19,7 +19,7 @@ class ForkChain(object):
             self.fix_block_number = web3.eth.block_number  # Fix to current.
 
         self.chainid = web3.eth.chain_id
-        self.block = web3.eth.get_block(self.fix_block_number)
+        self.block = web3.eth.get_block(self.fix_block_number - 1)
 
         if not os.path.exists(config.EVM_OUTPUT_PATH):
             os.makedirs(config.EVM_OUTPUT_PATH)

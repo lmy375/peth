@@ -7,7 +7,7 @@ from .transaction import Transaction
 
 class Inspector(object):
 
-    def __init__(self, chain=None) -> None:
+    def __init__(self, chain, peth) -> None:
         super().__init__()
 
         # Including Trasactions and Receipts.
@@ -18,14 +18,12 @@ class Inspector(object):
         self.created_contracts = set()
         self.erc20_contracts = set()
 
-        if chain:
-            self.attach_chain(chain)
+        self.peth = peth
+        self.attach_chain(chain)
 
     def attach_chain(self, chain):
         self.chain = chain
         self.chain.inspector = self
-
-        # TODO: self.peth = peth.get_or_create(chain.chain_id)
 
     def detach(self):
         if self.chain:
@@ -44,7 +42,7 @@ class Inspector(object):
             else:
                 return name
 
-        return hex(addr)
+        return addr
 
     def add_transaction(self, tx: Transaction):
         self._tx_traces.append(tx)
@@ -82,7 +80,7 @@ class Inspector(object):
         # for: http://relation-graph.com/#/options-tools
 
         def node_id(addr):
-            return hex(addr)
+            return addr
 
         def node_text(addr):
             return self.get_address_name(addr, False)  # short

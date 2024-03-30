@@ -66,8 +66,9 @@ class VM(object):
     def _trace(self, msg: str):
         if self.trace or self.debug:
             self.result.trace.post_trace(self._current_ins.pc, msg)
-        if self.debug:
-            print(self.result.trace.current_step)
+
+            if self.debug:
+                print(self.result.trace.current_step)
 
     def reset(self):
         self._current_ins = None
@@ -339,10 +340,10 @@ class VM(object):
     def _sha3(self):
         offset, size = self._stack_pop_values(2)
         data = self._read_memory(offset, size)
-        data = sha3_256(data)
-        v = data_to_uint(data)
+        hash = sha3_256(data)
+        v = data_to_uint(hash)
         self._stack_push(v)
-        self._trace(f"sha3({offset}, {size}) => {hex(v)}")
+        self._trace(f"{data.hex()} => {hash.hex()}")
 
     #
     # Environment Information
@@ -536,7 +537,7 @@ class VM(object):
         address = self.transaction.to
         v = self.chain.get_storage(address, slot)
         self._stack_push(v)
-        self._trace(f"{address}[{slot}] => {hex(v)}")
+        self._trace(f"[{hex(slot)}] => {hex(v)}")
 
     def _sstore(self):
         slot, v = self._stack_pop_values(2)
@@ -615,7 +616,9 @@ class VM(object):
         data = self._read_memory(offset, size)
 
         self.result.event_logs.append((self.transaction.to, topics, data))
-        self._trace(f"log{n}")
+
+        topics = ",".join(hex(i) for i in topics)
+        self._trace(f"log{n} {topics} {data.hex()}")
 
     #
     # System

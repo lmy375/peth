@@ -45,6 +45,25 @@ class OpCode(object):
         else:
             return 0
 
+    @property
+    def print_level(self) -> int:
+        if self.code >= 0xA0 and self.code <= 0xFF:
+            # Logging + System
+            return 1
+
+        if self.mnemonic in [
+            "SHA3",
+            "SSTORE",
+            "SLOAD",
+        ]:
+            return 2
+
+        if self.code >= 0x30 and self.code <= 48 or self.mnemonic in ["GAS"]:
+            # Environment Information + Block Information
+            return 3
+
+        return 4
+
     @classmethod
     def from_mnemonic(cls, mnemonic: str) -> Optional["OpCode"]:
         return cls.mnemonic_map.get(mnemonic.upper(), OpCode.INVALID)

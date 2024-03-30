@@ -1,6 +1,8 @@
 import json
 from typing import List, Optional
 
+from ..opcodes import OpCode
+
 
 class Step(object):
     def __init__(
@@ -21,6 +23,14 @@ class Step(object):
         depth_pc = f"[{self.depth}-{self.pc}]"
         stack = ",".join(hex(i) for i in self.stack[::-1])  # reverse.
         return "%-10s %-20s %-100s %-10s" % (depth_pc, self.op, self.msg, stack)
+
+    def print(self, full=False):
+        depth_pc = f"[{self.depth}-{self.pc}]"
+        s = "%-10s %-20s %-100s" % (depth_pc, self.op, self.msg)
+        if full:
+            stack = ",".join(hex(i) for i in self.stack[::-1])
+            s += " %-10s" % stack
+        print(s)
 
     @classmethod
     def fromJSON(cls, d):
@@ -48,7 +58,7 @@ class Step(object):
 
 class Trace(object):
     def __init__(self) -> None:
-        self.steps = []
+        self.steps: List[Step] = []
 
     def pre_trace(
         self, pc: int, op: int, depth: int, stack: List[int], msg: Optional[str] = None
@@ -134,3 +144,8 @@ class Trace(object):
             other.steps.append(Step.fromJSON(d))
 
         return self.compare(other, outputfile)
+
+    def print(self, level=2):
+        for step in self.steps:
+            if OpCode.from_mnemonic(step.op).print_level <= level:
+                step.print()

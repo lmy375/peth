@@ -17,6 +17,7 @@ from peth.core.peth import Peth
 from peth.core.tracer import GethTracer, TxTrace
 from peth.eth.abi import ABI, ABIFunction
 from peth.eth.bytecode import Code
+from peth.eth.evm import VM, Chain, ForkChain, Transaction
 from peth.eth.sigs import Signature
 from peth.eth.utils import (
     CoinPrice,
@@ -553,10 +554,7 @@ class PethConsole(cmd.Cmd):
     ##################################################################
     # Basic ETH commands.
 
-    def do_eth_call(self, arg):
-        """
-        eth_call <to> <calldata>  [<sender>] [<value>]
-        """
+    def _parse_tx_call_args(self, arg):
         args = arg.split()
 
         to = args[0]
@@ -570,7 +568,15 @@ class PethConsole(cmd.Cmd):
         if len(args) >= 4:
             value = args[4]
         else:
-            value = "0x0"
+            value = 0
+
+        return to, data, sender, value
+
+    def do_eth_call(self, arg):
+        """
+        eth_call <to> <calldata> [<sender>] [<value>]
+        """
+        to, data, sender, value = self._parse_tx_call_args(arg)
 
         try:
             ret = self.web3.eth.call(
@@ -1580,22 +1586,9 @@ class PethConsole(cmd.Cmd):
 
     def do_trace_call(self, arg):
         """
-        trace_call <to> <calldata>  [<sender>] [<value>]: Perform a call and print trace. Note: A Debug RPC is required.
+        trace_call <to> <calldata> [<sender>] [<value>]: Perform a call and print trace. Note: A Debug RPC is required.
         """
-        args = arg.split()
-
-        to = args[0]
-        data = args[1]
-
-        if len(args) >= 3:
-            sender = args[2]
-        else:
-            sender = self.peth.sender
-
-        if len(args) >= 4:
-            value = args[4]
-        else:
-            value = "0x0"
+        to, data, sender, value = self._parse_tx_call_args(arg)
 
         js = "legacy_tracer.js"
         tracer = GethTracer(self.peth.rpc_url, js)
@@ -1604,6 +1597,50 @@ class PethConsole(cmd.Cmd):
         )
         trace = TxTrace(self.peth.chain, result)
         trace.print()
+
+    def do_evm_trace_tx(self, arg):
+        """
+        evm_trace_tx <txid>:
+            Simulate the transaction in a simple built-in EVM and print transaction trace.
+            Please note that the simulation results may differ from the actual results because:
+                1. This simple EVM does not measure gas.
+                2. It does not support precompile contracts.
+                3. The transaction will be simulated in the block prior to the one it is in.
+        """
+        txid = arg.strip()
+        tx = self.web3.eth.get_transaction(txid)
+        block_number = tx["blockNumber"] - 1
+
+        # Chain.debug = True
+        # VM.debug = True
+        VM.trace = True
+
+        chain = Chain(ForkChain(self.web3, block_number))
+        # ins = Inspector(chain, self.peth)
+        r = chain.apply_transaction(
+            Transaction(
+                sender=tx["from"],
+                to=tx["to"],
+                value=tx["value"],
+                data=HexBytes(tx["input"]),
+            )
+        )
+        # ins.print_call_trace()
+        r.trace.print()
+
+    def do_evm_trace_call(self, arg):
+        """
+        evm_trace_call <to> <calldata> [<sender>] [<value>]:
+            Simulate the transaction in a simple built-in EVM and print transaction trace.
+        """
+        to, data, sender, value = self._parse_tx_call_args(arg)
+        VM.trace = True
+
+        chain = Chain(ForkChain(self.web3))
+        r = chain.apply_transaction(
+            Transaction(sender=sender, to=to, value=value, data=HexBytes(data))
+        )
+        r.trace.print()
 
     ##################################################################
     # Bytecode tools.
