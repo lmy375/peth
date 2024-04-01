@@ -2,7 +2,7 @@ import os
 
 from web3 import Web3
 
-from peth.core import config
+from peth.core.config import config
 from peth.core.peth import Peth
 from peth.eth.scan import ScanAPI
 
@@ -13,7 +13,7 @@ def diff_source(src1, src2, output=None):
     src1 = ContractSource(src1)
     src2 = ContractSource(src2)
     if output:
-        output = os.path.join(config.DIFF_PATH, output)
+        output = os.path.join(config.diff_path, output)
     src1.compare(src2, output)
 
 

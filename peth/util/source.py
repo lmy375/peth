@@ -1,7 +1,7 @@
 import difflib
 import os
 
-from peth.core import config
+from peth.core.config import config
 
 _disable_format = False
 
@@ -12,10 +12,10 @@ def format_solidity(code):
     if _disable_format:
         return code
 
-    if not os.path.exists(config.DIFF_PATH):
-        os.makedirs(config.DIFF_PATH)
+    if not os.path.exists(config.diff_path):
+        os.makedirs(config.diff_path)
 
-    path = config.DIFF_TMP_FILE
+    path = os.path.join(config.diff_path, "peth.tmp.sol")
     open(path, "w").write(code)
 
     ret = os.system("npx prettier -w %s >/dev/null" % path)
@@ -94,7 +94,7 @@ class ContractSource(object):
     def compare(self, other, output=None):
 
         if output is None:
-            output = config.DIFF_PATH
+            output = config.diff_path
 
         if not os.path.isdir(output):
             os.makedirs(output)
@@ -125,7 +125,7 @@ class ContractSource(object):
                 similarity = s.ratio()
                 filename = "%s_%s_%0.2f" % (name1, name2, similarity)
                 # print(filename)
-                if similarity > config.DIFF_MIN_SIMILARITY:
+                if similarity > config.diff_min_similarity:
                     self.__diff_file(src1, src2, os.path.join(output, filename))
                     src_left[name1] = None
                     dst_left[name2] = None

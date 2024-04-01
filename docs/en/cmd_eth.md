@@ -42,6 +42,12 @@ peth > call 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 balanceOf(address)->(uint
 748101950687662255047
 ```
 
+When the contract is verified on Etherscan, peth will extract its ABI automatically. So you do not have to type the full signature every time, a method name is enough.
+```
+peth > call 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 balanceOf 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+748362491149045280673
+```
+
 ## eth_call
 
 Initiate `eth_call` using the original binary calldata

@@ -42,6 +42,13 @@ peth > call 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 balanceOf(address)->(uint
 748101950687662255047
 ```
 
+当合约开源时，peth 会自动解析 ABI，此时不需要写出完整的函数签名，只需要输入函数名即可，如下：
+```
+peth > call 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 balanceOf 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+748362491149045280673
+```
+
+
 ## eth_call
 
 使用原始的 calldata 发起 `eth_call` 调用

@@ -17,7 +17,7 @@ from crytic_compile.platform.etherscan import (
 from crytic_compile.platform.exceptions import InvalidCompilation
 from slither.slither import Slither
 
-from peth.core import config
+from peth.core.config import config
 from peth.eth.scan import ScanAPI
 
 
@@ -31,7 +31,7 @@ class Uniscan(Etherscan):
 
         target = self._target
         export_dir = os.path.join(
-            config.OUTPUT_PATH, kwargs.get("etherscan_export_dir", "compile-contracts")
+            config.output_path, kwargs.get("etherscan_export_dir", "compile-contracts")
         )
 
         source_code: str = ""

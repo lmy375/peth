@@ -1,0 +1,112 @@
+aoa:
+- https://mainnet.aurora.dev
+- https://api.aurorascan.dev/api?
+- https://aurorascan.dev/address/
+arb:
+- https://arb1.arbitrum.io/rpc
+- https://api.arbiscan.io/api?
+- https://arbiscan.io/address/
+avax:
+- https://rpc.ankr.com/avalanche
+- https://api.snowtrace.io/api?
+- https://snowtrace.io/address/
+base:
+- https://mainnet.base.org
+- https://basescan.org/api?
+- https://basescan.org/address/
+blast:
+- https://rpc.ankr.com/blast
+- https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan/api?
+- https://blastexplorer.io/address/
+boba:
+- https://mainnet.boba.network/
+- https://blockexplorer.boba.network/api?
+- https://blockexplorer.boba.network/address/
+bsc:
+- https://rpc.ankr.com/bsc
+- https://api.bscscan.com/api?
+- https://bscscan.com/address/
+canto:
+- https://canto.slingshot.finance
+- https://tuber.build/api?
+- https://tuber.build/address/
+cro:
+- https://evm.cronos.org
+- https://api.cronoscan.com/api?
+- https://cronoscan.com/address/
+etf:
+- https://rpc.etherfair.org
+- https://explorer.etherfair.org/api?
+- https://explorer.etherfair.org/address/
+eth:
+- https://rpc.ankr.com/eth
+- https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
+- https://etherscan.io/address/
+ethw:
+- https://mainnet.ethereumpow.org
+- null
+- https://www.oklink.com/en/ethw/address/
+ftm:
+- https://rpc.ankr.com/fantom
+- https://api.ftmscan.com/api?
+- https://ftmscan.com/address/
+gnosis:
+- https://rpc.gnosischain.com
+- https://api.gnosisscan.io/api?
+- https://gnosisscan.io/address/
+heco:
+- https://http-mainnet.hecochain.com
+- https://api.hecoinfo.com/api?
+- https://hecoinfo.com/address/
+local:
+- http://127.0.0.1:8545
+- https://api.etherscan.io/api?
+- https://etherscan.io/address/
+manta:
+- https://pacific-rpc.manta.network/http
+- https://pacific-explorer.manta.network/api?
+- https://pacific-explorer.manta.network/address/
+mantle:
+- https://rpc.mantle.xyz
+- https://explorer.mantle.xyz/api?
+- https://explorer.mantle.xyz/address/
+matic:
+- https://rpc.ankr.com/polygon
+- https://api.polygonscan.com/api?
+- https://polygonscan.com/address/
+merlin:
+- https://rpc.merlinchain.io
+- https://scan.merlinchain.io/api?
+- https://scan.merlinchain.io/address/
+metis:
+- https://andromeda.metis.io/?owner=1088
+- https://andromeda-explorer.metis.io/api?
+- https://andromeda-explorer.metis.io/address/
+moonbeam:
+- https://rpc.api.moonbeam.network
+- https://api-moonbeam.moonscan.io/api?
+- https://moonbeam.moonscan.io/address/
+moonriver:
+- https://rpc.moonriver.moonbeam.network
+- https://api-moonriver.moonscan.io/api?
+- https://moonriver.moonscan.io/address/
+oasis:
+- https://emerald.oasis.dev
+- https://explorer.emerald.oasis.dev/api?
+- https://explorer.emerald.oasis.dev/address/
+one:
+- https://api.harmony.one
+- null
+- https://explorer.harmony.one/address/
+op:
+- https://optimism-mainnet.public.blastapi.io
+- https://api-optimistic.etherscan.io/api?
+- https://optimistic.etherscan.io/address/
+zkfair:
+- https://rpc.zkfair.io
+- https://scan.zkfair.io/api?
+- https://scan.zkfair.io/address/
+zksync:
+- https://mainnet.era.zksync.io
+- null
+- https://explorer.zksync.io/address/

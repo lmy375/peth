@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Tuple
 import requests
 from web3 import Web3
 
-from peth.core import config
+from peth.core.config import config
 from peth.core.log import logger
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -70,20 +70,20 @@ class SelectorDatabase(object):
     def __init__(self) -> None:
         self.db = {}
 
-        if not os.path.exists(config.SIG_DB_PATH):
+        if not os.path.exists(config.sig_db_path):
             try:
                 logger.info(
-                    "Downloading SelectorDatabase from %s ..." % config.SIG_DB_URL
+                    "Downloading SelectorDatabase from %s ..." % config.sig_db_url
                 )
-                r = requests.get(config.SIG_DB_URL)
+                r = requests.get(config.sig_db_url)
                 self.db = r.json()
                 logger.info("OK")
             except Exception as e:
                 logger.warn("SelectorDatabase init failed. %s" % e)
-            logger.debug("Load sig db from %s" % config.SIG_DB_URL)
+            logger.debug("Load sig db from %s" % config.sig_db_url)
         else:
-            self.db = json.load(open(config.SIG_DB_PATH))
-            logger.debug("Load sig db from %s" % config.SIG_DB_PATH)
+            self.db = json.load(open(config.sig_db_path))
+            logger.debug("Load sig db from %s" % config.sig_db_path)
 
         atexit.register(self.save)
 
@@ -210,8 +210,8 @@ class SelectorDatabase(object):
                 return []
 
     def save(self):
-        json.dump(self.db, open(config.SIG_DB_PATH, "w"))
-        logger.debug("Save sig db to %s" % config.SIG_DB_PATH)
+        json.dump(self.db, open(config.sig_db_path, "w"))
+        logger.debug("Save sig db to %s" % config.sig_db_path)
 
     @classmethod
     def get(cls):

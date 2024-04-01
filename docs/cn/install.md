@@ -45,31 +45,26 @@ $ python main.py -h
 
 ## 配置 RPC 及 API Key
 
-编辑 peth 目录下的 `config.json` 文件。如果是通过 pip 形式安装，则文件位于 `site-packages` 中对应的包中。
+编辑 peth 目录下的 `chains.yaml` 文件。如果是通过 pip 形式安装，则文件位于 `site-packages` 中对应的包中。
 
 添加自定义的 RPC 地址，以支持新的 EVM 链，，也欢迎提交 Github Pull Request。
 
 添加 API Key 可以提高执行速度，否则遇到 API 限频时会自动等待。
 
-```js
-{
-    "chains": {
-        "eth": [
-            // 节点 RPC 地址
-            "https://rpc.ankr.com/eth",  
+```yaml
+eth:
+# 节点 RPC 地址
+- https://rpc.ankr.com/eth 
 
-            // Etherscan API URL，注意不要少了末尾的 ?
-            // 仅支持 Etherscan 系列的区块链浏览器
-            "https://api.etherscan.io/api?",
-            
-            // 如果要添加 API Key 则使这样的格式
-            // https://api.etherscan.io/api?apikey=<Your API Key>&
+# Etherscan API URL，注意不要少了末尾的 ?
+# 仅支持 Etherscan 系列的区块链浏览器
+# 如果要添加 API Key 则使这样的格式
+# https://api.etherscan.io/api?apikey=<Your API Key>&
+- https://api.etherscan.io/api?
 
-            // 用于打开特定地址的 URL
-            "https://etherscan.io/address/"
-        ],
+# 用于打开特定地址的 URL
+- https://etherscan.io/address/
 
-       // 可继续添加新的链
-    }
-}
+bsc:
+# 可继续添加新的链
 ```

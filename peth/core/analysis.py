@@ -4,7 +4,7 @@ import os
 
 from web3 import Web3
 
-from peth.core import config
+from peth.core.config import config
 from peth.core.log import logger
 from peth.eth.bytecode import Code
 from peth.eth.sigs import Signature, Signatures
@@ -85,7 +85,7 @@ class AccountAnalysis(object):
             self.analyze_extra()
 
             # Can be slow.
-            if config.ENABLE_SLITHER:
+            if config.enable_slither:
                 self.analyze_slither()
 
         logger.debug("%s %s done.", self.addr, self.name)
@@ -158,7 +158,8 @@ class AccountAnalysis(object):
         if Web3.isAddress(self.implmentation):
             # If this is a proxy, analyze the implmentation code.
             addr = self.implmentation
-        self.selectors, self.hardcoded_addresses = self.peth.analyze_bytecode(addr)
+        self.selectors = self.peth.get_selectors(addr)
+        self.hardcoded_addresses = self.peth.get_hardcoded_addresses(addr)
         logger.debug(
             "%d selectors, %s hardcode addresses",
             len(self.selectors),
@@ -548,7 +549,7 @@ class Project(object):
         time_tag = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         filename = "Report_%s_%s.md" % (time_tag, self.addresses[0][:10])
 
-        report_dir = config.REPORT_PATH
+        report_dir = config.report_path
         if not os.path.exists(report_dir):
             os.makedirs(report_dir)
         path = os.path.join(report_dir, filename)

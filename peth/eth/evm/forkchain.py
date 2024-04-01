@@ -5,7 +5,7 @@ import pickle
 from web3 import Web3
 
 from peth import Peth
-from peth.core import config
+from peth.core.config import config
 
 
 class ForkChain(object):
@@ -21,11 +21,11 @@ class ForkChain(object):
         self.chainid = web3.eth.chain_id
         self.block = web3.eth.get_block(self.fix_block_number - 1)
 
-        if not os.path.exists(config.EVM_OUTPUT_PATH):
-            os.makedirs(config.EVM_OUTPUT_PATH)
+        if not os.path.exists(config.evm_cache_path):
+            os.makedirs(config.evm_cache_path)
 
         self._cache_file_name = os.path.join(
-            config.EVM_OUTPUT_PATH,
+            config.evm_cache_path,
             "fork_%s_%s.pickle" % (self.chainid, self.fix_block_number),
         )
 

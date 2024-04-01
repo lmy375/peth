@@ -33,7 +33,7 @@ from peth.util import diff
 from peth.util.graph import ContractRelationGraph
 from peth.util.logos import random_logo
 
-from .core import config
+from .core.config import config
 from .core.log import logger, logging
 
 
@@ -213,7 +213,7 @@ class PethConsole(cmd.Cmd):
         print("  API:", self.peth.api_url)
         print("  Address:", self.peth.address_url)
 
-        if arg in config.chain_config:
+        if arg in config.chains:
             old_sender = self.peth.sender
             self.peth = Peth.get_or_create(arg)
             self.peth.sender = old_sender  # Keep the sender value.
@@ -229,23 +229,22 @@ class PethConsole(cmd.Cmd):
             print("  Address:", self.peth.address_url)
 
         else:
-            print("Supported chains: %s" % ", ".join(config.chain_config.keys()))
+            print("Supported chains: %s" % ", ".join(config.chains.keys()))
 
     def do_config(self, arg):
         """
         config: Print current settings.
-        config <key> <value>: Change settings.
+        config raw: Print raw settings.
+        config <section> <key> <value>: Change settings.
         """
-        args = self._parse_args(arg)
+        args = arg.split()
         if len(args) == 0:
             config.print_config()
-            print("\nUse `config key value` to change settings.")
+        elif args[0] == "raw":
+            config.print_ini()
         else:
-            k, v = args
-            if k in config.__dict__:
-                config.__dict__[k] = v
-            else:
-                print("Not valid config key.")
+            assert len(args) == 3
+            config.cfg.set(args[0], args[1], args[2])
 
     def do_sender(self, arg):
         """
@@ -306,8 +305,8 @@ class PethConsole(cmd.Cmd):
         """
 
         print("%-40s %-10s %s" % ("Name", "Chain", "Address"))
-        for name in config.contracts_config:
-            chain, addr = config.contracts_config[name]
+        for name in config.contracts:
+            chain, addr = config.contracts[name]
             print("%-40s %-10s %s" % (name, chain, addr))
 
     def do_sh(self, arg):
@@ -878,22 +877,23 @@ class PethConsole(cmd.Cmd):
             gas_used_avg = gas_used_total / tx_cnt
             gas_price_avg = gas_price_total / tx_cnt
 
-            gas_desc = "%d/%d/%d" % (gas_used_avg, gas_used_min, gas_used_max)
+            gas_desc = "%8d < %8d < %8d" % (gas_used_min, gas_used_avg, gas_used_max)
             GWEI = 10**9
-            gas_price_desc = "%d/%d/%d" % (
-                gas_price_avg / GWEI,
+            gas_price_desc = "%0.2f < %0.2f < %0.2f" % (
                 gas_price_min / GWEI,
+                gas_price_avg / GWEI,
                 gas_price_max / GWEI,
             )
+            tx_cnt = "%4d" % tx_cnt
             print(
-                f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used rate, price {gas_price_desc} gwei"
+                f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used, price {gas_price_desc} Gwei"
             )
 
         cur = get_block("latest")
 
         while True:
             print(datetime.now())
-            print_block("latest", cur)
+            print_block("latest ", cur)
 
             while True:
                 pending = get_block("pending")
@@ -1699,9 +1699,9 @@ class PethConsole(cmd.Cmd):
             similarity,
         )
 
-        if not os.path.isdir(config.DIFF_PATH):
-            os.makedirs(config.DIFF_PATH)
-        output_filename = os.path.join(config.DIFF_PATH, output_filename)
+        if not os.path.isdir(config.diff_path):
+            os.makedirs(config.diff_path)
+        output_filename = os.path.join(config.diff_path, output_filename)
         open(output_filename + ".html", "w").write(buf)
         print("Written to " + output_filename + ".html")
 
@@ -1817,8 +1817,8 @@ class PethConsole(cmd.Cmd):
             print("Open http://relation-graph.com/#/options-tools and paste the json.")
 
     def _check_alias(self, alias):
-        if alias in config.contracts_config:
-            return config.contracts_config[alias]
+        if alias in config.contracts:
+            return config.contracts[alias]
         else:
             return self.peth.chain, alias
 
@@ -1866,7 +1866,7 @@ class PethConsole(cmd.Cmd):
         if len(args) > 1:
             output_dir = args[1]
             if "/" not in output_dir:
-                output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
+                output_dir = os.path.join(config.output_path, output_dir)
         else:
             output_dir = None
 
@@ -1886,7 +1886,7 @@ class PethConsole(cmd.Cmd):
         if len(args) > 1:
             output_dir = args[1]
             if "/" not in output_dir:
-                output_dir = os.path.join(config.OUTPUT_PATH, output_dir)
+                output_dir = os.path.join(config.output_path, output_dir)
         else:
             output_dir = None
 
@@ -1946,10 +1946,10 @@ class PethConsole(cmd.Cmd):
 
         d = difflib.HtmlDiff()
         buf = d.make_file(code_list1, code_list2)
-        if not os.path.exists(config.DIFF_PATH):
-            os.makedirs(config.DIFF_PATH)
+        if not os.path.exists(config.diff_path):
+            os.makedirs(config.diff_path)
 
-        path = os.path.join(config.DIFF_PATH, "bytecode_diff.html")
+        path = os.path.join(config.diff_path, "bytecode_diff.html")
         open(path, "w").write(buf)
         print("Written to " + path)
 

@@ -45,31 +45,27 @@ $ python main.py -h
 
 ## Customized RPC and API Key
 
-Edit the config.json file in the peth directory. If installed via pip, the file is located in the corresponding package in `site-packages`.
+Edit the `chains.yaml` file in the peth directory. If installed via pip, the file is located in the corresponding package in `site-packages`.
 
 Add custom RPC addresses to support new EVM chains, and you are welcome to submit a Github Pull Request.
 
 Adding an API Key can speed up execution, otherwise it will automatically wait when encountering API rate limits.
 
-```js
-{
-    "chains": {
-        "eth": [
-            // Node RPC address
-            "https://rpc.ankr.com/eth",
+```yaml
+eth:
+# Node RPC address
+- "https://rpc.ankr.com/eth",
 
-            // Etherscan API URL, be careful not to miss the trailing ?
-            // Only supports Etherscan compatible blockchain explorers
-            "https://api.etherscan.io/api?",
+# Etherscan API URL, be careful not to miss the trailing ?
+# Only supports Etherscan compatible blockchain explorers
+# If you want to add an API Key, use this format
+# https://api.etherscan.io/api?apikey=<Your API Key>&
+- "https://api.etherscan.io/api?",
 
-            // If you want to add an API Key, use this format
-            // https://api.etherscan.io/api?apikey=<Your API Key>&
 
-            // URL for opening a specific address
-            "https://etherscan.io/address/"
-        ],
+# URL for opening a specific address
+- "https://etherscan.io/address/"
 
-       // You can continue to add new chains
-    }
-}
+bsc:
+# You can continue to add new chains
 ```

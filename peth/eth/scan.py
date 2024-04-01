@@ -6,7 +6,7 @@ import time
 import requests
 from web3 import Web3
 
-from ..core import config
+from ..core.config import config
 
 
 class ScanAPI(object):
@@ -21,13 +21,13 @@ class ScanAPI(object):
         self.api_url = api_url
 
         self._cache_path = os.path.join(
-            config.CACHE_PATH, re.findall("//(.*)?/", api_url)[0]
+            config.contracts_cache_path, re.findall("//(.*)?/", api_url)[0]
         )
         if not os.path.exists(self._cache_path):
             os.makedirs(self._cache_path)
 
         self._source_path = os.path.join(
-            config.OUTPUT_PATH, "source", re.findall("//(.*)?/", self.api_url)[0]
+            config.sources_path, re.findall("//(.*)?/", self.api_url)[0]
         )
 
     @classmethod
@@ -39,9 +39,9 @@ class ScanAPI(object):
     @classmethod
     def get_or_create_by_chain(cls, chain):
         assert (
-            chain in config.chain_config.keys()
-        ), f"Invalid chain {chain}. See config.json."
-        return ScanAPI.get_or_create(config.chain_config[chain][1])
+            chain in config.chains.keys()
+        ), f"Invalid chain {chain}. See {config.chains_path}."
+        return ScanAPI.get_or_create(config.chains[chain][1])
 
     @classmethod
     def get_source_by_chain(cls, chain, addr):
@@ -66,7 +66,7 @@ class ScanAPI(object):
             # retry.
             if "Max rate limit reached" in d["result"]:
                 # API request limit.
-                time.sleep(config.SCAN_API_INTERVAL)
+                time.sleep(config.scan_api_interval)
                 return self.get(url)
 
             assert d["status"] == "1", d
@@ -269,7 +269,7 @@ class ScanAPI(object):
     def download_json(self, addr, output_dir=None):
         if not output_dir:
             output_dir = os.path.join(
-                config.OUTPUT_PATH, "json", re.findall("//(.*)?/", self.api_url)[0]
+                config.output_path, "json", re.findall("//(.*)?/", self.api_url)[0]
             )
 
         if not os.path.exists(output_dir):

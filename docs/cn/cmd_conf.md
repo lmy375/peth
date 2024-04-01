@@ -59,19 +59,51 @@ New: 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf
 
 ## config
 
-修改 peth 中的一些默认设置
+查看当前配置
 ```
 peth > config
-SIG_DB_PATH = '....'
+root = ..
+chains_path = ..
 ...
-SCAN_API_INTERVAL = 6
-DIFF_MIN_SIMILARITY = 0.5
-ENABLE_SLITHER = False
+scan_api_interval = 6
+sig_db_url = https://raw.githubusercontent.com/ethereum/go-ethereum/master/signer/fourbyte/4byte.json
+diff_min_similarity = 0.5
+enable_slither = False
 
-Use `config key value` to change settings.
-peth > config SCAN_API_INTERVAL 1
+peth > config raw
+[path]
+root = peth-data
+
+[root]
+chains = chains.yaml
+tokens = tokens.yaml
+contracts = contracts.yaml
+sig_db = 4byte.json
+output = output
+cache = cache
+
+[output]
+diff = diff
+report = report
+sources = sources
+
+[cache]
+evm = evm
+contracts = contracts
+
+[misc]
+scan_api_interval = 6
+sig_db_url = https://raw.githubusercontent.com/ethereum/go-ethereum/master/signer/fourbyte/4byte.json
+diff_min_similarity = 0.5
+enable_slither = false
+```
+
+修改配置
+
+```
+peth > config misc scan_api_interval 1
 peth > config
 ...
-SCAN_API_INTERVAL = 1
+scan_api_interval = 1
 ...
 ```
