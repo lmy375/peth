@@ -1,4 +1,6 @@
 include *.md 
+include *.ini
+include *.yaml
 include LICENSE 
 include CHANGELOG.md
 include requirements.txt
