@@ -1,0 +1,418 @@
+[
+    {
+        "symbol": "MATIC",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://polygonscan.com/token/0x0000000000000000000000000000000000000000",
+        "name": "Native MATIC",
+        "price": 0.8989,
+        "decimals": 18
+    },
+    {
+        "symbol": "WMATIC",
+        "address": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+        "url": "https://polygonscan.com/token/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+        "name": "Wrapped MATIC",
+        "price": 0.8989,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDT",
+        "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+        "url": "https://polygonscan.com/token/0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+        "name": "(PoS) Tether USD",
+        "price": 0.999304,
+        "decimals": 6
+    },
+    {
+        "symbol": "BNB",
+        "address": "0x3BA4c387f786bFEE076A58914F5Bd38d668B42c3",
+        "url": "https://polygonscan.com/token/0x3BA4c387f786bFEE076A58914F5Bd38d668B42c3",
+        "name": "BNB",
+        "price": 561.1,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDC",
+        "address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "url": "https://polygonscan.com/token/0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "name": "USD Coin",
+        "price": 0.999762,
+        "decimals": 6
+    },
+    {
+        "symbol": "USDC.e",
+        "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+        "url": "https://polygonscan.com/token/0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+        "name": "USD Coin (PoS)",
+        "price": 0.999762,
+        "decimals": 6
+    },
+    {
+        "symbol": "BUSD",
+        "address": "0xdab529f40e671a1d4bf91361c21bf9f0c9712ab7",
+        "url": "https://polygonscan.com/token/0xdab529f40e671a1d4bf91361c21bf9f0c9712ab7",
+        "name": "binance-usd",
+        "price": 1.001,
+        "decimals": 18
+    },
+    {
+        "symbol": "AVAX",
+        "address": "0x2C89bbc92BD86F8075d1DEcc58C7F4E0107f286b",
+        "url": "https://polygonscan.com/token/0x2C89bbc92BD86F8075d1DEcc58C7F4E0107f286b",
+        "name": "Avalanche Token",
+        "price": 47.81,
+        "decimals": 18
+    },
+    {
+        "symbol": "SHIB",
+        "address": "0x6f8a06447ff6fcf75d803135a7de15ce88c1d4ec",
+        "url": "https://polygonscan.com/token/0x6f8a06447ff6fcf75d803135a7de15ce88c1d4ec",
+        "name": "SHIBA INU (PoS)",
+        "price": 2.678e-05,
+        "decimals": 18
+    },
+    {
+        "symbol": "LINK",
+        "address": "0xb0897686c545045afc77cf20ec7a532e3120e0f1",
+        "url": "https://polygonscan.com/token/0xb0897686c545045afc77cf20ec7a532e3120e0f1",
+        "name": "ChainLink Token",
+        "price": 17.64,
+        "decimals": 18
+    },
+    {
+        "symbol": "LINK",
+        "address": "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",
+        "url": "https://polygonscan.com/token/0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",
+        "name": "ChainLink Token",
+        "price": 17.64,
+        "decimals": 18
+    },
+    {
+        "symbol": "WBTC",
+        "address": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+        "url": "https://polygonscan.com/token/0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+        "name": "(PoS) Wrapped BTC",
+        "price": 66748,
+        "decimals": 8
+    },
+    {
+        "symbol": "UNI",
+        "address": "0xb33eaad8d922b1083446dc23f610c2567fb5180f",
+        "url": "https://polygonscan.com/token/0xb33eaad8d922b1083446dc23f610c2567fb5180f",
+        "name": "Uniswap (PoS)",
+        "price": 11.68,
+        "decimals": 18
+    },
+    {
+        "symbol": "MATIC",
+        "address": "0x0000000000000000000000000000000000001010",
+        "url": "https://polygonscan.com/token/0x0000000000000000000000000000000000001010",
+        "name": "Matic Token",
+        "price": 0.913527,
+        "decimals": 18
+    },
+    {
+        "symbol": "LEO",
+        "address": "0x06d02e9d62a13fc76bb229373fb3bbbd1101d2fc",
+        "url": "https://polygonscan.com/token/0x06d02e9d62a13fc76bb229373fb3bbbd1101d2fc",
+        "name": "Bitfinex LEO Token",
+        "price": 6.06,
+        "decimals": 18
+    },
+    {
+        "symbol": "DAI",
+        "address": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+        "url": "https://polygonscan.com/token/0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+        "name": "(PoS) Dai Stablecoin",
+        "price": 0.996663,
+        "decimals": 18
+    },
+    {
+        "symbol": "CRO",
+        "address": "0xada58df0f643d959c2a47c9d4d4c1a4defe3f11c",
+        "url": "https://polygonscan.com/token/0xada58df0f643d959c2a47c9d4d4c1a4defe3f11c",
+        "name": "Cronos Coin",
+        "price": 0.143106,
+        "decimals": 8
+    },
+    {
+        "symbol": "RNDR",
+        "address": "0x61299774020da444af134c82fa83e3810b309991",
+        "url": "https://polygonscan.com/token/0x61299774020da444af134c82fa83e3810b309991",
+        "name": "Render Token",
+        "price": 9.58,
+        "decimals": 18
+    },
+    {
+        "symbol": "MKR",
+        "address": "0x6f7C932e7684666C9fd1d44527765433e01fF61d",
+        "url": "https://polygonscan.com/token/0x6f7C932e7684666C9fd1d44527765433e01fF61d",
+        "name": "Maker",
+        "price": 3761.18,
+        "decimals": 18
+    },
+    {
+        "symbol": "GRT",
+        "address": "0x5fe2b58c013d7601147dcdd68c143a77499f5531",
+        "url": "https://polygonscan.com/token/0x5fe2b58c013d7601147dcdd68c143a77499f5531",
+        "name": "Graph Token",
+        "price": 0.352895,
+        "decimals": 18
+    },
+    {
+        "symbol": "INJ",
+        "address": "0x4e8dc2149eac3f3def36b1c281ea466338249371",
+        "url": "https://polygonscan.com/token/0x4e8dc2149eac3f3def36b1c281ea466338249371",
+        "name": "Injective Token",
+        "price": 32.68,
+        "decimals": 18
+    },
+    {
+        "symbol": "FET",
+        "address": "0x7583feddbcefa813dc18259940f76a02710a8905",
+        "url": "https://polygonscan.com/token/0x7583feddbcefa813dc18259940f76a02710a8905",
+        "name": "Fetch",
+        "price": 2.72,
+        "decimals": 18
+    },
+    {
+        "symbol": "THETA",
+        "address": "0xb46e0ae620efd98516f49bb00263317096c114b2",
+        "url": "https://polygonscan.com/token/0xb46e0ae620efd98516f49bb00263317096c114b2",
+        "name": "Theta Token (PoS)",
+        "price": 2.69,
+        "decimals": 18
+    },
+    {
+        "symbol": "FTM",
+        "address": "0xc9c1c1c20b3658f8787cc2fd702267791f224ce1",
+        "url": "https://polygonscan.com/token/0xc9c1c1c20b3658f8787cc2fd702267791f224ce1",
+        "name": "Fantom Token",
+        "price": 0.912181,
+        "decimals": 18
+    },
+    {
+        "symbol": "LDO",
+        "address": "0xc3c7d422809852031b44ab29eec9f1eff2a58756",
+        "url": "https://polygonscan.com/token/0xc3c7d422809852031b44ab29eec9f1eff2a58756",
+        "name": "Lido DAO Token (PoS)",
+        "price": 2.67,
+        "decimals": 18
+    },
+    {
+        "symbol": "rETH",
+        "address": "0x0266F4F08D82372CF0FcbCCc0Ff74309089c74d1",
+        "url": "https://polygonscan.com/token/0x0266F4F08D82372CF0FcbCCc0Ff74309089c74d1",
+        "name": "Rocket Pool ETH (PoS)",
+        "price": 3700.59,
+        "decimals": 18
+    },
+    {
+        "symbol": "AAVE",
+        "address": "0xd6df932a45c0f255f85145f286ea0b292b21c90b",
+        "url": "https://polygonscan.com/token/0xd6df932a45c0f255f85145f286ea0b292b21c90b",
+        "name": "Aave (PoS)",
+        "price": 120.83,
+        "decimals": 18
+    },
+    {
+        "symbol": "AGIX",
+        "address": "0x190eb8a183d22a4bdf278c6791b152228857c033",
+        "url": "https://polygonscan.com/token/0x190eb8a183d22a4bdf278c6791b152228857c033",
+        "name": "SingularityNET Token",
+        "price": 1.12,
+        "decimals": 8
+    },
+    {
+        "symbol": "SAND",
+        "address": "0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683",
+        "url": "https://polygonscan.com/token/0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683",
+        "name": "SAND",
+        "price": 0.627388,
+        "decimals": 18
+    },
+    {
+        "symbol": "SNX",
+        "address": "0x50b728d8d964fd00c2d0aad81718b71311fef68a",
+        "url": "https://polygonscan.com/token/0x50b728d8d964fd00c2d0aad81718b71311fef68a",
+        "name": "Synthetix Network Token (PoS)",
+        "price": 4.23,
+        "decimals": 18
+    },
+    {
+        "symbol": "CHZ",
+        "address": "0xf1938ce12400f9a761084e7a80d37e732a4da056",
+        "url": "https://polygonscan.com/token/0xf1938ce12400f9a761084e7a80d37e732a4da056",
+        "name": "chiliZ",
+        "price": 0.132021,
+        "decimals": 18
+    },
+    {
+        "symbol": "APE",
+        "address": "0xB7b31a6BC18e48888545CE79e83E06003bE70930",
+        "url": "https://polygonscan.com/token/0xB7b31a6BC18e48888545CE79e83E06003bE70930",
+        "name": "ApeCoin (PoS)",
+        "price": 1.79,
+        "decimals": 18
+    },
+    {
+        "symbol": "MANA",
+        "address": "0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4",
+        "url": "https://polygonscan.com/token/0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4",
+        "name": "Decentraland",
+        "price": 0.599435,
+        "decimals": 18
+    },
+    {
+        "symbol": "AXL",
+        "address": "0x6e4e624106cb12e168e6533f8ec7c82263358940",
+        "url": "https://polygonscan.com/token/0x6e4e624106cb12e168e6533f8ec7c82263358940",
+        "name": "Axelar",
+        "price": 1.8,
+        "decimals": 6
+    },
+    {
+        "symbol": "AIOZ",
+        "address": "0xe2341718c6c0cbfa8e6686102dd8fbf4047a9e9b",
+        "url": "https://polygonscan.com/token/0xe2341718c6c0cbfa8e6686102dd8fbf4047a9e9b",
+        "name": "AIOZ Network",
+        "price": 0.880395,
+        "decimals": 18
+    },
+    {
+        "symbol": "frxETH",
+        "address": "0xee327f889d5947c1dc1934bb208a1e792f953e96",
+        "url": "https://polygonscan.com/token/0xee327f889d5947c1dc1934bb208a1e792f953e96",
+        "name": "Frax Ether",
+        "price": 3321.97,
+        "decimals": 18
+    },
+    {
+        "symbol": "WOO",
+        "address": "0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603",
+        "url": "https://polygonscan.com/token/0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603",
+        "name": "WOO",
+        "price": 0.484632,
+        "decimals": 18
+    },
+    {
+        "symbol": "GNO",
+        "address": "0x5ffd62d3c3ee2e81c00a7b9079fb248e7df024a8",
+        "url": "https://polygonscan.com/token/0x5ffd62d3c3ee2e81c00a7b9079fb248e7df024a8",
+        "name": "Gnosis",
+        "price": 333.85,
+        "decimals": 18
+    },
+    {
+        "symbol": "NEXO",
+        "address": "0x41b3966b4ff7b427969ddf5da3627d6aeae9a48e",
+        "url": "https://polygonscan.com/token/0x41b3966b4ff7b427969ddf5da3627d6aeae9a48e",
+        "name": "Nexo",
+        "price": 1.3,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDD",
+        "address": "0xffa4d863c96e743a2e1513824ea006b8d0353c57",
+        "url": "https://polygonscan.com/token/0xffa4d863c96e743a2e1513824ea006b8d0353c57",
+        "name": "Decentralized USD (PoS)",
+        "price": 0.999547,
+        "decimals": 18
+    },
+    {
+        "symbol": "CRV",
+        "address": "0x172370d5cd63279efa6d502dab29171933a610af",
+        "url": "https://polygonscan.com/token/0x172370d5cd63279efa6d502dab29171933a610af",
+        "name": "CRV (PoS)",
+        "price": 0.618646,
+        "decimals": 18
+    },
+    {
+        "symbol": "OCEAN",
+        "address": "0x282d8efce846a88b159800bd4130ad77443fa1a1",
+        "url": "https://polygonscan.com/token/0x282d8efce846a88b159800bd4130ad77443fa1a1",
+        "name": "Ocean Token",
+        "price": 1.17369205,
+        "decimals": 18
+    },
+    {
+        "symbol": "IOTX",
+        "address": "0xf6372cdb9c1d3674e83842e3800f2a62ac9f3c66",
+        "url": "https://polygonscan.com/token/0xf6372cdb9c1d3674e83842e3800f2a62ac9f3c66",
+        "name": "IoTeX Network",
+        "price": 0.0685965,
+        "decimals": 18
+    },
+    {
+        "symbol": "FRAX",
+        "address": "0x45c32fa6df82ead1e2ef74d17b76547eddfaff89",
+        "url": "https://polygonscan.com/token/0x45c32fa6df82ead1e2ef74d17b76547eddfaff89",
+        "name": "Frax",
+        "price": 0.993541,
+        "decimals": 18
+    },
+    {
+        "symbol": "1INCH",
+        "address": "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",
+        "url": "https://polygonscan.com/token/0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",
+        "name": "1INCH Token",
+        "price": 0.561358,
+        "decimals": 18
+    },
+    {
+        "symbol": "ENJ",
+        "address": "0x7ec26842f195c852fa843bb9f6d8b583a274a157",
+        "url": "https://polygonscan.com/token/0x7ec26842f195c852fa843bb9f6d8b583a274a157",
+        "name": "EnjinCoin",
+        "price": 0.449953,
+        "decimals": 18
+    },
+    {
+        "symbol": "ANKR",
+        "address": "0x101a023270368c0d50bffb62780f4afd4ea79c35",
+        "url": "https://polygonscan.com/token/0x101a023270368c0d50bffb62780f4afd4ea79c35",
+        "name": "Ankr (PoS)",
+        "price": 0.060128,
+        "decimals": 18
+    },
+    {
+        "symbol": "sfrxETH",
+        "address": "0x6d1fdbb266fcc09a16a22016369210a15bb95761",
+        "url": "https://polygonscan.com/token/0x6d1fdbb266fcc09a16a22016369210a15bb95761",
+        "name": "Staked Frax Ether",
+        "price": 3598.37,
+        "decimals": 18
+    },
+    {
+        "symbol": "GMT",
+        "address": "0x714db550b574b3e927af3d93e26127d15721d4c2",
+        "url": "https://polygonscan.com/token/0x714db550b574b3e927af3d93e26127d15721d4c2",
+        "name": "GreenMetaverseToken",
+        "price": 0.323262,
+        "decimals": 8
+    },
+    {
+        "symbol": "RPL",
+        "address": "0x7205705771547cf79201111b4bd8aaf29467b9ec",
+        "url": "https://polygonscan.com/token/0x7205705771547cf79201111b4bd8aaf29467b9ec",
+        "name": "Rocket Pool",
+        "price": 29.53,
+        "decimals": 18
+    },
+    {
+        "symbol": "ZRX",
+        "address": "0x5559edb74751a0ede9dea4dc23aee72cca6be3d5",
+        "url": "https://polygonscan.com/token/0x5559edb74751a0ede9dea4dc23aee72cca6be3d5",
+        "name": "ZRX",
+        "price": 0.684858,
+        "decimals": 18
+    },
+    {
+        "symbol": "GLM",
+        "address": "0x0b220b82f3ea3b7f6d9a1d8ab58930c064a2b5bf",
+        "url": "https://polygonscan.com/token/0x0b220b82f3ea3b7f6d9a1d8ab58930c064a2b5bf",
+        "name": "Golem Network Token",
+        "price": 0.562714,
+        "decimals": 18
+    }
+]

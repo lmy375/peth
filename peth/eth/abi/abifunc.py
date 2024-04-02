@@ -96,8 +96,11 @@ class ABIFunction(object):
     def __repr__(self):
         return self.full
 
-    def encode_input(self, args=[]):
-        return HexBytes(self.selector + HexBytes(abi_encode(self.input_types, args)))
+    def encode_input(self, args=[], include_selector=True) -> HexBytes:
+        calldata = HexBytes(abi_encode(self.input_types, args))
+        if include_selector:
+            calldata = HexBytes(self.selector) + calldata
+        return HexBytes(calldata)
 
     def decode_input(self, calldata):
         calldata = HexBytes(calldata)
@@ -105,7 +108,7 @@ class ABIFunction(object):
         calldata = calldata[4:]
         return abi_decode(self.input_types, calldata)
 
-    def encode_output(self, rets=[], auto_tuple=True):
+    def encode_output(self, rets=[], auto_tuple=True) -> HexBytes:
         if auto_tuple and len(self.outputs) == 1:
             rets = [rets]
         return HexBytes(abi_encode(self.output_types, rets))
@@ -149,6 +152,10 @@ class ABIFunction(object):
 
         arg, value = get_item_value_by_index(indexes[0], self.inputs, values)
         return arg.extract_value(indexes[1:], value)
+
+    def extract_calldata(self, indexes, calldata):
+        values = self.decode_input(calldata)
+        return self.extract_value(indexes, values)
 
     def map_values(self, values):
         assert len(values) == len(self.inputs), "Value not match arguments size"

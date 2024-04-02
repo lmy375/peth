@@ -1,0 +1,410 @@
+[
+    {
+        "symbol": "BNB",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://bscscan.com/token/0x0000000000000000000000000000000000000000",
+        "name": "Native BNB",
+        "price": 561.13203671,
+        "decimals": 18
+    },
+    {
+        "symbol": "ETH",
+        "address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+        "url": "https://bscscan.com/token/0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+        "name": "Binance-Peg Ethereum Token",
+        "price": 3365.21,
+        "decimals": 18
+    },
+    {
+        "symbol": "BSC-USD",
+        "address": "0x55d398326f99059ff775485246999027b3197955",
+        "url": "https://bscscan.com/token/0x55d398326f99059ff775485246999027b3197955",
+        "name": "Binance-Peg BSC-USD",
+        "price": 1.001,
+        "decimals": 18
+    },
+    {
+        "symbol": "WBNB",
+        "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "url": "https://bscscan.com/token/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "name": "Wrapped BNB",
+        "price": 561.13203671,
+        "decimals": 18
+    },
+    {
+        "symbol": "XRP",
+        "address": "0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe",
+        "url": "https://bscscan.com/token/0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe",
+        "name": "Binance-Peg XRP Token",
+        "price": 0.59516702,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDC",
+        "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+        "url": "https://bscscan.com/token/0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+        "name": "Binance-Peg USD Coin",
+        "price": 0.998281,
+        "decimals": 18
+    },
+    {
+        "symbol": "anyUSDC",
+        "address": "0x8965349fb649a33a30cbfda057d8ec2c48abe2a2",
+        "url": "https://bscscan.com/token/0x8965349fb649a33a30cbfda057d8ec2c48abe2a2",
+        "name": "USDC",
+        "price": 0.998281,
+        "decimals": 18
+    },
+    {
+        "symbol": "DOGE",
+        "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43",
+        "url": "https://bscscan.com/token/0xba2ae424d960c26247dd6c32edc70b295c744c43",
+        "name": "Binance-Peg Dogecoin Token",
+        "price": 0.1881572,
+        "decimals": 8
+    },
+    {
+        "symbol": "ADA",
+        "address": "0x3ee2200efb3400fabb9aacf31297cbdd1d435d47",
+        "url": "https://bscscan.com/token/0x3ee2200efb3400fabb9aacf31297cbdd1d435d47",
+        "name": "Binance-Peg Cardano Token",
+        "price": 0.59922618,
+        "decimals": 18
+    },
+    {
+        "symbol": "AVAX",
+        "address": "0x1ce0c2827e2ef14d5c4f29a091d735a204794041",
+        "url": "https://bscscan.com/token/0x1ce0c2827e2ef14d5c4f29a091d735a204794041",
+        "name": "Binance-Peg Avalanche Token",
+        "price": 47.8950752,
+        "decimals": 18
+    },
+    {
+        "symbol": "TONCOIN",
+        "address": "0x76A797A59Ba2C17726896976B7B3747BfD1d220f",
+        "url": "https://bscscan.com/token/0x76A797A59Ba2C17726896976B7B3747BfD1d220f",
+        "name": "Wrapped TON Coin",
+        "price": 5.08,
+        "decimals": 9
+    },
+    {
+        "symbol": "SHIB",
+        "address": "0x2859e4544c4bb03966803b044a93563bd2d0dd4d",
+        "url": "https://bscscan.com/token/0x2859e4544c4bb03966803b044a93563bd2d0dd4d",
+        "name": "Binance-Peg SHIBA INU Token",
+        "price": 2.675e-05,
+        "decimals": 18
+    },
+    {
+        "symbol": "DOT",
+        "address": "0x7083609fce4d1d8dc0c979aab8c869ea2c873402",
+        "url": "https://bscscan.com/token/0x7083609fce4d1d8dc0c979aab8c869ea2c873402",
+        "name": "Binance-Peg Polkadot Token",
+        "price": 8.74620713,
+        "decimals": 18
+    },
+    {
+        "symbol": "BCH",
+        "address": "0x8ff795a6f4d97e7887c79bea79aba5cc76444adf",
+        "url": "https://bscscan.com/token/0x8ff795a6f4d97e7887c79bea79aba5cc76444adf",
+        "name": "Binance-Peg Bitcoin Cash Token",
+        "price": 604.26462474,
+        "decimals": 18
+    },
+    {
+        "symbol": "TRX",
+        "address": "0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3",
+        "url": "https://bscscan.com/token/0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3",
+        "name": "TRON",
+        "price": 0.118868,
+        "decimals": 6
+    },
+    {
+        "symbol": "LINK",
+        "address": "0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd",
+        "url": "https://bscscan.com/token/0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd",
+        "name": "Binance-Peg ChainLink Token",
+        "price": 17.66,
+        "decimals": 18
+    },
+    {
+        "symbol": "MATIC",
+        "address": "0xcc42724c6683b7e57334c4e856f4c9965ed682bd",
+        "url": "https://bscscan.com/token/0xcc42724c6683b7e57334c4e856f4c9965ed682bd",
+        "name": "Matic Token",
+        "price": 0.914807,
+        "decimals": 18
+    },
+    {
+        "symbol": "LTC",
+        "address": "0x4338665cbb7b2485a8855a139b75d5e34ab0db94",
+        "url": "https://bscscan.com/token/0x4338665cbb7b2485a8855a139b75d5e34ab0db94",
+        "name": "Binance-Peg Litecoin Token",
+        "price": 95.24,
+        "decimals": 18
+    },
+    {
+        "symbol": "UNI",
+        "address": "0xbf5140a22578168fd562dccf235e5d43a02ce9b1",
+        "url": "https://bscscan.com/token/0xbf5140a22578168fd562dccf235e5d43a02ce9b1",
+        "name": "Binance-Peg Uniswap",
+        "price": 11.70350124,
+        "decimals": 18
+    },
+    {
+        "symbol": "NEAR",
+        "address": "0x1fa4a73a3f0133f0025378af00236f3abdee5d63",
+        "url": "https://bscscan.com/token/0x1fa4a73a3f0133f0025378af00236f3abdee5d63",
+        "name": "Binance-Peg NEAR Protocol",
+        "price": 6.36926348,
+        "decimals": 18
+    },
+    {
+        "symbol": "DAI",
+        "address": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
+        "url": "https://bscscan.com/token/0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
+        "name": "Binance-Peg Dai Token",
+        "price": 1.00010232,
+        "decimals": 18
+    },
+    {
+        "symbol": "FIL",
+        "address": "0x0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153",
+        "url": "https://bscscan.com/token/0x0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153",
+        "name": "Binance-Peg Filecoin",
+        "price": 8.81140819,
+        "decimals": 18
+    },
+    {
+        "symbol": "ETC",
+        "address": "0x3d6545b08693dae087e957cb1180ee38b9e3c25e",
+        "url": "https://bscscan.com/token/0x3d6545b08693dae087e957cb1180ee38b9e3c25e",
+        "name": "Binance-Peg Ethereum Classic",
+        "price": 30.81898578,
+        "decimals": 18
+    },
+    {
+        "symbol": "ATOM",
+        "address": "0x0eb3a705fc54725037cc9e008bdede697f62f335",
+        "url": "https://bscscan.com/token/0x0eb3a705fc54725037cc9e008bdede697f62f335",
+        "name": "Binance-Peg Cosmos Token",
+        "price": 11.27050527,
+        "decimals": 18
+    },
+    {
+        "symbol": "Arbitrum",
+        "address": "0xa050ffb3eeb8200eeb7f61ce34ff644420fd3522",
+        "url": "https://bscscan.com/token/0xa050ffb3eeb8200eeb7f61ce34ff644420fd3522",
+        "name": "ARB",
+        "price": 1.49,
+        "decimals": 18
+    },
+    {
+        "symbol": "XLM",
+        "address": "0x43c934a845205f0b514417d757d7235b8f53f1b9",
+        "url": "https://bscscan.com/token/0x43c934a845205f0b514417d757d7235b8f53f1b9",
+        "name": "Stellar",
+        "price": 0.130299,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTCB",
+        "address": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+        "url": "https://bscscan.com/token/0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+        "name": "Binance-Peg BTCB Token",
+        "price": 66927.70326632,
+        "decimals": 18
+    },
+    {
+        "symbol": "MKR",
+        "address": "0x5f0da599bb2cccfcf6fdfd7d81743b6020864350",
+        "url": "https://bscscan.com/token/0x5f0da599bb2cccfcf6fdfd7d81743b6020864350",
+        "name": "Binance-Peg Maker",
+        "price": 3767.15460879,
+        "decimals": 18
+    },
+    {
+        "symbol": "PEPE",
+        "address": "0x25d887ce7a35172c62febfd67a1856f20faebb00",
+        "url": "https://bscscan.com/token/0x25d887ce7a35172c62febfd67a1856f20faebb00",
+        "name": "Pepe",
+        "price": 7.28e-06,
+        "decimals": 18
+    },
+    {
+        "symbol": "VET",
+        "address": "0x6fdcdfef7c496407ccb0cec90f9c5aaa1cc8d888",
+        "url": "https://bscscan.com/token/0x6fdcdfef7c496407ccb0cec90f9c5aaa1cc8d888",
+        "name": "VeChain",
+        "price": 0.04208851,
+        "decimals": 18
+    },
+    {
+        "symbol": "FTM",
+        "address": "0xad29abb318791d579433d831ed122afeaf29dcfe",
+        "url": "https://bscscan.com/token/0xad29abb318791d579433d831ed122afeaf29dcfe",
+        "name": "Fantom",
+        "price": 0.910273,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTT",
+        "address": "0x8595f9da7b868b1822194faed312235e43007b49",
+        "url": "https://bscscan.com/token/0x8595f9da7b868b1822194faed312235e43007b49",
+        "name": "Binance-Peg BitTorrent Token",
+        "price": 0.00269639,
+        "decimals": 18
+    },
+    {
+        "symbol": "FET",
+        "address": "0x031b41e504677879370e9dbcf937283a8691fa7f",
+        "url": "https://bscscan.com/token/0x031b41e504677879370e9dbcf937283a8691fa7f",
+        "name": "Fetch",
+        "price": 2.73607661,
+        "decimals": 18
+    },
+    {
+        "symbol": "FLOKI",
+        "address": "0xfb5b838b6cfeedc2873ab27866079ac55363d37e",
+        "url": "https://bscscan.com/token/0xfb5b838b6cfeedc2873ab27866079ac55363d37e",
+        "name": "FLOKI",
+        "price": 0.00021713,
+        "decimals": 9
+    },
+    {
+        "symbol": "FLOW",
+        "address": "0xc943c5320b9c18c153d1e2d12cc3074bebfb31a2",
+        "url": "https://bscscan.com/token/0xc943c5320b9c18c153d1e2d12cc3074bebfb31a2",
+        "name": "Binance-Peg FLOW Token",
+        "price": 1.2,
+        "decimals": 18
+    },
+    {
+        "symbol": "bCFX",
+        "address": "0x045c4324039dA91c52C55DF5D785385Aab073DcF",
+        "url": "https://bscscan.com/token/0x045c4324039dA91c52C55DF5D785385Aab073DcF",
+        "name": "BSC Conflux",
+        "price": 0.38033243,
+        "decimals": 18
+    },
+    {
+        "symbol": "AXS",
+        "address": "0x715d400f88c167884bbcc41c5fea407ed4d2f8a0",
+        "url": "https://bscscan.com/token/0x715d400f88c167884bbcc41c5fea407ed4d2f8a0",
+        "name": "Binance-Peg Axie Infinity Shard Token",
+        "price": 9.74,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTT",
+        "address": "0x352Cb5E19b12FC216548a2677bD0fce83BaE434B",
+        "url": "https://bscscan.com/token/0x352Cb5E19b12FC216548a2677bD0fce83BaE434B",
+        "name": "BitTorrent",
+        "price": 1.41e-06,
+        "decimals": 18
+    },
+    {
+        "symbol": "XTZ",
+        "address": "0x16939ef78684453bfdfb47825f8a5f714f12623a",
+        "url": "https://bscscan.com/token/0x16939ef78684453bfdfb47825f8a5f714f12623a",
+        "name": "Binance-Peg Tezos Token",
+        "price": 1.26931752,
+        "decimals": 18
+    },
+    {
+        "symbol": "XEC",
+        "address": "0x0ef2e7602add1733bfdb17ac3094d0421b502ca3",
+        "url": "https://bscscan.com/token/0x0ef2e7602add1733bfdb17ac3094d0421b502ca3",
+        "name": "Binance-Peg eCash Token",
+        "price": 6.262e-05,
+        "decimals": 18
+    },
+    {
+        "symbol": "MANA",
+        "address": "0x26433c8127d9b4e9b71eaa15111df99ea2eeb2f8",
+        "url": "https://bscscan.com/token/0x26433c8127d9b4e9b71eaa15111df99ea2eeb2f8",
+        "name": "Decentraland",
+        "price": 0.598975,
+        "decimals": 18
+    },
+    {
+        "symbol": "AXL",
+        "address": "0x8b1f4432f943c465a973fedc6d7aa50fc96f1f65",
+        "url": "https://bscscan.com/token/0x8b1f4432f943c465a973fedc6d7aa50fc96f1f65",
+        "name": "Axelar",
+        "price": 1.8,
+        "decimals": 6
+    },
+    {
+        "symbol": "EOS",
+        "address": "0x56b6fb708fc5732dec1afc8d8556423a2edccbd6",
+        "url": "https://bscscan.com/token/0x56b6fb708fc5732dec1afc8d8556423a2edccbd6",
+        "name": "Binance-Peg EOS Token",
+        "price": 0.98832814,
+        "decimals": 18
+    },
+    {
+        "symbol": "OP",
+        "address": "0x170C84E3b1D282f9628229836086716141995200",
+        "url": "https://bscscan.com/token/0x170C84E3b1D282f9628229836086716141995200",
+        "name": "Optimism",
+        "price": 4.11,
+        "decimals": 18
+    },
+    {
+        "symbol": "EGLD",
+        "address": "0xbf7c81fff98bbe61b40ed186e4afd6ddd01337fe",
+        "url": "https://bscscan.com/token/0xbf7c81fff98bbe61b40ed186e4afd6ddd01337fe",
+        "name": "Binance-Peg Elrond Token",
+        "price": 40.88037691,
+        "decimals": 18
+    },
+    {
+        "symbol": "IOTA",
+        "address": "0xd944f1d1e9d5f9bb90b62f9d45e447d989580782",
+        "url": "https://bscscan.com/token/0xd944f1d1e9d5f9bb90b62f9d45e447d989580782",
+        "name": "MIOTAC",
+        "price": 0.309353,
+        "decimals": 6
+    },
+    {
+        "symbol": "CHEEL",
+        "address": "0x1f1c90aeb2fd13ea972f0a71e35c0753848e3db0",
+        "url": "https://bscscan.com/token/0x1f1c90aeb2fd13ea972f0a71e35c0753848e3db0",
+        "name": "CHEELEE",
+        "price": 16.81,
+        "decimals": 18
+    },
+    {
+        "symbol": "AIOZ",
+        "address": "0x33d08d8c7a168333a85285a68c0042b39fc3741d",
+        "url": "https://bscscan.com/token/0x33d08d8c7a168333a85285a68c0042b39fc3741d",
+        "name": "AIOZ Network",
+        "price": 0.878415,
+        "decimals": 18
+    },
+    {
+        "symbol": "frxETH",
+        "address": "0x64048a7eecf3a2f1ba9e144aac3d7db6e58f555e",
+        "url": "https://bscscan.com/token/0x64048a7eecf3a2f1ba9e144aac3d7db6e58f555e",
+        "name": "Frax Ether",
+        "price": 3324.47,
+        "decimals": 18
+    },
+    {
+        "symbol": "PAX",
+        "address": "0xb7f8cd00c5a06c0537e2abff0b58033d02e5e094",
+        "url": "https://bscscan.com/token/0xb7f8cd00c5a06c0537e2abff0b58033d02e5e094",
+        "name": "Binance-Peg Paxos Standard",
+        "price": 0.99989775,
+        "decimals": 18
+    },
+    {
+        "symbol": "WOO",
+        "address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
+        "url": "https://bscscan.com/token/0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
+        "name": "WOO",
+        "price": 0.48554,
+        "decimals": 18
+    }
+]

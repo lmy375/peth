@@ -299,15 +299,78 @@ class PethConsole(cmd.Cmd):
         print("Hex(Address): %#0.40x" % value)
         print("Hex(Uint256): %0.64x" % value)
 
-    def do_common_addresses(self, arg):
+    def do_addresses(self, arg):
         """
-        common_addresses: Print some common addresses.
+        addresses: Print some common contract addresses.
         """
 
         print("%-40s %-10s %s" % ("Name", "Chain", "Address"))
         for name in config.contracts:
             chain, addr = config.contracts[name]
             print("%-40s %-10s %s" % (name, chain, addr))
+
+    def do_tokens(self, arg):
+        """
+        tokens: Print tokens.
+        tokens <search text>: Find tokens.
+        """
+        tokens = config.tokens[self.peth.chain]
+        if arg:
+            search_text = arg
+        else:
+            search_text = ""
+
+        print(
+            "%-30s %-10s %-45s %8s %15s"
+            % ("Name", "Symbol", "Address", "Decimals", "Price")
+        )
+        for token in tokens:
+            line = "%-30s %-10s %-45s %8s %15s" % (
+                token["name"],
+                token["symbol"],
+                token["address"],
+                token["decimals"],
+                token["price"],
+            )
+            if search_text.lower() in line.lower():
+                print(line)
+
+    def do_portfolio(self, arg):
+        """
+        portfolio <address>: Print balance of common tokens (like debank)
+        """
+        addr = self._parse_args(arg, "address")
+
+        tokens = {}  # addr => info
+        for token in config.tokens[self.peth.chain]:
+            tokens[token["address"].lower()] = token
+
+        token_balances = self.peth.get_token_balances(list(tokens.keys()), [addr])
+        total = 0
+        lines = []
+        for token_addr, _, balance in token_balances:
+            token = tokens[token_addr.lower()]
+            balance = balance / (10 ** token["decimals"])
+            price = token["price"]
+            usd = price * balance
+            total += usd
+            line = "%-30s\t%-10s\t%-45s\t%-10s\t%-20s\t%-20s" % (
+                token["name"],
+                token["symbol"],
+                token["address"],
+                price,
+                balance,
+                usd,
+            )
+            lines.append(line)
+
+        print("Total: $%0.2f" % total)
+        print(
+            "%-30s\t%-10s\t%-45s\t%-10s\t%-20s\t%-20s"
+            % ("Name", "Symbol", "Address", "Price", "Balance", "USD")
+        )
+        for line in lines:
+            print(line)
 
     def do_sh(self, arg):
         """

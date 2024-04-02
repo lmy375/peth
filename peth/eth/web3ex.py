@@ -1,4 +1,7 @@
+import json
+import os
 import time
+from typing import List, Tuple
 
 from eth_account import Account
 from hexbytes import HexBytes
@@ -8,6 +11,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from peth.core.log import logger
 from peth.util.solc import compile_with_eth_call
 
+from ..core.config import DATA_DIR
 from . import utils
 from .abi import ABI, ABIFunction
 from .contract import Contract
@@ -136,16 +140,17 @@ class Web3Ex(object):
         # No signature found.
         return None
 
-    def eth_call_raw(self, to, data, sender=None, value: int = 0):
+    def eth_call_raw(self, to=None, data=b"", sender=None, value: int = 0):
         if not sender:
             sender = self.sender
 
         tx = {
             "from": sender,
-            "to": to,
             "data": HexBytes(data).hex(),
             "value": hex(value),
         }
+        if to:
+            tx["to"] = to
         return self.rpc_call("eth_call", [tx, "latest"])
 
     def _sig_name_to_func(self, to, sig_or_name):
@@ -206,41 +211,6 @@ class Web3Ex(object):
 
     # Alias
     call = call_contract
-
-    def run_solidity(self, code):
-        """
-        Compile and run the Executor.run() code with Wrapper contract constructor.
-        """
-
-        assert (
-            "Executor" in code and "run" in code
-        ), "Executor.run() is not defined in such code."
-
-        output = compile_with_eth_call(code)
-        calldata = output["<stdin>:Wrapper"]["bin"]
-        abi = None
-        for abi in output["<stdin>:Executor"]["abi"]:
-            if abi["type"] == "function" and abi["name"] == "run":
-                break
-
-        if abi is None:
-            raise Exception("Executor.run() not found in the code")
-
-        func = ABIFunction(abi)
-
-        tx = {"from": self.sender, "data": "0x" + calldata}
-
-        # print(tx)
-        r = self.rpc_call("eth_call", [tx, "latest"])
-        # print(r)
-        try:
-            ret = func.decode_output(r)
-            if ret is not None:
-                return ret
-            else:
-                return r
-        except Exception:
-            return r
 
     def send_transaction(self, data=None, to=None, value=None, dry_run=False, wait=0):
         assert self.signer, "send_transaction: signer not set."
@@ -327,3 +297,106 @@ class Web3Ex(object):
             abi = self.scan.get_abi(str(abi))
 
         return Contract(self, address, abi)
+
+    def run_solidity(self, code):
+        """
+        Compile and run the Executor.run() code with Wrapper contract constructor.
+        """
+
+        assert (
+            "Executor" in code and "run" in code
+        ), "Executor.run() is not defined in such code."
+
+        output = compile_with_eth_call(code)
+        calldata = output["<stdin>:Wrapper"]["bin"]
+        abi = None
+        for abi in output["<stdin>:Executor"]["abi"]:
+            if abi["type"] == "function" and abi["name"] == "run":
+                break
+
+        if abi is None:
+            raise Exception("Executor.run() not found in the code")
+
+        func = ABIFunction(abi)
+
+        tx = {"from": self.sender, "data": "0x" + calldata}
+
+        # print(tx)
+        r = self.rpc_call("eth_call", [tx, "latest"])
+        # print(r)
+        try:
+            ret = func.decode_output(r)
+            if ret is not None:
+                return ret
+            else:
+                return r
+        except Exception:
+            return r
+
+    def get_token_balances(
+        self, tokens: List[str], users: List[str], min_balance=1
+    ) -> List[Tuple[str, str, int]]:
+        """
+        Check token balances of users.
+            token: ERC20 addresses. address(0) for ETH.
+            users: user addresses.
+            min_balance: Do not return if balance is smaller than min_balance.
+        Returns
+            [(token, user, balance), ]
+        """
+        BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "GetBalanceWrapper.json")
+        ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
+        code = HexBytes(json.load(open(BYTECODE_PATH))["bytecode"])
+        fn = ABI(json.load(open(ABI_PATH))["abi"]).getBalance
+
+        data = fn.encode_input([tokens, users, min_balance], False)
+
+        output = self.eth_call_raw(data=code + data)
+        _, balances = fn.decode_output(output)
+        return balances
+
+    def multicall_raw(
+        self, txs: List[Tuple[str, HexBytes, int]]
+    ) -> List[Tuple[bool, HexBytes]]:
+        """
+        Call multiple transactions.
+            txs: [(to, data, value), ..]
+        Returns:
+            [(status, returndata), ..]
+        """
+        BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "ExecTxWrapper.json")
+        ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
+        code = HexBytes(json.load(open(BYTECODE_PATH))["bytecode"])
+        fn = ABI(json.load(open(ABI_PATH))["abi"]).execTxs
+
+        data = fn.encode_input([txs], False)
+
+        output = self.eth_call_raw(data=code + data)
+        _, balances = fn.decode_output(output)
+        return balances
+
+    def multicall_from(
+        self, txs: List[Tuple[str, HexBytes, int]], sender=None
+    ) -> List[Tuple[bool, HexBytes]]:
+        """
+        Simulate multiple transactions with the same sender using `eth_call override`
+        Ref: https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-eth#eth-call
+        """
+        BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
+        ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
+
+        code = json.load(open(BYTECODE_PATH))["deployedBytecode"]
+        fn = ABI(json.load(open(ABI_PATH))["abi"]).execTxs
+
+        if sender is None:
+            sender = self.sender
+
+        calldata = fn.encode_input([txs])
+
+        tx = {"to": sender, "data": calldata.hex()}
+
+        output = self.rpc_call(
+            "eth_call", [tx, "latest", {sender: {"code": code}}]  # Or pending?
+        )
+        _, results = fn.decode_output(output)
+        return results

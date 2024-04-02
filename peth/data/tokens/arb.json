@@ -1,0 +1,418 @@
+[
+    {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://arbiscan.io/token/0x0000000000000000000000000000000000000000",
+        "name": "Native ETH",
+        "price": 3335.56,
+        "decimals": 18
+    },
+    {
+        "symbol": "WETH",
+        "address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+        "url": "https://arbiscan.io/token/0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+        "name": "Wrapped Ether",
+        "price": 3335.56,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDT",
+        "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+        "url": "https://arbiscan.io/token/0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+        "name": "Tether USD",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "USDC.e",
+        "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+        "url": "https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+        "name": "Bridged USDC",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "USDC",
+        "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "url": "https://arbiscan.io/token/0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "name": "USD Coin",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "LINK",
+        "address": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
+        "url": "https://arbiscan.io/token/0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
+        "name": "ChainLink Token",
+        "price": 17.69,
+        "decimals": 18
+    },
+    {
+        "symbol": "WBTC",
+        "address": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+        "url": "https://arbiscan.io/token/0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+        "name": "Wrapped BTC",
+        "price": 66699,
+        "decimals": 8
+    },
+    {
+        "symbol": "UNI",
+        "address": "0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
+        "url": "https://arbiscan.io/token/0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
+        "name": "Uniswap",
+        "price": 11.71,
+        "decimals": 18
+    },
+    {
+        "symbol": "DAI",
+        "address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+        "url": "https://arbiscan.io/token/0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+        "name": "Dai Stablecoin",
+        "price": 0.999172,
+        "decimals": 18
+    },
+    {
+        "symbol": "ARB",
+        "address": "0x912ce59144191c1204e64559fe8253a0e49e6548",
+        "url": "https://arbiscan.io/token/0x912ce59144191c1204e64559fe8253a0e49e6548",
+        "name": "Arbitrum",
+        "price": 1.5,
+        "decimals": 18
+    },
+    {
+        "symbol": "GRT",
+        "address": "0x9623063377ad1b27544c965ccd7342f7ea7e88c7",
+        "url": "https://arbiscan.io/token/0x9623063377ad1b27544c965ccd7342f7ea7e88c7",
+        "name": "Graph Token",
+        "price": 0.353569,
+        "decimals": 18
+    },
+    {
+        "symbol": "PEPE",
+        "address": "0x25d887ce7a35172c62febfd67a1856f20faebb00",
+        "url": "https://arbiscan.io/token/0x25d887ce7a35172c62febfd67a1856f20faebb00",
+        "name": "Pepe",
+        "price": 7.28e-06,
+        "decimals": 18
+    },
+    {
+        "symbol": "LDO",
+        "address": "0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60",
+        "url": "https://arbiscan.io/token/0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60",
+        "name": "Lido DAO Token",
+        "price": 2.68,
+        "decimals": 18
+    },
+    {
+        "symbol": "PYTH",
+        "address": "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724",
+        "url": "https://arbiscan.io/token/0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724",
+        "name": "Pyth Network",
+        "price": 0.877863,
+        "decimals": 6
+    },
+    {
+        "symbol": "AXL",
+        "address": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+        "url": "https://arbiscan.io/token/0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+        "name": "Axelar",
+        "price": 1.81,
+        "decimals": 6
+    },
+    {
+        "symbol": "frxETH",
+        "address": "0x178412e79c25968a32e89b11f63b33f733770c2a",
+        "url": "https://arbiscan.io/token/0x178412e79c25968a32e89b11f63b33f733770c2a",
+        "name": "Frax Ether",
+        "price": 3322.7,
+        "decimals": 18
+    },
+    {
+        "symbol": "WOO",
+        "address": "0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b",
+        "url": "https://arbiscan.io/token/0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b",
+        "name": "WOO",
+        "price": 0.48519,
+        "decimals": 18
+    },
+    {
+        "symbol": "GNO",
+        "address": "0xa0b862f60edef4452f25b4160f177db44deb6cf1",
+        "url": "https://arbiscan.io/token/0xa0b862f60edef4452f25b4160f177db44deb6cf1",
+        "name": "Gnosis Token",
+        "price": 334.71,
+        "decimals": 18
+    },
+    {
+        "symbol": "LUNC",
+        "address": "0x1A4dA80967373fd929961e976b4b53ceeC063a15",
+        "url": "https://arbiscan.io/token/0x1A4dA80967373fd929961e976b4b53ceeC063a15",
+        "name": "LUNC",
+        "price": 0.00014146,
+        "decimals": 6
+    },
+    {
+        "symbol": "CRV",
+        "address": "0x11cdb42b0eb46d95f990bedd4695a6e3fa034978",
+        "url": "https://arbiscan.io/token/0x11cdb42b0eb46d95f990bedd4695a6e3fa034978",
+        "name": "Curve DAO Token",
+        "price": 0.620928,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDD",
+        "address": "0x680447595e8b7b3aa1b43beb9f6098c79ac2ab3f",
+        "url": "https://arbiscan.io/token/0x680447595e8b7b3aa1b43beb9f6098c79ac2ab3f",
+        "name": "Decentralized USD",
+        "price": 1.002,
+        "decimals": 18
+    },
+    {
+        "symbol": "FRAX",
+        "address": "0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
+        "url": "https://arbiscan.io/token/0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
+        "name": "Frax",
+        "price": 0.995421,
+        "decimals": 18
+    },
+    {
+        "symbol": "CELO",
+        "address": "0x4e51ac49bc5e2d87e0ef713e9e5ab2d71ef4f336",
+        "url": "https://arbiscan.io/token/0x4e51ac49bc5e2d87e0ef713e9e5ab2d71ef4f336",
+        "name": "Celo native asset",
+        "price": 1.12012179,
+        "decimals": 18
+    },
+    {
+        "symbol": "FXS",
+        "address": "0x9d2f299715d94d8a7e6f5eaa8e654e8c74a988a7",
+        "url": "https://arbiscan.io/token/0x9d2f299715d94d8a7e6f5eaa8e654e8c74a988a7",
+        "name": "Frax Share",
+        "price": 6.91,
+        "decimals": 18
+    },
+    {
+        "symbol": "LPT",
+        "address": "0x289ba1701c2f088cf0faf8b3705246331cb8a839",
+        "url": "https://arbiscan.io/token/0x289ba1701c2f088cf0faf8b3705246331cb8a839",
+        "name": "Livepeer Token",
+        "price": 17.04,
+        "decimals": 18
+    },
+    {
+        "symbol": "PENDLE",
+        "address": "0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8",
+        "url": "https://arbiscan.io/token/0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8",
+        "name": "Pendle",
+        "price": 5.31,
+        "decimals": 18
+    },
+    {
+        "symbol": "COMP",
+        "address": "0x354a6da3fcde098f8389cad84b0182725c6c91de",
+        "url": "https://arbiscan.io/token/0x354a6da3fcde098f8389cad84b0182725c6c91de",
+        "name": "Compound",
+        "price": 72.18,
+        "decimals": 18
+    },
+    {
+        "symbol": "TUSD",
+        "address": "0x4d15a3a2286d883af0aa1b3f21367843fac63e07",
+        "url": "https://arbiscan.io/token/0x4d15a3a2286d883af0aa1b3f21367843fac63e07",
+        "name": "TrueUSD",
+        "price": 1.00002765,
+        "decimals": 18
+    },
+    {
+        "symbol": "LRC",
+        "address": "0x46d0ce7de6247b0a95f67b43b589b4041bae7fbe",
+        "url": "https://arbiscan.io/token/0x46d0ce7de6247b0a95f67b43b589b4041bae7fbe",
+        "name": "LoopringCoin V2",
+        "price": 0.3458738,
+        "decimals": 18
+    },
+    {
+        "symbol": "GMX",
+        "address": "0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
+        "url": "https://arbiscan.io/token/0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
+        "name": "GMX",
+        "price": 41.88,
+        "decimals": 18
+    },
+    {
+        "symbol": "SUSHI",
+        "address": "0xd4d42f0b6def4ce0383636770ef773390d85c61a",
+        "url": "https://arbiscan.io/token/0xd4d42f0b6def4ce0383636770ef773390d85c61a",
+        "name": "SushiToken",
+        "price": 1.71,
+        "decimals": 18
+    },
+    {
+        "symbol": "UMA",
+        "address": "0xd693ec944a85eeca4247ec1c3b130dca9b0c3b22",
+        "url": "https://arbiscan.io/token/0xd693ec944a85eeca4247ec1c3b130dca9b0c3b22",
+        "name": "UMA Voting Token v1",
+        "price": 3.93,
+        "decimals": 18
+    },
+    {
+        "symbol": "YFI",
+        "address": "0x82e3a8f066a6989666b031d916c43672085b1582",
+        "url": "https://arbiscan.io/token/0x82e3a8f066a6989666b031d916c43672085b1582",
+        "name": "yearn.finance",
+        "price": 8349.01,
+        "decimals": 18
+    },
+    {
+        "symbol": "JOE",
+        "address": "0x371c7ec6d8039ff7933a2aa28eb827ffe1f52f07",
+        "url": "https://arbiscan.io/token/0x371c7ec6d8039ff7933a2aa28eb827ffe1f52f07",
+        "name": "JoeToken",
+        "price": 0.77254747,
+        "decimals": 18
+    },
+    {
+        "symbol": "BAL",
+        "address": "0x040d1edc9569d4bab2d15287dc5a4f10f56a56b8",
+        "url": "https://arbiscan.io/token/0x040d1edc9569d4bab2d15287dc5a4f10f56a56b8",
+        "name": "Balancer",
+        "price": 4.8,
+        "decimals": 18
+    },
+    {
+        "symbol": "COTI",
+        "address": "0x6fe14d3cc2f7bddffba5cdb3bbe7467dd81ea101",
+        "url": "https://arbiscan.io/token/0x6fe14d3cc2f7bddffba5cdb3bbe7467dd81ea101",
+        "name": "COTI Token",
+        "price": 0.16886684,
+        "decimals": 18
+    },
+    {
+        "symbol": "POND",
+        "address": "0xda0a57b710768ae17941a9fa33f8b720c8bd9ddd",
+        "url": "https://arbiscan.io/token/0xda0a57b710768ae17941a9fa33f8b720c8bd9ddd",
+        "name": "Marlin POND",
+        "price": 0.03012926,
+        "decimals": 18
+    },
+    {
+        "symbol": "USTC",
+        "address": "0x13780E6d5696DD91454F6d3BbC2616687fEa43d0",
+        "url": "https://arbiscan.io/token/0x13780E6d5696DD91454F6d3BbC2616687fEa43d0",
+        "name": "TerraUSD",
+        "price": 0.02574825,
+        "decimals": 6
+    },
+    {
+        "symbol": "SYN",
+        "address": "0x080f6aed32fc474dd5717105dba5ea57268f46eb",
+        "url": "https://arbiscan.io/token/0x080f6aed32fc474dd5717105dba5ea57268f46eb",
+        "name": "Synapse",
+        "price": 1.21,
+        "decimals": 18
+    },
+    {
+        "symbol": "TRB",
+        "address": "0xd58d345fd9c82262e087d2d0607624b410d88242",
+        "url": "https://arbiscan.io/token/0xd58d345fd9c82262e087d2d0607624b410d88242",
+        "name": "Tellor Tributes",
+        "price": 85.61,
+        "decimals": 18
+    },
+    {
+        "symbol": "CTSI",
+        "address": "0x319f865b287fcc10b30d8ce6144e8b6d1b476999",
+        "url": "https://arbiscan.io/token/0x319f865b287fcc10b30d8ce6144e8b6d1b476999",
+        "name": "Cartesi Token",
+        "price": 0.274219,
+        "decimals": 18
+    },
+    {
+        "symbol": "OHM",
+        "address": "0x6e6a3d8f1affac703b1aef1f43b8d2321be40043",
+        "url": "https://arbiscan.io/token/0x6e6a3d8f1affac703b1aef1f43b8d2321be40043",
+        "name": "Olympus",
+        "price": 12.03,
+        "decimals": 9
+    },
+    {
+        "symbol": "ORBS",
+        "address": "0xf3c091ed43de9c270593445163a41a876a0bb3dd",
+        "url": "https://arbiscan.io/token/0xf3c091ed43de9c270593445163a41a876a0bb3dd",
+        "name": "Orbs",
+        "price": 0.04163745,
+        "decimals": 18
+    },
+    {
+        "symbol": "CELR",
+        "address": "0x3a8b787f78d775aecfeea15706d4221b40f345ab",
+        "url": "https://arbiscan.io/token/0x3a8b787f78d775aecfeea15706d4221b40f345ab",
+        "name": "CelerToken",
+        "price": 0.03038483,
+        "decimals": 18
+    },
+    {
+        "symbol": "SDEX",
+        "address": "0xabd587f2607542723b17f14d00d99b987c29b074",
+        "url": "https://arbiscan.io/token/0xabd587f2607542723b17f14d00d99b987c29b074",
+        "name": "SmarDex Token",
+        "price": 0.02021229,
+        "decimals": 18
+    },
+    {
+        "symbol": "LADYS",
+        "address": "0x3b60FF35D3f7F62d636b067dD0dC0dFdAd670E4E",
+        "url": "https://arbiscan.io/token/0x3b60FF35D3f7F62d636b067dD0dC0dFdAd670E4E",
+        "name": "Milady",
+        "price": 2.2e-07,
+        "decimals": 18
+    },
+    {
+        "symbol": "GNS",
+        "address": "0x18c11FD286C5EC11c3b683Caa813B77f5163A122",
+        "url": "https://arbiscan.io/token/0x18c11FD286C5EC11c3b683Caa813B77f5163A122",
+        "name": "Gains Network",
+        "price": 4.63,
+        "decimals": 18
+    },
+    {
+        "symbol": "RDNT",
+        "address": "0x3082cc23568ea640225c2467653db90e9250aaa0",
+        "url": "https://arbiscan.io/token/0x3082cc23568ea640225c2467653db90e9250aaa0",
+        "name": "Radiant",
+        "price": 0.308681,
+        "decimals": 18
+    },
+    {
+        "symbol": "STG",
+        "address": "0x6694340fc020c5e6b96567843da2df01b2ce1eb6",
+        "url": "https://arbiscan.io/token/0x6694340fc020c5e6b96567843da2df01b2ce1eb6",
+        "name": "StargateToken",
+        "price": 0.713403,
+        "decimals": 18
+    },
+    {
+        "symbol": "DODO",
+        "address": "0x69eb4fa4a2fbd498c257c57ea8b7655a2559a581",
+        "url": "https://arbiscan.io/token/0x69eb4fa4a2fbd498c257c57ea8b7655a2559a581",
+        "name": "DODO bird",
+        "price": 0.227533,
+        "decimals": 18
+    },
+    {
+        "symbol": "KNC",
+        "address": "0xe4dddfe67e7164b0fe14e218d80dc4c08edc01cb",
+        "url": "https://arbiscan.io/token/0xe4dddfe67e7164b0fe14e218d80dc4c08edc01cb",
+        "name": "Kyber Network Crystal v2",
+        "price": 0.777168,
+        "decimals": 18
+    },
+    {
+        "symbol": "BADGER",
+        "address": "0xbfa641051ba0a0ad1b0acf549a89536a0d76472e",
+        "url": "https://arbiscan.io/token/0xbfa641051ba0a0ad1b0acf549a89536a0d76472e",
+        "name": "Badger",
+        "price": 6.58,
+        "decimals": 18
+    }
+]

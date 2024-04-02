@@ -1,0 +1,210 @@
+[
+    {
+        "symbol": "AVAX",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://snowtrace.io/token/0x0000000000000000000000000000000000000000",
+        "name": "Native AVAX",
+        "price": 47.93,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDt",
+        "address": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+        "url": "https://snowtrace.io/token/0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7?chainId=43114",
+        "name": "TetherToken",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "JOE",
+        "address": "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd",
+        "url": "https://snowtrace.io/token/0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd?chainId=43114",
+        "name": "JoeToken",
+        "price": 0.7731,
+        "decimals": 18
+    },
+    {
+        "symbol": "sAVAX",
+        "address": "0x2b2C81e08f1Af8835a78Bb2A90AE924ACE0eA4bE",
+        "url": "https://snowtrace.io/token/0x2b2C81e08f1Af8835a78Bb2A90AE924ACE0eA4bE?chainId=43114",
+        "name": "Staked AVAX",
+        "price": 58.66,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDC",
+        "address": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+        "url": "https://snowtrace.io/token/0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E?chainId=43114",
+        "name": "USD Coin",
+        "price": 0.9998,
+        "decimals": 6
+    },
+    {
+        "symbol": "COQ",
+        "address": "0x420FcA0121DC28039145009570975747295f2329",
+        "url": "https://snowtrace.io/token/0x420FcA0121DC28039145009570975747295f2329?chainId=43114",
+        "name": "COQINU",
+        "price": 1e-07,
+        "decimals": 18
+    },
+    {
+        "symbol": "QI",
+        "address": "0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5",
+        "url": "https://snowtrace.io/token/0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5?chainId=43114",
+        "name": "BENQI",
+        "price": 0.02389,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTC.b",
+        "address": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+        "url": "https://snowtrace.io/token/0x152b9d0FdC40C096757F570A51E494bd4b943E50?chainId=43114",
+        "name": "Bitcoin",
+        "price": 66830,
+        "decimals": 8
+    },
+    {
+        "symbol": "WAVAX",
+        "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+        "url": "https://snowtrace.io/token/0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7?chainId=43114",
+        "name": "Wrapped AVAX",
+        "price": 47.93,
+        "decimals": 18
+    },
+    {
+        "symbol": "PNG",
+        "address": "0x60781C2586D68229fde47564546784ab3fACA982",
+        "url": "https://snowtrace.io/token/0x60781C2586D68229fde47564546784ab3fACA982?chainId=43114",
+        "name": "Pangolin",
+        "price": 0.4711,
+        "decimals": 18
+    },
+    {
+        "symbol": "GGP",
+        "address": "0x69260B9483F9871ca57f81A90D91E2F96c2Cd11d",
+        "url": "https://snowtrace.io/token/0x69260B9483F9871ca57f81A90D91E2F96c2Cd11d?chainId=43114",
+        "name": "GoGoPool Protocol",
+        "price": 10.72,
+        "decimals": 18
+    },
+    {
+        "symbol": "XAVA",
+        "address": "0xd1c3f94DE7e5B45fa4eDBBA472491a9f4B166FC4",
+        "url": "https://snowtrace.io/token/0xd1c3f94DE7e5B45fa4eDBBA472491a9f4B166FC4?chainId=43114",
+        "name": "Avalaunch",
+        "price": 1.31,
+        "decimals": 18
+    },
+    {
+        "symbol": "WETH.e",
+        "address": "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB",
+        "url": "https://snowtrace.io/token/0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB?chainId=43114",
+        "name": "Wrapped Ether",
+        "price": 3362,
+        "decimals": 18
+    },
+    {
+        "symbol": "DUA",
+        "address": "0xb418417374fcA27bb54169D3C777492e6Fe17Ee7",
+        "url": "https://snowtrace.io/token/0xb418417374fcA27bb54169D3C777492e6Fe17Ee7?chainId=43114",
+        "name": "DUA",
+        "price": 0.0952,
+        "decimals": 18
+    },
+    {
+        "symbol": "Volta",
+        "address": "0x9b06F3C5de42D4623D7A2Bd940EC735103c68A76",
+        "url": "https://snowtrace.io/token/0x9b06F3C5de42D4623D7A2Bd940EC735103c68A76?chainId=43114",
+        "name": "Volta Club",
+        "price": 125.2,
+        "decimals": 18
+    },
+    {
+        "symbol": "INFRA.e",
+        "address": "0xa4FB4F0Ff2431262D236778495145EcBC975c38B",
+        "url": "https://snowtrace.io/token/0xa4FB4F0Ff2431262D236778495145EcBC975c38B?chainId=43114",
+        "name": "Bware",
+        "price": 1.38,
+        "decimals": 18
+    },
+    {
+        "symbol": "aAvaWAVAX",
+        "address": "0x6d80113e533a2C0fe82EaBD35f1875DcEA89Ea97",
+        "url": "https://snowtrace.io/token/0x6d80113e533a2C0fe82EaBD35f1875DcEA89Ea97?chainId=43114",
+        "name": "Aave Avalanche WAVAX",
+        "price": 19.86,
+        "decimals": 18
+    },
+    {
+        "symbol": "RST",
+        "address": "0x23675Ba5d0A8075DA5Ba18756554e7633cEA2C85",
+        "url": "https://snowtrace.io/token/0x23675Ba5d0A8075DA5Ba18756554e7633cEA2C85?chainId=43114",
+        "name": "Raini Studios Token",
+        "price": 0.07028,
+        "decimals": 18
+    },
+    {
+        "symbol": "GAU",
+        "address": "0xCa8EBfB8e1460Aaac7c272CB9053B3D42412AAc2",
+        "url": "https://snowtrace.io/token/0xCa8EBfB8e1460Aaac7c272CB9053B3D42412AAc2?chainId=43114",
+        "name": "GAU Token",
+        "price": 0.1405,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDC.e",
+        "address": "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664",
+        "url": "https://snowtrace.io/token/0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664?chainId=43114",
+        "name": "USD Coin",
+        "price": 0.9884,
+        "decimals": 6
+    },
+    {
+        "symbol": "WBTC.e",
+        "address": "0x50b7545627a5162F82A992c33b87aDc75187B218",
+        "url": "https://snowtrace.io/token/0x50b7545627a5162F82A992c33b87aDc75187B218?chainId=43114",
+        "name": "Wrapped BTC",
+        "price": 66720,
+        "decimals": 8
+    },
+    {
+        "symbol": "aAvaUSDC",
+        "address": "0x625E7708f30cA75bfd92586e17077590C60eb4cD",
+        "url": "https://snowtrace.io/token/0x625E7708f30cA75bfd92586e17077590C60eb4cD?chainId=43114",
+        "name": "Aave Avalanche USDC",
+        "price": 1,
+        "decimals": 6
+    },
+    {
+        "symbol": "ALOT",
+        "address": "0x093783055F9047C2BfF99c4e414501F8A147bC69",
+        "url": "https://snowtrace.io/token/0x093783055F9047C2BfF99c4e414501F8A147bC69?chainId=43114",
+        "name": "Dexalot Token",
+        "price": 0.542,
+        "decimals": 18
+    },
+    {
+        "symbol": "BAVA",
+        "address": "0xe19A1684873faB5Fb694CfD06607100A632fF21c",
+        "url": "https://snowtrace.io/token/0xe19A1684873faB5Fb694CfD06607100A632fF21c?chainId=43114",
+        "name": "BavaToken",
+        "price": 0.06739,
+        "decimals": 18
+    },
+    {
+        "symbol": "TRESR",
+        "address": "0x9913BA363073Ca3e9eA0cD296E36B75aF9E40bef",
+        "url": "https://snowtrace.io/token/0x9913BA363073Ca3e9eA0cD296E36B75aF9E40bef?chainId=43114",
+        "name": "TRESR",
+        "price": 0.1142,
+        "decimals": 18
+    },
+    {
+        "symbol": "WXT",
+        "address": "0xfcDe4A87b8b6FA58326BB462882f1778158B02F1",
+        "url": "https://snowtrace.io/token/0xfcDe4A87b8b6FA58326BB462882f1778158B02F1?chainId=43114",
+        "name": "Wirex Token",
+        "price": 0.007086,
+        "decimals": 18
+    }
+]

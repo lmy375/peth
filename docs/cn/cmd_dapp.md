@@ -160,3 +160,25 @@ Min Answer: 100000000000000000 (0.10)
   0x5a6fcc02d8c50ea58a22115a7c4608b723030016
   0xe3e0596ac55ae6044b757bab27426f7dc9e018d4
 ```
+
+## portfolio
+
+查看用户持仓价值。注意：价格是在配置文件中固定的，不是实时获取的，因此美元价值仅作参考。
+```
+> portfolio 0xdac17f958d2ee523a2206206994597c13d831ec7       
+Total: $1188746.79
+Name                            Symbol          Address                                         Price           Balance                 USD                 
+Wrapped Ether                   WETH            0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2      3335.56         0.6976344750448605      2327.001649580635   
+Tether USD                      USDT            0xdac17f958d2ee523a2206206994597c13d831ec7      1.001           266720.277779           266986.998056779    
+BNB                             BNB             0xB8c77482e45F1F44dE1745F52C74426C631bDD52      561.13203671    0.42                    235.6754554182      
+USDC                            USDC            0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48      0.998281        195118.248374           194782.84010504506  
+stETH                           stETH           0xae7ab96520de3a18e5e111b5eaab095312d7fe84      3362.38         0.03720959512995727     125.11279847306574  
+SHIBA INU                       SHIB            0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE      2.68e-05        73323602.02657662       1965.0725343122535  
+ChainLink Token                 LINK            0x514910771af9ca656af840dff83e8264ecf986ca      17.66           633.4449161230983       11186.637218733917  
+Dai Stablecoin                  DAI             0x6b175474e89094c44da98b954eedeac495271d0f      0.999172        39.887889789776075      39.854862617030136  
+Cronos Coin                     CRO             0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b      0.143436        4800000.0               688492.8            
+Maker                           MKR             0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2      3764.96         0.008496658437862034    31.989579152213043  
+Graph Token                     GRT             0xc944e90c64b2c07662a292be6244bdf05cda44a7      0.353508        63333.33                22388.83882164      
+Pepe                            PEPE            0x6982508145454ce325ddbe47a25d4ec3d2311933      7.28e-06        17853165.88             129.9710476064      
+Rocket Pool ETH                 rETH            0xae78736cd615f374d3085123a210448e74fc6393      3700.68         0.01459                 53.9929212  
+```

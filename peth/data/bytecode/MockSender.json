@@ -1,0 +1,188 @@
+{
+    "abi": [
+        {
+            "type": "function",
+            "name": "execTxs",
+            "inputs": [
+                {
+                    "name": "txs",
+                    "type": "tuple[]",
+                    "internalType": "struct Transaction[]",
+                    "components": [
+                        {
+                            "name": "to",
+                            "type": "address",
+                            "internalType": "address"
+                        },
+                        {
+                            "name": "data",
+                            "type": "bytes",
+                            "internalType": "bytes"
+                        },
+                        {
+                            "name": "value",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        }
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "ctx",
+                    "type": "tuple",
+                    "internalType": "struct Context",
+                    "components": [
+                        {
+                            "name": "chainId",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "blockNumber",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "timestamp",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "from",
+                            "type": "address",
+                            "internalType": "address"
+                        }
+                    ]
+                },
+                {
+                    "name": "results",
+                    "type": "tuple[]",
+                    "internalType": "struct Result[]",
+                    "components": [
+                        {
+                            "name": "success",
+                            "type": "bool",
+                            "internalType": "bool"
+                        },
+                        {
+                            "name": "data",
+                            "type": "bytes",
+                            "internalType": "bytes"
+                        }
+                    ]
+                }
+            ],
+            "stateMutability": "payable"
+        },
+        {
+            "type": "function",
+            "name": "getBalance",
+            "inputs": [
+                {
+                    "name": "tokens",
+                    "type": "address[]",
+                    "internalType": "address[]"
+                },
+                {
+                    "name": "users",
+                    "type": "address[]",
+                    "internalType": "address[]"
+                },
+                {
+                    "name": "minBalanace",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "ctx",
+                    "type": "tuple",
+                    "internalType": "struct Context",
+                    "components": [
+                        {
+                            "name": "chainId",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "blockNumber",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "timestamp",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "from",
+                            "type": "address",
+                            "internalType": "address"
+                        }
+                    ]
+                },
+                {
+                    "name": "balances",
+                    "type": "tuple[]",
+                    "internalType": "struct TokenBalance[]",
+                    "components": [
+                        {
+                            "name": "token",
+                            "type": "address",
+                            "internalType": "address"
+                        },
+                        {
+                            "name": "user",
+                            "type": "address",
+                            "internalType": "address"
+                        },
+                        {
+                            "name": "balance",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        }
+                    ]
+                }
+            ],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "getContext",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "ctx",
+                    "type": "tuple",
+                    "internalType": "struct Context",
+                    "components": [
+                        {
+                            "name": "chainId",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "blockNumber",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "timestamp",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "from",
+                            "type": "address",
+                            "internalType": "address"
+                        }
+                    ]
+                }
+            ],
+            "stateMutability": "view"
+        }
+    ],
+    "deployedBytecode": "0x6080604052600436101561001257600080fd5b60003560e01c8063127f0f07146108df578063253e0b941461054e5763db92875b1461003d57600080fd5b3461033a5760607ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261033a5767ffffffffffffffff60043581811161033a5761008d9036906004016109ff565b60249160243590811161033a576100a89036906004016109ff565b906100b1610a7c565b506100ba610ab2565b9060005460008055806104bc575b506000925b81518410156103625773ffffffffffffffffffffffffffffffffffffffff6100f785849594610bc6565b51169283159260005b83518110156103535773ffffffffffffffffffffffffffffffffffffffff6101288286610bc6565b51169085156102c55781315b6044358111610149575b506001915001610100565b604051906101568261095b565b888252602082019384526040820190815260005490680100000000000000008210156102975760018201806000558210156102695760019460037f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5659360008052029373ffffffffffffffffffffffffffffffffffffffff857f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56301915116907fffffffffffffffffffffffff0000000000000000000000000000000000000000918282541617905573ffffffffffffffffffffffffffffffffffffffff7f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e564860192511690825416179055519101553861013e565b8b7f4e487b710000000000000000000000000000000000000000000000000000000060005260326004526000fd5b8b7f4e487b710000000000000000000000000000000000000000000000000000000060005260416004526000fd5b6040517f70a082310000000000000000000000000000000000000000000000000000000081528260048201526020818b8160008c5af190811561034757600091610310575b50610134565b90506020813d60201161033f575b8161032b602093836109a6565b8101031261033a57513861030a565b600080fd5b3d915061031e565b6040513d6000823e3d90fd5b509350915092600101926100cd565b8260005461036f816109e7565b9061037d60405192836109a6565b8082526020928383019182600080527f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5636000915b8383106104665750505050604051926104028460a081019373ffffffffffffffffffffffffffffffffffffffff60608092805185526020810151602086015260408101516040860152015116910152565b60a060808501525180915260c08301919360005b8281106104235784840385f35b8551805173ffffffffffffffffffffffffffffffffffffffff90811686528184015116858401526040908101519085015294810194606090930192600101610416565b60038860019260409a97989a5161047c8161095b565b73ffffffffffffffffffffffffffffffffffffffff80875416825285870154168382015260028601546040820152815201920192019190969493966103b1565b6003908060030290600382040361051f57600080527f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563908101905b8181106105055750506100c8565b8060008492556000600182015560006002820155016104f7565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6020807ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261033a5760043567ffffffffffffffff9182821161033a573660238301121561033a5781600401359083821161033a57602480840193602436918560051b01011161033a57918491926105c6610a7c565b506105cf610ab2565b916105d9816109e7565b936105e760405195866109a6565b8185526105f3826109e7565b967fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe080980160005b81811061087957505060005b838110610739575050505050604051926106798460a081019373ffffffffffffffffffffffffffffffffffffffff60608092805185526020810151602086015260408101516040860152015116910152565b60a06080850152825180925260c08401948160c08460051b8701019401956000915b8483106106a85786860387f35b90919293947fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff408782030183528480895180511515845201519160408282015282519283604083015260005b848110610724575050600192829185601f60609360008582860101520116010199019301930191969493929061069b565b818101840151838201606001528893016106f3565b6107498185849b9a98999b610b57565b3573ffffffffffffffffffffffffffffffffffffffff811680910361033a576040610775838786610b57565b013590610783838786610b57565b88810135907fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe18136030182121561033a57019081359186831161033a57890191803603831361033a576000938493826040519384928337810185815203925af1893d1561086e57503d84811161084057600192918a8c9261080e8b60405193601f84011601836109a6565b81523d60008b83013e5b8961082e856108278187610bc6565b5195610bc6565b51015215159052019795949697610627565b867f4e487b710000000000000000000000000000000000000000000000000000000060005260416004526000fd5b600192916060610818565b604099989697995160408101818110868211176108b157604052600081526060888201528a820188015297989597959695880161061b565b877f4e487b710000000000000000000000000000000000000000000000000000000060005260416004526000fd5b3461033a5760007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261033a576080610918610ab2565b610959604051809273ffffffffffffffffffffffffffffffffffffffff60608092805185526020810151602086015260408101516040860152015116910152565bf35b6060810190811067ffffffffffffffff82111761097757604052565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b90601f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0910116810190811067ffffffffffffffff82111761097757604052565b67ffffffffffffffff81116109775760051b60200190565b9080601f8301121561033a576020908235610a19816109e7565b93610a2760405195866109a6565b81855260208086019260051b82010192831161033a57602001905b828210610a50575050505090565b813573ffffffffffffffffffffffffffffffffffffffff8116810361033a578152908301908301610a42565b604051906080820182811067ffffffffffffffff8211176109775760405260006060838281528260208201528260408201520152565b610aba610a7c565b9046825230606083015242604083015261a4b14614600014610b4f576040517fa3b1b31d00000000000000000000000000000000000000000000000000000000815260208160048160645afa90811561034757600091610b1d575b506020830152565b90506020813d602011610b47575b81610b38602093836109a6565b8101031261033a575138610b15565b3d9150610b2b565b436020830152565b9190811015610b975760051b810135907fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa18136030182121561033a570190565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b8051821015610b975760209160051b01019056fea26469706673582212201393ddb4fd053d0cc593b555faa5147744e83aa40c41719fba113a736268bc2664736f6c63430008170033"
+}

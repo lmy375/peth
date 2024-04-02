@@ -1,7 +1,6 @@
-from peth.__main__ import main
+from peth.cli import main
 from peth.core.config import config
 
-config.cfg.set("path", "root", "peth-data")
-
-# Start.
-main()
+if __name__ == "__main__":
+    config.cfg.set("path", "root", "peth-data")
+    main()

@@ -1,0 +1,410 @@
+[
+    {
+        "symbol": "FTM",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://ftmscan.com/token/0x0000000000000000000000000000000000000000",
+        "name": "Native Fantom",
+        "price": 0.912181,
+        "decimals": 18
+    },
+    {
+        "symbol": "DEI",
+        "address": "0xde1e704dae0b4051e80dabb26ab6ad6c12262da0",
+        "url": "https://ftmscan.com/token/0xde1e704dae0b4051e80dabb26ab6ad6c12262da0",
+        "name": "DEI",
+        "price": 0.337677,
+        "decimals": 18
+    },
+    {
+        "symbol": "JEFE",
+        "address": "0x5b2af7fd27e2ea14945c82dd254c79d3ed34685e",
+        "url": "https://ftmscan.com/token/0x5b2af7fd27e2ea14945c82dd254c79d3ed34685e",
+        "name": "JEFE TOKEN",
+        "price": 0.04377624,
+        "decimals": 9
+    },
+    {
+        "symbol": "sFHM",
+        "address": "0x5e983ff70de345de15dbdcf0529640f14446cdfa",
+        "url": "https://ftmscan.com/token/0x5e983ff70de345de15dbdcf0529640f14446cdfa",
+        "name": "Staked Fantohm",
+        "price": 0.298946,
+        "decimals": 9
+    },
+    {
+        "symbol": "sHEC",
+        "address": "0x75bdef24285013387a47775828bec90b91ca9a5f",
+        "url": "https://ftmscan.com/token/0x75bdef24285013387a47775828bec90b91ca9a5f",
+        "name": "Staked Hector",
+        "price": 7.26,
+        "decimals": 9
+    },
+    {
+        "symbol": "GEL",
+        "address": "0x15b7c0c907e4C6b9AdaAaabC300C08991D6CEA05",
+        "url": "https://ftmscan.com/token/0x15b7c0c907e4C6b9AdaAaabC300C08991D6CEA05",
+        "name": "Gelato Network Token",
+        "price": 0.51707,
+        "decimals": 18
+    },
+    {
+        "symbol": "TOR",
+        "address": "0x74e23df9110aa9ea0b6ff2faee01e740ca1c642e",
+        "url": "https://ftmscan.com/token/0x74e23df9110aa9ea0b6ff2faee01e740ca1c642e",
+        "name": "TOR",
+        "price": 11.12,
+        "decimals": 18
+    },
+    {
+        "symbol": "fmXEN",
+        "address": "0xeF4B763385838FfFc708000f884026B8c0434275",
+        "url": "https://ftmscan.com/token/0xeF4B763385838FfFc708000f884026B8c0434275",
+        "name": "XEN Crypto",
+        "price": 3.6e-07,
+        "decimals": 18
+    },
+    {
+        "symbol": "MARS",
+        "address": "0xbe41772587872a92184873d55b09c6bb6f59f895",
+        "url": "https://ftmscan.com/token/0xbe41772587872a92184873d55b09c6bb6f59f895",
+        "name": "ProjectMars Token",
+        "price": 1.1e-07,
+        "decimals": 9
+    },
+    {
+        "symbol": "WFTM",
+        "address": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
+        "url": "https://ftmscan.com/token/0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
+        "name": "Wrapped Fantom",
+        "price": 0.912181,
+        "decimals": 18
+    },
+    {
+        "symbol": "ETH",
+        "address": "0x74b23882a30290451A17c44f4F05243b6b58C76d",
+        "url": "https://ftmscan.com/token/0x74b23882a30290451A17c44f4F05243b6b58C76d",
+        "name": "Ethereum",
+        "price": 3361.53,
+        "decimals": 18
+    },
+    {
+        "symbol": "L3USD",
+        "address": "0x5f0456F728E2D59028b4f5B8Ad8C604100724C6A",
+        "url": "https://ftmscan.com/token/0x5f0456F728E2D59028b4f5B8Ad8C604100724C6A",
+        "name": "L3USD",
+        "price": 0.988645,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTC",
+        "address": "0x321162Cd933E2Be498Cd2267a90534A804051b11",
+        "url": "https://ftmscan.com/token/0x321162Cd933E2Be498Cd2267a90534A804051b11",
+        "name": "Bitcoin",
+        "price": 66748,
+        "decimals": 8
+    },
+    {
+        "symbol": "miMATIC",
+        "address": "0xfb98b335551a418cd0737375a2ea0ded62ea213b",
+        "url": "https://ftmscan.com/token/0xfb98b335551a418cd0737375a2ea0ded62ea213b",
+        "name": "miMATIC",
+        "price": 0.847912,
+        "decimals": 18
+    },
+    {
+        "symbol": "SFTM",
+        "address": "0x69c744d3444202d35a2783929a0f930f2fbb05ad",
+        "url": "https://ftmscan.com/token/0x69c744d3444202d35a2783929a0f930f2fbb05ad",
+        "name": "Staked FTM",
+        "price": 0.912181,
+        "decimals": 18
+    },
+    {
+        "symbol": "BOO",
+        "address": "0x841fad6eae12c286d1fd18d1d525dffa75c7effe",
+        "url": "https://ftmscan.com/token/0x841fad6eae12c286d1fd18d1d525dffa75c7effe",
+        "name": "SpookyToken",
+        "price": 2.31,
+        "decimals": 18
+    },
+    {
+        "symbol": "HEC",
+        "address": "0x5C4FDfc5233f935f20D2aDbA572F770c2E377Ab0",
+        "url": "https://ftmscan.com/token/0x5C4FDfc5233f935f20D2aDbA572F770c2E377Ab0",
+        "name": "Hector",
+        "price": 7.26,
+        "decimals": 9
+    },
+    {
+        "symbol": "WIGO",
+        "address": "0xe992beab6659bff447893641a378fbbf031c5bd6",
+        "url": "https://ftmscan.com/token/0xe992beab6659bff447893641a378fbbf031c5bd6",
+        "name": "WigoSwap Token",
+        "price": 0.01342216,
+        "decimals": 18
+    },
+    {
+        "symbol": "STG",
+        "address": "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590",
+        "url": "https://ftmscan.com/token/0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590",
+        "name": "StargateToken",
+        "price": 0.711905,
+        "decimals": 18
+    },
+    {
+        "symbol": "TREEB",
+        "address": "0xc60d7067dfbc6f2caf30523a064f416a5af52963",
+        "url": "https://ftmscan.com/token/0xc60d7067dfbc6f2caf30523a064f416a5af52963",
+        "name": "Treeb",
+        "price": 0.01205195,
+        "decimals": 18
+    },
+    {
+        "symbol": "LSHARE",
+        "address": "0xcbe0ca46399af916784cadf5bcc3aed2052d6c45",
+        "url": "https://ftmscan.com/token/0xcbe0ca46399af916784cadf5bcc3aed2052d6c45",
+        "name": "LSHARE",
+        "price": 166.36,
+        "decimals": 18
+    },
+    {
+        "symbol": "BRUSH",
+        "address": "0x85dec8c4b2680793661bca91a8f129607571863d",
+        "url": "https://ftmscan.com/token/0x85dec8c4b2680793661bca91a8f129607571863d",
+        "name": "PaintSwap Token",
+        "price": 0.03162096,
+        "decimals": 18
+    },
+    {
+        "symbol": "gWBTC",
+        "address": "0x38aca5484b8603373acc6961ecd57a6a594510a3",
+        "url": "https://ftmscan.com/token/0x38aca5484b8603373acc6961ecd57a6a594510a3",
+        "name": "Geist WBTC",
+        "price": 66715,
+        "decimals": 8
+    },
+    {
+        "symbol": "BEETS",
+        "address": "0xf24bcf4d1e507740041c9cfd2dddb29585adce1e",
+        "url": "https://ftmscan.com/token/0xf24bcf4d1e507740041c9cfd2dddb29585adce1e",
+        "name": "BeethovenxToken",
+        "price": 0.04505063,
+        "decimals": 18
+    },
+    {
+        "symbol": "LINK",
+        "address": "0xb3654dc3d10ea7645f8319668e8f54d2574fbdc8",
+        "url": "https://ftmscan.com/token/0xb3654dc3d10ea7645f8319668e8f54d2574fbdc8",
+        "name": "ChainLink",
+        "price": 17.64,
+        "decimals": 18
+    },
+    {
+        "symbol": "RISE",
+        "address": "0xC17c30e98541188614dF99239cABD40280810cA3",
+        "url": "https://ftmscan.com/token/0xC17c30e98541188614dF99239cABD40280810cA3",
+        "name": "EverRise",
+        "price": 0.00012806,
+        "decimals": 18
+    },
+    {
+        "symbol": "gfUSDT",
+        "address": "0x940f41f0ec9ba1a34cf001cc03347ac092f5f6b5",
+        "url": "https://ftmscan.com/token/0x940f41f0ec9ba1a34cf001cc03347ac092f5f6b5",
+        "name": "Geist fUSDT",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "SPIRIT",
+        "address": "0x5cc61a78f164885776aa610fb0fe1257df78e59b",
+        "url": "https://ftmscan.com/token/0x5cc61a78f164885776aa610fb0fe1257df78e59b",
+        "name": "SpiritSwap Token",
+        "price": 0.00830107,
+        "decimals": 18
+    },
+    {
+        "symbol": "LQDR",
+        "address": "0x10b620b2dbac4faa7d7ffd71da486f5d44cd86f9",
+        "url": "https://ftmscan.com/token/0x10b620b2dbac4faa7d7ffd71da486f5d44cd86f9",
+        "name": "Liquid Driver",
+        "price": 0.770064,
+        "decimals": 18
+    },
+    {
+        "symbol": "ELK",
+        "address": "0xeeeeeb57642040be42185f49c52f7e9b38f8eeee",
+        "url": "https://ftmscan.com/token/0xeeeeeb57642040be42185f49c52f7e9b38f8eeee",
+        "name": "Elk",
+        "price": 0.152529,
+        "decimals": 18
+    },
+    {
+        "symbol": "FRAX",
+        "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355",
+        "url": "https://ftmscan.com/token/0xdc301622e621166bd8e82f2ca0a26c13ad0be355",
+        "name": "Frax",
+        "price": 0.993541,
+        "decimals": 18
+    },
+    {
+        "symbol": "YOSHI",
+        "address": "0x3dc57b391262e3aae37a08d91241f9ba9d58b570",
+        "url": "https://ftmscan.com/token/0x3dc57b391262e3aae37a08d91241f9ba9d58b570",
+        "name": "Yoshi.exchange",
+        "price": 0.0427764,
+        "decimals": 18
+    },
+    {
+        "symbol": "WOO",
+        "address": "0x6626c47c00f1d87902fc13eecfac3ed06d5e8d8a",
+        "url": "https://ftmscan.com/token/0x6626c47c00f1d87902fc13eecfac3ed06d5e8d8a",
+        "name": "Wootrade Network",
+        "price": 0.484632,
+        "decimals": 18
+    },
+    {
+        "symbol": "IB",
+        "address": "0x00a35FD824c717879BF370E70AC6868b95870Dfb",
+        "url": "https://ftmscan.com/token/0x00a35FD824c717879BF370E70AC6868b95870Dfb",
+        "name": "IronBank",
+        "price": 1.01,
+        "decimals": 18
+    },
+    {
+        "symbol": "gFTM",
+        "address": "0x39b3bd37208cbade74d0fcbdbb12d606295b430a",
+        "url": "https://ftmscan.com/token/0x39b3bd37208cbade74d0fcbdbb12d606295b430a",
+        "name": "Geist FTM",
+        "price": 0.91435,
+        "decimals": 18
+    },
+    {
+        "symbol": "TSHARE",
+        "address": "0x4cdf39285d7ca8eb3f090fda0c069ba5f4145b37",
+        "url": "https://ftmscan.com/token/0x4cdf39285d7ca8eb3f090fda0c069ba5f4145b37",
+        "name": "TSHARE",
+        "price": 55.45,
+        "decimals": 18
+    },
+    {
+        "symbol": "OATH",
+        "address": "0x21ada0d2ac28c3a5fa3cd2ee30882da8812279b6",
+        "url": "https://ftmscan.com/token/0x21ada0d2ac28c3a5fa3cd2ee30882da8812279b6",
+        "name": "Oath Token",
+        "price": 0.02667901,
+        "decimals": 18
+    },
+    {
+        "symbol": "TOMB",
+        "address": "0x6c021ae822bea943b2e66552bde1d2696a53fbb7",
+        "url": "https://ftmscan.com/token/0x6c021ae822bea943b2e66552bde1d2696a53fbb7",
+        "name": "TOMB",
+        "price": 0.0101249,
+        "decimals": 18
+    },
+    {
+        "symbol": "GEIST",
+        "address": "0xd8321aa83fb0a4ecd6348d4577431310a6e0814d",
+        "url": "https://ftmscan.com/token/0xd8321aa83fb0a4ecd6348d4577431310a6e0814d",
+        "name": "Geist.Finance Protocol Token",
+        "price": 0.00345535,
+        "decimals": 18
+    },
+    {
+        "symbol": "TAROT",
+        "address": "0xc5e2b037d30a390e62180970b3aa4e91868764cd",
+        "url": "https://ftmscan.com/token/0xc5e2b037d30a390e62180970b3aa4e91868764cd",
+        "name": "Tarot",
+        "price": 0.02931196,
+        "decimals": 18
+    },
+    {
+        "symbol": "FTG",
+        "address": "0x3a4cab3dcfab144fe7eb2b5a3e288cc03dc07659",
+        "url": "https://ftmscan.com/token/0x3a4cab3dcfab144fe7eb2b5a3e288cc03dc07659",
+        "name": "fantomGO",
+        "price": 0.00283507,
+        "decimals": 18
+    },
+    {
+        "symbol": "MIM",
+        "address": "0x82f0b8b456c1a451378467398982d4834b6829c1",
+        "url": "https://ftmscan.com/token/0x82f0b8b456c1a451378467398982d4834b6829c1",
+        "name": "Magic Internet Money",
+        "price": 0.983728,
+        "decimals": 18
+    },
+    {
+        "symbol": "1ART",
+        "address": "0xd3c325848d7c6e29b574cb0789998b2ff901f17e",
+        "url": "https://ftmscan.com/token/0xd3c325848d7c6e29b574cb0789998b2ff901f17e",
+        "name": "ArtWallet",
+        "price": 0.00955181,
+        "decimals": 18
+    },
+    {
+        "symbol": "MPX",
+        "address": "0x66eed5ff1701e6ed8470dc391f05e27b1d0657eb",
+        "url": "https://ftmscan.com/token/0x66eed5ff1701e6ed8470dc391f05e27b1d0657eb",
+        "name": "MPX",
+        "price": 0.04813312,
+        "decimals": 18
+    },
+    {
+        "symbol": "MMY",
+        "address": "0x01e77288b38b416f972428d562454fb329350bac",
+        "url": "https://ftmscan.com/token/0x01e77288b38b416f972428d562454fb329350bac",
+        "name": "MUMMY",
+        "price": 0.817839,
+        "decimals": 18
+    },
+    {
+        "symbol": "HND",
+        "address": "0x10010078a54396f62c96df8532dc2b4847d47ed3",
+        "url": "https://ftmscan.com/token/0x10010078a54396f62c96df8532dc2b4847d47ed3",
+        "name": "Hundred Finance",
+        "price": 0.0216929,
+        "decimals": 18
+    },
+    {
+        "symbol": "SCREAM",
+        "address": "0xe0654C8e6fd4D733349ac7E09f6f23DA256bF475",
+        "url": "https://ftmscan.com/token/0xe0654C8e6fd4D733349ac7E09f6f23DA256bF475",
+        "name": "Scream",
+        "price": 0.98092,
+        "decimals": 18
+    },
+    {
+        "symbol": "gETH",
+        "address": "0x25c130b2624cf12a4ea30143ef50c5d68cefa22f",
+        "url": "https://ftmscan.com/token/0x25c130b2624cf12a4ea30143ef50c5d68cefa22f",
+        "name": "Geist ETH",
+        "price": 3365.7,
+        "decimals": 18
+    },
+    {
+        "symbol": "gUSDC",
+        "address": "0xe578c856933d8e1082740bf7661e379aa2a30b26",
+        "url": "https://ftmscan.com/token/0xe578c856933d8e1082740bf7661e379aa2a30b26",
+        "name": "Geist USDC",
+        "price": 0.999997,
+        "decimals": 6
+    },
+    {
+        "symbol": "AVAX",
+        "address": "0x511D35c52a3C244E7b8bd92c0C297755FbD89212",
+        "url": "https://ftmscan.com/token/0x511D35c52a3C244E7b8bd92c0C297755FbD89212",
+        "name": "Avalanche",
+        "price": 47.81,
+        "decimals": 18
+    },
+    {
+        "symbol": "YFI",
+        "address": "0x29b0Da86e484E1C0029B56e817912d778aC0EC69",
+        "url": "https://ftmscan.com/token/0x29b0Da86e484E1C0029B56e817912d778aC0EC69",
+        "name": "yearn.finance",
+        "price": 8342.29,
+        "decimals": 18
+    }
+]

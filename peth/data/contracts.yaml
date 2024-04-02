@@ -1,0 +1,90 @@
+ATokenV1:
+- eth
+- '0xda5e8e1c3596d3cc11a4dd5ad66b8f03b5410f8c'
+ATokenV2:
+- eth
+- '0x541dcd3f00bcd1a683cc73e1b2a8693b602201f4'
+AaveOracle:
+- eth
+- '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9'
+AggregationRouterV5:
+- eth
+- '0x1111111254EEB25477B68fb85Ed929f73A960582'
+BalancerVault:
+- eth
+- '0xba12222222228d8ba445958a75a0704d566bf2c8'
+CErc20Delegate:
+- eth
+- '0xa035b9e130F2B1AedC733eEFb1C67Ba4c503491F'
+Comptroller:
+- eth
+- '0xbafe01ff935c7305907c33bf824352ee5979b526'
+CurveStableSwap:
+- eth
+- '0x4dece678ceceb27446b35c672dc7d61f30bad69e'
+CurveTricryptoOptimizedWETH:
+- eth
+- '0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B'
+EACAggregatorProxy:
+- arb
+- '0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612'
+GnosisSafeProxy:
+- matic
+- '0xdeb4c33d5c3e7e32f55a9d6336fe06010e40e3ab'
+GnosisSafe_1.3.0:
+- eth
+- '0xd9db270c1b5e3bd161e8c8503c55ceabee709552'
+LendingPoolAddressesProvider:
+- eth
+- '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
+LendingPoolV2:
+- eth
+- '0x987115c38fd9fd2aa2c6f1718451d167c13a3186'
+LendingPoolV3:
+- eth
+- '0xC6845a5C768BF8D7681249f8927877Efda425baf'
+PancakeMasterChef:
+- bsc
+- '0x73feaa1eE314F8c655E354234017bE2193C9E24E'
+PancakePair:
+- bsc
+- '0x0eD7e52944161450477ee417DE9Cd3a859b14fD0'
+SolidlyBaseV1Factory:
+- ftm
+- '0x3faab499b519fdc5819e3d7ed0c26111904cbc28'
+SolidlyBaseV1Router01:
+- ftm
+- '0xa38cd27185a464914D3046f0AB9d43356B34829D'
+SolidlyGauge:
+- ftm
+- '0xC009BC33201A85800b3593A40a178521a8e60a02'
+StableDebtToken:
+- eth
+- '0xdfd091e40e79e06f7298bd09a652f3a739f457bd'
+StakingRewards:
+- eth
+- '0xFBaEdde70732540cE2B11A8AC58Eb2dC0D69dE10'
+SushiMasterChef:
+- eth
+- '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd'
+SushiMasterChefV2:
+- eth
+- '0xef0881ec094552b2e128cf945ef17a6752b4ec5d'
+SwapRouter02:
+- eth
+- '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45'
+UniswapV2Factory:
+- eth
+- '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+UniswapV2Pair:
+- eth
+- '0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852'
+UniswapV2Router02:
+- eth
+- '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+UniversalRouter:
+- eth
+- '0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b'
+VariableDebtToken:
+- eth
+- '0xa65329a5a62ab12338aca9cc82d42ea925d92a1f'

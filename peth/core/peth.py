@@ -13,7 +13,8 @@ class Peth(Web3Ex):
     """
     The core class which implements real peth command logic.
     This class should be API-friendly and easily scriptable.
-    Do NOT perform arguments validation or output prints here, console.py is a better choice.
+    If any feature in console.py is found to be very useful,
+    it's better to be moved here for API usage.
     """
 
     __cache__ = {}

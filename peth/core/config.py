@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from configparser import ConfigParser
@@ -5,7 +6,7 @@ from configparser import ConfigParser
 import yaml
 
 PETH_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-CONFIG_DIR = os.path.join(PETH_ROOT, "config")
+DATA_DIR = os.path.join(PETH_ROOT, "data")
 CONFIG_FILE_NAME = "config.ini"
 
 
@@ -13,15 +14,30 @@ class PethConfig(object):
 
     def __init__(self, config_file=CONFIG_FILE_NAME) -> None:
         self.load(config_file)
+        self.load_chains(self.chains_path)
+        self.load_contracts(self.contracts_path)
+        self.load_tokens(self.tokens_path)
 
     def load(self, cfg_file):
-        self.config_path = self._find_file(cfg_file, ".", CONFIG_DIR)
+        self.config_path = self._find_file(cfg_file, ".", DATA_DIR)
         self.cfg = ConfigParser()
         self.cfg.read(self.config_path, "utf-8")
 
-        self.chains = self.load_yaml(self.chains_path)
-        self.tokens = self.load_yaml(self.tokens_path)
-        self.contracts = self.load_yaml(self.contracts_path)
+    def load_chains(self, filename):
+        self.chains = self.load_yaml(filename)
+
+    def load_contracts(self, filename):
+        self.contracts = self.load_yaml(filename)
+
+    def load_tokens(self, dir):
+        assert os.path.isdir(dir), f"dir {dir} not found."
+
+        self.tokens = {}
+        for name in os.listdir(dir):
+            chain = name.split(".")[0]
+            path = os.path.join(dir, name)
+            tokens = json.load(open(path, encoding="utf-8"))
+            self.tokens[chain] = tokens
 
     def load_yaml(self, chain_file):
         return yaml.safe_load(open(chain_file))
@@ -34,15 +50,15 @@ class PethConfig(object):
 
     @property
     def chains_path(self):
-        return self._find_file(self.cfg.get("root", "chains"), self.root, CONFIG_DIR)
+        return self._find_file(self.cfg.get("root", "chains"), self.root, DATA_DIR)
 
     @property
     def tokens_path(self):
-        return self._find_file(self.cfg.get("root", "tokens"), self.root, CONFIG_DIR)
+        return self._find_file(self.cfg.get("root", "tokens"), self.root, DATA_DIR)
 
     @property
     def contracts_path(self):
-        return self._find_file(self.cfg.get("root", "contracts"), self.root, CONFIG_DIR)
+        return self._find_file(self.cfg.get("root", "contracts"), self.root, DATA_DIR)
 
     @property
     def output_path(self):

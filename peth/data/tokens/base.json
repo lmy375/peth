@@ -1,0 +1,370 @@
+[
+    {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000006",
+        "url": "https://basescan.org/token/0x0000000000000000000000000000000000000006",
+        "name": "Native Ether",
+        "price": 3361.53,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDC",
+        "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "url": "https://basescan.org/token/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "name": "USDC",
+        "price": 0.999762,
+        "decimals": 6
+    },
+    {
+        "symbol": "DAI",
+        "address": "0x50c5725949a6f0c72e6c4a641f24049a917db0cb",
+        "url": "https://basescan.org/token/0x50c5725949a6f0c72e6c4a641f24049a917db0cb",
+        "name": "Dai Stablecoin",
+        "price": 1.00012673,
+        "decimals": 18
+    },
+    {
+        "symbol": "rETH",
+        "address": "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c",
+        "url": "https://basescan.org/token/0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c",
+        "name": "Rocket Pool ETH",
+        "price": 3742.6207687,
+        "decimals": 18
+    },
+    {
+        "symbol": "SNX",
+        "address": "0x22e6966b799c4d5b13be962e1d117b56327fda66",
+        "url": "https://basescan.org/token/0x22e6966b799c4d5b13be962e1d117b56327fda66",
+        "name": "Synthetix Network Token",
+        "price": 4.23749032,
+        "decimals": 18
+    },
+    {
+        "symbol": "PYTH",
+        "address": "0x4c5d8A75F3762c1561D96f177694f67378705E98",
+        "url": "https://basescan.org/token/0x4c5d8A75F3762c1561D96f177694f67378705E98",
+        "name": "Pyth Network",
+        "price": 0.876472,
+        "decimals": 6
+    },
+    {
+        "symbol": "PRIME",
+        "address": "0xfA980cEd6895AC314E7dE34Ef1bFAE90a5AdD21b",
+        "url": "https://basescan.org/token/0xfA980cEd6895AC314E7dE34Ef1bFAE90a5AdD21b",
+        "name": "Prime",
+        "price": 21.1,
+        "decimals": 18
+    },
+    {
+        "symbol": "cbETH",
+        "address": "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+        "url": "https://basescan.org/token/0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+        "name": "Coinbase Wrapped Staked ETH",
+        "price": 3582.80999009,
+        "decimals": 18
+    },
+    {
+        "symbol": "YFI",
+        "address": "0x9eaf8c1e34f05a589eda6bafdf391cf6ad3cb239",
+        "url": "https://basescan.org/token/0x9eaf8c1e34f05a589eda6bafdf391cf6ad3cb239",
+        "name": "yearn.finance",
+        "price": 8342.29,
+        "decimals": 18
+    },
+    {
+        "symbol": "BTRST",
+        "address": "0xa7d68d155d17cb30e311367c2ef1e82ab6022b67",
+        "url": "https://basescan.org/token/0xa7d68d155d17cb30e311367c2ef1e82ab6022b67",
+        "name": "BTRST",
+        "price": 0.88006333,
+        "decimals": 18
+    },
+    {
+        "symbol": "SDEX",
+        "address": "0xfd4330b0312fdeec6d4225075b82e00493ff2e3f",
+        "url": "https://basescan.org/token/0xfd4330b0312fdeec6d4225075b82e00493ff2e3f",
+        "name": "SmarDex Token",
+        "price": 0.0201796,
+        "decimals": 18
+    },
+    {
+        "symbol": "MAVIA",
+        "address": "0x24fcFC492C1393274B6bcd568ac9e225BEc93584",
+        "url": "https://basescan.org/token/0x24fcFC492C1393274B6bcd568ac9e225BEc93584",
+        "name": "Heroes of Mavia",
+        "price": 5.48,
+        "decimals": 18
+    },
+    {
+        "symbol": "KNC",
+        "address": "0x28fe69ff6864c1c218878bdca01482d36b9d57b1",
+        "url": "https://basescan.org/token/0x28fe69ff6864c1c218878bdca01482d36b9d57b1",
+        "name": "Kyber Network Crystal v2",
+        "price": 0.774843,
+        "decimals": 18
+    },
+    {
+        "symbol": "USD+crvUSD-f",
+        "address": "0xda3de145054ed30ee937865d31b500505c4bdfe7",
+        "url": "https://basescan.org/token/0xda3de145054ed30ee937865d31b500505c4bdfe7",
+        "name": "Curve.fi Factory Plain Pool: Overnight/Curve",
+        "price": 0.99971,
+        "decimals": 18
+    },
+    {
+        "symbol": "USD+",
+        "address": "0xb79dd08ea68a908a97220c76d19a6aa9cbde4376",
+        "url": "https://basescan.org/token/0xb79dd08ea68a908a97220c76d19a6aa9cbde4376",
+        "name": "USD+",
+        "price": 0.99971,
+        "decimals": 6
+    },
+    {
+        "symbol": "MIM",
+        "address": "0x4A3A6Dd60A34bB2Aba60D73B4C88315E9CeB6A3D",
+        "url": "https://basescan.org/token/0x4A3A6Dd60A34bB2Aba60D73B4C88315E9CeB6A3D",
+        "name": "Magic Internet Money",
+        "price": 0.983728,
+        "decimals": 18
+    },
+    {
+        "symbol": "SIPHER",
+        "address": "0xd0d1e44fc9adaeb732f73ffc2429cd1db9cd4529",
+        "url": "https://basescan.org/token/0xd0d1e44fc9adaeb732f73ffc2429cd1db9cd4529",
+        "name": "Sipher Token",
+        "price": 0.373571,
+        "decimals": 18
+    },
+    {
+        "symbol": "SQT",
+        "address": "0x858c50C3AF1913b0E849aFDB74617388a1a5340d",
+        "url": "https://basescan.org/token/0x858c50C3AF1913b0E849aFDB74617388a1a5340d",
+        "name": "SubQueryToken",
+        "price": 0.03992761,
+        "decimals": 18
+    },
+    {
+        "symbol": "agEUR",
+        "address": "0xa61beb4a3d02decb01039e378237032b351125b4",
+        "url": "https://basescan.org/token/0xa61beb4a3d02decb01039e378237032b351125b4",
+        "name": "agEUR",
+        "price": 1.069,
+        "decimals": 18
+    },
+    {
+        "symbol": "SOFI",
+        "address": "0x703d57164ca270b0b330a87fd159cfef1490c0a5",
+        "url": "https://basescan.org/token/0x703d57164ca270b0b330a87fd159cfef1490c0a5",
+        "name": "Rai.Finance",
+        "price": 0.03322452,
+        "decimals": 18
+    },
+    {
+        "symbol": "MBS",
+        "address": "0x8fbd0648971d56f1f2c35fa075ff5bc75fb0e39d",
+        "url": "https://basescan.org/token/0x8fbd0648971d56f1f2c35fa075ff5bc75fb0e39d",
+        "name": "MBS",
+        "price": 0.02611643,
+        "decimals": 18
+    },
+    {
+        "symbol": "GRG",
+        "address": "0x09188484e1ab980daef53a9755241d759c5b7d60",
+        "url": "https://basescan.org/token/0x09188484e1ab980daef53a9755241d759c5b7d60",
+        "name": "Rigo Token",
+        "price": 3.61118249,
+        "decimals": 18
+    },
+    {
+        "symbol": "MEDIA",
+        "address": "0x6E51B3a19F114013E5Dc09D0477a536c7E4e0207",
+        "url": "https://basescan.org/token/0x6E51B3a19F114013E5Dc09D0477a536c7E4e0207",
+        "name": "Media Token",
+        "price": 21.24,
+        "decimals": 18
+    },
+    {
+        "symbol": "DEUS",
+        "address": "0xde5ed76e7c05ec5e4572cfc88d1acea165109e44",
+        "url": "https://basescan.org/token/0xde5ed76e7c05ec5e4572cfc88d1acea165109e44",
+        "name": "DEUS",
+        "price": 32.74,
+        "decimals": 18
+    },
+    {
+        "symbol": "ECO",
+        "address": "0x434769c82fB928150B87C4Ae6320Bf71F92dCCa5",
+        "url": "https://basescan.org/token/0x434769c82fB928150B87C4Ae6320Bf71F92dCCa5",
+        "name": "ECO",
+        "price": 0.01477384,
+        "decimals": 18
+    },
+    {
+        "symbol": "BETS",
+        "address": "0x94025780a1ab58868d9b2dbbb775f44b32e8e6e5",
+        "url": "https://basescan.org/token/0x94025780a1ab58868d9b2dbbb775f44b32e8e6e5",
+        "name": "BetSwirl v2",
+        "price": 0.00069591,
+        "decimals": 18
+    },
+    {
+        "symbol": "EDG",
+        "address": "0x4e0da40b9063dc48364c1c0ffb4ae9d091fc2270",
+        "url": "https://basescan.org/token/0x4e0da40b9063dc48364c1c0ffb4ae9d091fc2270",
+        "name": "Edgeware",
+        "price": 0.00037867,
+        "decimals": 18
+    },
+    {
+        "symbol": "R",
+        "address": "0xafb2820316e7bc5ef78d295ab9b8bb2257534576",
+        "url": "https://basescan.org/token/0xafb2820316e7bc5ef78d295ab9b8bb2257534576",
+        "name": "R Stablecoin",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "xSYNTH",
+        "address": "0x01CC6b33c63CeE896521D63451896C14D42D05Ea",
+        "url": "https://basescan.org/token/0x01CC6b33c63CeE896521D63451896C14D42D05Ea",
+        "name": "Synth escrowed token",
+        "price": 10.16,
+        "decimals": 18
+    },
+    {
+        "symbol": "SYNTH",
+        "address": "0xbd2DBb8eceA9743CA5B16423b4eAa26bDcfE5eD2",
+        "url": "https://basescan.org/token/0xbd2DBb8eceA9743CA5B16423b4eAa26bDcfE5eD2",
+        "name": "Synth Token",
+        "price": 10.16,
+        "decimals": 18
+    },
+    {
+        "symbol": "aBascbETH",
+        "address": "0xcf3d55c10db69f28fd1a75bd73f3d8a2d9c595ad",
+        "url": "https://basescan.org/token/0xcf3d55c10db69f28fd1a75bd73f3d8a2d9c595ad",
+        "name": "Aave Base cbETH",
+        "price": 3576.86,
+        "decimals": 18
+    },
+    {
+        "symbol": "aBasWETH",
+        "address": "0xd4a0e0b9149bcee3c920d2e00b5de09138fd8bb7",
+        "url": "https://basescan.org/token/0xd4a0e0b9149bcee3c920d2e00b5de09138fd8bb7",
+        "name": "Aave Base WETH",
+        "price": 3371.54,
+        "decimals": 18
+    },
+    {
+        "symbol": "WETH",
+        "address": "0x4200000000000000000000000000000000000006",
+        "url": "https://basescan.org/token/0x4200000000000000000000000000000000000006",
+        "name": "Wrapped Ether",
+        "price": 3361.53,
+        "decimals": 18
+    },
+    {
+        "symbol": "SEAM",
+        "address": "0x1c7a460413dd4e964f96d8dfc56e7223ce88cd85",
+        "url": "https://basescan.org/token/0x1c7a460413dd4e964f96d8dfc56e7223ce88cd85",
+        "name": "Seamless",
+        "price": 6.27,
+        "decimals": 18
+    },
+    {
+        "symbol": "LEET",
+        "address": "0x0963a1abaf36ca88c21032b82e479353126a1c4b",
+        "url": "https://basescan.org/token/0x0963a1abaf36ca88c21032b82e479353126a1c4b",
+        "name": "leetswap.finance",
+        "price": 3.24719628,
+        "decimals": 18
+    },
+    {
+        "symbol": "BSWAP",
+        "address": "0x78a087d713be963bf307b18f2ff8122ef9a63ae9",
+        "url": "https://basescan.org/token/0x78a087d713be963bf307b18f2ff8122ef9a63ae9",
+        "name": "Baseswap Token",
+        "price": 1.29,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDbC",
+        "address": "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+        "url": "https://basescan.org/token/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+        "name": "USD Base Coin",
+        "price": 1.003,
+        "decimals": 6
+    },
+    {
+        "symbol": "BASE",
+        "address": "0xb3ce4ce692e035720b25880f678871cfc5a863ca",
+        "url": "https://basescan.org/token/0xb3ce4ce692e035720b25880f678871cfc5a863ca",
+        "name": "BaseTools",
+        "price": 0.00818239,
+        "decimals": 18
+    },
+    {
+        "symbol": "aBasUSDbC",
+        "address": "0x0a1d576f3efef75b330424287a95a366e8281d54",
+        "url": "https://basescan.org/token/0x0a1d576f3efef75b330424287a95a366e8281d54",
+        "name": "Aave Base USDbC",
+        "price": 0,
+        "decimals": 6
+    },
+    {
+        "symbol": "AURA",
+        "address": "0x1509706a6c66ca549ff0cb464de88231ddbe213b",
+        "url": "https://basescan.org/token/0x1509706a6c66ca549ff0cb464de88231ddbe213b",
+        "name": "Aura",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "CDT",
+        "address": "0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece",
+        "url": "https://basescan.org/token/0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece",
+        "name": "CheckDot",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "GMR",
+        "address": "0xc876e9cdd16acd38c57200084345d76a673cac9a",
+        "url": "https://basescan.org/token/0xc876e9cdd16acd38c57200084345d76a673cac9a",
+        "name": "GAMER",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "JARVIS",
+        "address": "0x777b2839832982b35213063d850848369390ee16",
+        "url": "https://basescan.org/token/0x777b2839832982b35213063d850848369390ee16",
+        "name": "JARVIS",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "LL",
+        "address": "0x206571b68c66e1d112b74d65695043ad2b5f95d5",
+        "url": "https://basescan.org/token/0x206571b68c66e1d112b74d65695043ad2b5f95d5",
+        "name": "parallel",
+        "price": 0,
+        "decimals": null
+    },
+    {
+        "symbol": "RCKT",
+        "address": "0x6653dd4b92a0e5bf8ae570a98906d9d6fd2eec09",
+        "url": "https://basescan.org/token/0x6653dd4b92a0e5bf8ae570a98906d9d6fd2eec09",
+        "name": "RocketSwap",
+        "price": 0,
+        "decimals": 18
+    },
+    {
+        "symbol": "STG",
+        "address": "0xE3B53AF74a4BF62Ae5511055290838050bf764Df",
+        "url": "https://basescan.org/token/0xE3B53AF74a4BF62Ae5511055290838050bf764Df",
+        "name": "StargateToken",
+        "price": 0,
+        "decimals": 18
+    }
+]

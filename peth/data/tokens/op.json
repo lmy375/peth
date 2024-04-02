@@ -1,0 +1,418 @@
+[
+    {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://optimistic.etherscan.io/token/0x0000000000000000000000000000000000000000",
+        "name": "Native ETH",
+        "price": 3335.56,
+        "decimals": 18
+    },
+    {
+        "symbol": "WETH",
+        "address": "0x4200000000000000000000000000000000000006",
+        "url": "https://optimistic.etherscan.io/token/0x4200000000000000000000000000000000000006",
+        "name": "Wrapped Ether",
+        "price": 3335.56,
+        "decimals": 18
+    },
+    {
+        "symbol": "USDT",
+        "address": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
+        "url": "https://optimistic.etherscan.io/token/0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
+        "name": "Tether USD",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "USDC",
+        "address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+        "url": "https://optimistic.etherscan.io/token/0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+        "name": "USD Coin",
+        "price": 0.999278,
+        "decimals": 6
+    },
+    {
+        "symbol": "USDC.e",
+        "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+        "url": "https://optimistic.etherscan.io/token/0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+        "name": "USD Coin (Bridged from Ethereum)",
+        "price": 0.999278,
+        "decimals": 6
+    },
+    {
+        "symbol": "LINK",
+        "address": "0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6",
+        "url": "https://optimistic.etherscan.io/token/0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6",
+        "name": "ChainLink Token",
+        "price": 17.67,
+        "decimals": 18
+    },
+    {
+        "symbol": "WBTC",
+        "address": "0x68f180fcce6836688e9084f035309e29bf0a2095",
+        "url": "https://optimistic.etherscan.io/token/0x68f180fcce6836688e9084f035309e29bf0a2095",
+        "name": "Wrapped BTC",
+        "price": 66731,
+        "decimals": 8
+    },
+    {
+        "symbol": "DAI",
+        "address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+        "url": "https://optimistic.etherscan.io/token/0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+        "name": "Dai Stablecoin",
+        "price": 0.996663,
+        "decimals": 18
+    },
+    {
+        "symbol": "OP",
+        "address": "0x4200000000000000000000000000000000000042",
+        "url": "https://optimistic.etherscan.io/token/0x4200000000000000000000000000000000000042",
+        "name": "Optimism",
+        "price": 3.30799787,
+        "decimals": 18
+    },
+    {
+        "symbol": "LDO",
+        "address": "0xfdb794692724153d1488ccdbe0c56c252596735f",
+        "url": "https://optimistic.etherscan.io/token/0xfdb794692724153d1488ccdbe0c56c252596735f",
+        "name": "Lido DAO Token",
+        "price": 2.68,
+        "decimals": 18
+    },
+    {
+        "symbol": "SNX",
+        "address": "0x8700daec35af8ff88c16bdf0418774cb3d7599b4",
+        "url": "https://optimistic.etherscan.io/token/0x8700daec35af8ff88c16bdf0418774cb3d7599b4",
+        "name": "Synthetix Network Token",
+        "price": 4.23,
+        "decimals": 18
+    },
+    {
+        "symbol": "PYTH",
+        "address": "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f",
+        "url": "https://optimistic.etherscan.io/token/0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f",
+        "name": "Pyth Network",
+        "price": 0.877816,
+        "decimals": 6
+    },
+    {
+        "symbol": "WLD",
+        "address": "0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
+        "url": "https://optimistic.etherscan.io/token/0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
+        "name": "Worldcoin",
+        "price": 7.0946062,
+        "decimals": 18
+    },
+    {
+        "symbol": "frxETH",
+        "address": "0x6806411765af15bddd26f8f544a34cc40cb9838b",
+        "url": "https://optimistic.etherscan.io/token/0x6806411765af15bddd26f8f544a34cc40cb9838b",
+        "name": "Frax Ether",
+        "price": 3327.1,
+        "decimals": 18
+    },
+    {
+        "symbol": "WOO",
+        "address": "0x871f2F2ff935FD1eD867842FF2a7bfD051A5E527",
+        "url": "https://optimistic.etherscan.io/token/0x871f2F2ff935FD1eD867842FF2a7bfD051A5E527",
+        "name": "WOO",
+        "price": 0.482439,
+        "decimals": 18
+    },
+    {
+        "symbol": "FRAX",
+        "address": "0x2e3d870790dc77a83dd1d18184acc7439a53f475",
+        "url": "https://optimistic.etherscan.io/token/0x2e3d870790dc77a83dd1d18184acc7439a53f475",
+        "name": "Frax",
+        "price": 0.994301,
+        "decimals": 18
+    },
+    {
+        "symbol": "cbETH",
+        "address": "0xaddb6a0412de1ba0f936dcaeb8aaa24578dcf3b2",
+        "url": "https://optimistic.etherscan.io/token/0xaddb6a0412de1ba0f936dcaeb8aaa24578dcf3b2",
+        "name": "Coinbase Wrapped Staked ETH",
+        "price": 3569.02,
+        "decimals": 18
+    },
+    {
+        "symbol": "sfrxETH",
+        "address": "0x484c2d6e3cdd945a8b2df735e079178c1036578c",
+        "url": "https://optimistic.etherscan.io/token/0x484c2d6e3cdd945a8b2df735e079178c1036578c",
+        "name": "Staked Frax Ether",
+        "price": 3598.37,
+        "decimals": 18
+    },
+    {
+        "symbol": "RPL",
+        "address": "0xc81d1f0eb955b0c020e5d5b264e1ff72c14d1401",
+        "url": "https://optimistic.etherscan.io/token/0xc81d1f0eb955b0c020e5d5b264e1ff72c14d1401",
+        "name": "Rocket Pool Protocol",
+        "price": 29.56,
+        "decimals": 18
+    },
+    {
+        "symbol": "CELO",
+        "address": "0x9b88d293b7a791e40d36a39765ffd5a1b9b5c349",
+        "url": "https://optimistic.etherscan.io/token/0x9b88d293b7a791e40d36a39765ffd5a1b9b5c349",
+        "name": "Celo native asset",
+        "price": 1.11456926,
+        "decimals": 18
+    },
+    {
+        "symbol": "FXS",
+        "address": "0x67ccea5bb16181e7b4109c9c2143c24a1c2205be",
+        "url": "https://optimistic.etherscan.io/token/0x67ccea5bb16181e7b4109c9c2143c24a1c2205be",
+        "name": "Frax Share",
+        "price": 6.9,
+        "decimals": 18
+    },
+    {
+        "symbol": "PENDLE",
+        "address": "0xbc7b1ff1c6989f006a1185318ed4e7b5796e66e1",
+        "url": "https://optimistic.etherscan.io/token/0xbc7b1ff1c6989f006a1185318ed4e7b5796e66e1",
+        "name": "Pendle",
+        "price": 5.3,
+        "decimals": 18
+    },
+    {
+        "symbol": "YFI",
+        "address": "0x9046d36440290ffde54fe0dd84db8b1cfee9107b",
+        "url": "https://optimistic.etherscan.io/token/0x9046d36440290ffde54fe0dd84db8b1cfee9107b",
+        "name": "yearn.finance",
+        "price": 8337,
+        "decimals": 18
+    },
+    {
+        "symbol": "BAL",
+        "address": "0xfe8b128ba8c78aabc59d4c64cee7ff28e9379921",
+        "url": "https://optimistic.etherscan.io/token/0xfe8b128ba8c78aabc59d4c64cee7ff28e9379921",
+        "name": "Balancer",
+        "price": 4.79,
+        "decimals": 18
+    },
+    {
+        "symbol": "UST",
+        "address": "0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80",
+        "url": "https://optimistic.etherscan.io/token/0xfb21b70922b9f6e3c6274bcd6cb1aa8a0fe20b80",
+        "name": "TerraUSD",
+        "price": 0.02572084,
+        "decimals": 6
+    },
+    {
+        "symbol": "VELO",
+        "address": "0x3c8b650257cfb5f272f799f5e2b4e65093a11a05",
+        "url": "https://optimistic.etherscan.io/token/0x3c8b650257cfb5f272f799f5e2b4e65093a11a05",
+        "name": "Velodrome",
+        "price": 0.26127,
+        "decimals": 18
+    },
+    {
+        "symbol": "KNC",
+        "address": "0xa00e3a3511aac35ca78530c85007afcd31753819",
+        "url": "https://optimistic.etherscan.io/token/0xa00e3a3511aac35ca78530c85007afcd31753819",
+        "name": "Kyber Network Crystal v2",
+        "price": 0.777249,
+        "decimals": 18
+    },
+    {
+        "symbol": "tBTC",
+        "address": "0x6c84a8f1c29108f47a79964b5fe888d4f4d0de40",
+        "url": "https://optimistic.etherscan.io/token/0x6c84a8f1c29108f47a79964b5fe888d4f4d0de40",
+        "name": "Optimism tBTC v2",
+        "price": 66922,
+        "decimals": 18
+    },
+    {
+        "symbol": "LYRA",
+        "address": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+        "url": "https://optimistic.etherscan.io/token/0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+        "name": "Lyra Token",
+        "price": 0.12022662,
+        "decimals": 18
+    },
+    {
+        "symbol": "DOLA",
+        "address": "0x8ae125e8653821e851f12a49f7765db9a9ce7384",
+        "url": "https://optimistic.etherscan.io/token/0x8ae125e8653821e851f12a49f7765db9a9ce7384",
+        "name": "Dola USD Stablecoin",
+        "price": 0.99802,
+        "decimals": 18
+    },
+    {
+        "symbol": "USD+",
+        "address": "0x73cb180bf0521828d8849bc8cf2b920918e23032",
+        "url": "https://optimistic.etherscan.io/token/0x73cb180bf0521828d8849bc8cf2b920918e23032",
+        "name": "USD+",
+        "price": 1.001,
+        "decimals": 6
+    },
+    {
+        "symbol": "sUSD",
+        "address": "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
+        "url": "https://optimistic.etherscan.io/token/0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
+        "name": "Synth sUSD",
+        "price": 0.99884664,
+        "decimals": 18
+    },
+    {
+        "symbol": "sETH",
+        "address": "0xe405de8f52ba7559f9df3c368500b6e6ae6cee49",
+        "url": "https://optimistic.etherscan.io/token/0xe405de8f52ba7559f9df3c368500b6e6ae6cee49",
+        "name": "Synth sETH",
+        "price": 3367.67,
+        "decimals": 18
+    },
+    {
+        "symbol": "AURA",
+        "address": "0x1509706a6c66CA549ff0cB464de88231DDBe213B",
+        "url": "https://optimistic.etherscan.io/token/0x1509706a6c66CA549ff0cB464de88231DDBe213B",
+        "name": "Aura",
+        "price": 0.785427,
+        "decimals": 18
+    },
+    {
+        "symbol": "SIPHER",
+        "address": "0xb94944669f7967e16588e55ac41be0d5ef399dcd",
+        "url": "https://optimistic.etherscan.io/token/0xb94944669f7967e16588e55ac41be0d5ef399dcd",
+        "name": "Sipher Token",
+        "price": 0.373815,
+        "decimals": 18
+    },
+    {
+        "symbol": "mooBIFI",
+        "address": "0xc55e93c62874d8100dbd2dfe307edc1036ad5434",
+        "url": "https://optimistic.etherscan.io/token/0xc55e93c62874d8100dbd2dfe307edc1036ad5434",
+        "name": "Moo BIFI",
+        "price": 410.73,
+        "decimals": 18
+    },
+    {
+        "symbol": "EXTRA",
+        "address": "0x2dad3a13ef0c6366220f989157009e501e7938f8",
+        "url": "https://optimistic.etherscan.io/token/0x2dad3a13ef0c6366220f989157009e501e7938f8",
+        "name": "Extra Finance",
+        "price": 0.167933,
+        "decimals": 18
+    },
+    {
+        "symbol": "PNP",
+        "address": "0xC4a65A93dD6CD9717551ebE827E8baEe025d1d7E",
+        "url": "https://optimistic.etherscan.io/token/0xC4a65A93dD6CD9717551ebE827E8baEe025d1d7E",
+        "name": "Penpie Token",
+        "price": 4.11,
+        "decimals": 18
+    },
+    {
+        "symbol": "GRG",
+        "address": "0xecf46257ed31c329f204eb43e254c609dee143b3",
+        "url": "https://optimistic.etherscan.io/token/0xecf46257ed31c329f204eb43e254c609dee143b3",
+        "name": "Rigo Token",
+        "price": 2.76,
+        "decimals": 18
+    },
+    {
+        "symbol": "sBTC",
+        "address": "0x298b9b95708152ff6968aafd889c6586e9169f1d",
+        "url": "https://optimistic.etherscan.io/token/0x298b9b95708152ff6968aafd889c6586e9169f1d",
+        "name": "Synth sBTC",
+        "price": 68401,
+        "decimals": 18
+    },
+    {
+        "symbol": "THALES",
+        "address": "0x217d47011b23bb961eb6d93ca9945b7501a5bb11",
+        "url": "https://optimistic.etherscan.io/token/0x217d47011b23bb961eb6d93ca9945b7501a5bb11",
+        "name": "Thales DAO Token",
+        "price": 0.332766,
+        "decimals": 18
+    },
+    {
+        "symbol": "BLID",
+        "address": "0x048c6bad48c51436764ed1fdb3c9d1c25d2c0ada",
+        "url": "https://optimistic.etherscan.io/token/0x048c6bad48c51436764ed1fdb3c9d1c25d2c0ada",
+        "name": "Bolide",
+        "price": 0.00519762,
+        "decimals": 18
+    },
+    {
+        "symbol": "RGT",
+        "address": "0xb548f63d4405466b36c0c0ac3318a22fdcec711a",
+        "url": "https://optimistic.etherscan.io/token/0xb548f63d4405466b36c0c0ac3318a22fdcec711a",
+        "name": "Rari Governance Token",
+        "price": 0.48126717,
+        "decimals": 18
+    },
+    {
+        "symbol": "CDT",
+        "address": "0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece",
+        "url": "https://optimistic.etherscan.io/token/0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece",
+        "name": "CheckDot",
+        "price": 0.751414,
+        "decimals": 18
+    },
+    {
+        "symbol": "HOP",
+        "address": "0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc",
+        "url": "https://optimistic.etherscan.io/token/0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc",
+        "name": "Hop",
+        "price": 0.052792,
+        "decimals": 18
+    },
+    {
+        "symbol": "ECO",
+        "address": "0xe7bc9b3a936f122f08aac3b1fac3c3ec29a78874",
+        "url": "https://optimistic.etherscan.io/token/0xe7bc9b3a936f122f08aac3b1fac3c3ec29a78874",
+        "name": "ECO",
+        "price": 0.01474358,
+        "decimals": 18
+    },
+    {
+        "symbol": "JRT",
+        "address": "0x15e770b95edd73fd96b02ece0266247d50895e76",
+        "url": "https://optimistic.etherscan.io/token/0x15e770b95edd73fd96b02ece0266247d50895e76",
+        "name": "Jarvis Reward Token",
+        "price": 0.00702584,
+        "decimals": 18
+    },
+    {
+        "symbol": "PICKLE",
+        "address": "0x0c5b4c92c948691EEBf185C17eeB9c230DC019E9",
+        "url": "https://optimistic.etherscan.io/token/0x0c5b4c92c948691EEBf185C17eeB9c230DC019E9",
+        "name": "PickleToken",
+        "price": 1.96,
+        "decimals": 18
+    },
+    {
+        "symbol": "GIV",
+        "address": "0x528cdc92eab044e1e39fe43b9514bfdab4412b98",
+        "url": "https://optimistic.etherscan.io/token/0x528cdc92eab044e1e39fe43b9514bfdab4412b98",
+        "name": "Giveth Token",
+        "price": 0.01314895,
+        "decimals": 18
+    },
+    {
+        "symbol": "RADIO",
+        "address": "0xf899e3909b4492859d44260e1de41a9e663e70f5",
+        "url": "https://optimistic.etherscan.io/token/0xf899e3909b4492859d44260e1de41a9e663e70f5",
+        "name": "RadioShack Token",
+        "price": 0.00061809,
+        "decimals": 18
+    },
+    {
+        "symbol": "COLLAB",
+        "address": "0x8b21e9b7daf2c4325bf3d18c1beb79a347fe902a",
+        "url": "https://optimistic.etherscan.io/token/0x8b21e9b7daf2c4325bf3d18c1beb79a347fe902a",
+        "name": "Collab.Land",
+        "price": 0.00787641,
+        "decimals": 18
+    },
+    {
+        "symbol": "sLINK",
+        "address": "0xc5db22719a06418028a40a9b5e9a7c02959d0d08",
+        "url": "https://optimistic.etherscan.io/token/0xc5db22719a06418028a40a9b5e9a7c02959d0d08",
+        "name": "Synth sLINK",
+        "price": 7.23,
+        "decimals": 18
+    }
+]

@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+
+
+## [1.0.6] - 2024-03-31
+
+### Added 
+
+- Add `tokens`, `addresses`, `portfolio` command.
+
 ## [1.0.5] - 2024-03-31
 
 ### Added 

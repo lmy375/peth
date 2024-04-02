@@ -134,7 +134,7 @@ def get_item_by_index(index: str, items: list, only_int=False):
         i = int(index)
         if i < 0:
             i = len(items) + i
-        assert i < len(items), "tuple index out-of-bound"
+        assert i < len(items), f"tuple index out-of-bound {i} >= {len(items)}"
         return items[i]
     except ValueError:
         if not only_int:
