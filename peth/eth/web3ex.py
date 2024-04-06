@@ -212,11 +212,38 @@ class Web3Ex(object):
     # Alias
     call = call_contract
 
+    def populate_tx(self, tx, sender=None, gas_price_rate=1.2, gas_limit_rate=1.2):
+        if not sender:
+            sender = self.signer.address
+
+        assert sender, "sender not set"
+
+        if "from" not in tx:
+            tx["from"] = sender
+
+        if "chainId" not in tx:
+            tx["chainId"] = self.web3.eth.chain_id
+
+        if "nonce" not in tx:
+            tx["nonce"] = self.web3.eth.get_transaction_count(sender)
+
+        if "gas" not in tx:
+            gas = self.web3.eth.estimate_gas(tx)
+            tx["gas"] = int(gas * gas_limit_rate)
+
+        if "gasPrice" not in tx:
+            gas_price = rpc_gas_price_strategy(self.web3)
+            tx["gasPrice"] = int(gas_price * gas_price_rate)
+
+        return tx
+
+    def get_tx_gas_fee(self, tx):
+        return int(tx["gasPrice"] * tx["gas"])
+
     def send_transaction(self, data=None, to=None, value=None, dry_run=False, wait=0):
         assert self.signer, "send_transaction: signer not set."
 
-        tx = {"from": self.signer.address}
-
+        tx = {}
         if data:
             tx["data"] = data
 
@@ -226,14 +253,7 @@ class Web3Ex(object):
         if value:
             tx["value"] = value
 
-        tx["chainId"] = self.web3.eth.chain_id
-        tx["nonce"] = self.web3.eth.get_transaction_count(self.signer.address)
-
-        gas = self.web3.eth.estimate_gas(tx)
-        tx["gas"] = int(gas * 1.2)
-
-        gas_price = rpc_gas_price_strategy(self.web3)
-        tx["gasPrice"] = int(gas_price * 1.2)
+        self.populate_default(tx)
         signed_tx = self.signer.sign_transaction(tx)
         if dry_run:
             return tx, signed_tx

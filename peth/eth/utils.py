@@ -11,6 +11,7 @@ from peth.core.config import config
 from peth.core.log import logger
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+UINT256_MAX = 2**256 - 1
 
 try:
     from Crypto.Hash import keccak

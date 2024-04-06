@@ -341,26 +341,20 @@ class PethConsole(cmd.Cmd):
         """
         addr = self._parse_args(arg, "address")
 
-        tokens = {}  # addr => info
-        for token in config.tokens[self.peth.chain]:
-            tokens[token["address"].lower()] = token
+        portfolio = self.peth.get_portfolio([addr])
+        infos = portfolio.get(addr.lower(), [])
 
-        token_balances = self.peth.get_token_balances(list(tokens.keys()), [addr])
         total = 0
         lines = []
-        for token_addr, _, balance in token_balances:
-            token = tokens[token_addr.lower()]
-            balance = balance / (10 ** token["decimals"])
-            price = token["price"]
-            usd = price * balance
-            total += usd
+        for asset in infos:
+            total += asset["usd"]
             line = "%-30s\t%-10s\t%-45s\t%-10s\t%-20s\t%-20s" % (
-                token["name"],
-                token["symbol"],
-                token["address"],
-                price,
-                balance,
-                usd,
+                asset["info"]["name"],
+                asset["info"]["symbol"],
+                asset["info"]["address"],
+                asset["info"]["price"],
+                asset["balance"],
+                asset["usd"],
             )
             lines.append(line)
 

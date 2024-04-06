@@ -36,11 +36,13 @@ class PethConfig(object):
         for name in os.listdir(dir):
             chain = name.split(".")[0]
             path = os.path.join(dir, name)
-            tokens = json.load(open(path, encoding="utf-8"))
+            with open(path, encoding="utf-8") as f:
+                tokens = json.load(f)
             self.tokens[chain] = tokens
 
     def load_yaml(self, chain_file):
-        return yaml.safe_load(open(chain_file))
+        with open(chain_file) as f:
+            return yaml.safe_load(f)
 
     @property
     def root(self):

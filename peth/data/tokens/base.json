@@ -1,8 +1,8 @@
 [
     {
         "symbol": "ETH",
-        "address": "0x0000000000000000000000000000000000000006",
-        "url": "https://basescan.org/token/0x0000000000000000000000000000000000000006",
+        "address": "0x0000000000000000000000000000000000000000",
+        "url": "https://basescan.org/token/0x0000000000000000000000000000000000000000",
         "name": "Native Ether",
         "price": 3361.53,
         "decimals": 18
@@ -342,14 +342,6 @@
         "name": "JARVIS",
         "price": 0,
         "decimals": 18
-    },
-    {
-        "symbol": "LL",
-        "address": "0x206571b68c66e1d112b74d65695043ad2b5f95d5",
-        "url": "https://basescan.org/token/0x206571b68c66e1d112b74d65695043ad2b5f95d5",
-        "name": "parallel",
-        "price": 0,
-        "decimals": null
     },
     {
         "symbol": "RCKT",

@@ -124,3 +124,24 @@ class Peth(Web3Ex):
         project = Project(self, addresses)
         project.analyze_all()
         return project
+
+    def get_portfolio(self, addresses=[]) -> List[dict]:
+        infos = {}  # addr => info
+        for token in config.tokens[self.chain]:
+            infos[token["address"].lower()] = token
+        token_balances = self.get_token_balances(list(infos.keys()), addresses)
+        portfolio = {}  # addr => tokens
+        for token_addr, user_addr, balance in token_balances:
+            if user_addr not in portfolio:
+                portfolio[user_addr] = []
+
+            info = infos[token_addr.lower()]
+            portfolio[user_addr].append(
+                {
+                    "token": token_addr,
+                    "balance": balance,
+                    "info": info,
+                    "usd": balance * info["price"] / (10 ** info["decimals"]),
+                }
+            )
+        return portfolio
