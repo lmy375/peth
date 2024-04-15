@@ -104,7 +104,9 @@ class ABIFunction(object):
 
     def decode_input(self, calldata):
         calldata = HexBytes(calldata)
-        assert calldata[0:4] == self.selector, "select not match"
+        assert (
+            calldata[0:4] == self.selector
+        ), f"selector not match: {calldata[0:4]} {self.selector}"
         calldata = calldata[4:]
         return abi_decode(self.input_types, calldata)
 

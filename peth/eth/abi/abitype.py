@@ -70,7 +70,7 @@ class ABIType(object):
     def type_str(self) -> str:
         if self.is_tuple:
             s = "("
-            s += ",".join(str(i.type) for i in self.components)
+            s += ",".join(i.type_str for i in self.components)
             s += ")"
             assert self.type.startswith("tuple")
             s += self.type.strip("tuple")

@@ -145,3 +145,16 @@ class Peth(Web3Ex):
                 }
             )
         return portfolio
+
+    def withdraw_balance(self, to, gas_price_rate=1.2, gas_limit_rate=1):
+        assert self.signer
+
+        balance = self.web3.eth.get_balance(self.signer.address)
+        tx = {"to": to, "value": 1}
+        self.populate_tx(tx, self.signer.address, gas_price_rate, gas_limit_rate)
+        fee = self.get_tx_gas_fee(tx)
+        if balance <= fee:
+            raise Exception(f"balance {balance} > fee {fee}")
+
+        tx["value"] = balance - fee
+        return self.send_tx(tx)

@@ -238,6 +238,9 @@ class Web3Ex(object):
         return tx
 
     def get_tx_gas_fee(self, tx):
+        if "gas" not in tx or "gasPrice" not in tx:
+            self.populate_tx(tx)
+
         return int(tx["gasPrice"] * tx["gas"])
 
     def send_transaction(self, data=None, to=None, value=None, dry_run=False, wait=0):
@@ -253,7 +256,10 @@ class Web3Ex(object):
         if value:
             tx["value"] = value
 
-        self.populate_default(tx)
+        self.send_tx(self, tx, dry_run, wait)
+
+    def send_tx(self, tx, dry_run=False, wait=0):
+        self.populate_tx(tx)
         signed_tx = self.signer.sign_transaction(tx)
         if dry_run:
             return tx, signed_tx

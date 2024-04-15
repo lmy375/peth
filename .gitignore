@@ -8,6 +8,9 @@ __pycache__/
 # Peth generated.
 peth-data/
 crytic-export/
+contracts
+interfaces
+reports
 
 # Downloaded resource.
 4byte.json

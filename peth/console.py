@@ -1815,7 +1815,7 @@ class PethConsole(cmd.Cmd):
         abis = info["ABI"]
         try:
             abi_json = json.loads(abis)
-            print(" ", "=== VIEWS ===")
+            print(" ", "=== CALLED ===")
             contract = self.web3.eth.contract(address=addr, abi=abi_json)
 
             others = []
@@ -1827,7 +1827,7 @@ class PethConsole(cmd.Cmd):
             for func in contract.all_functions():
                 sig = Signature.from_abi(func.abi)
 
-                if sig.is_view and len(sig.inputs) == 0:
+                if len(sig.inputs) == 0:
                     try:
                         ret = func().call()
                     except Exception as e:
