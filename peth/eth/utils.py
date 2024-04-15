@@ -5,6 +5,7 @@ import re
 from typing import Any, Dict, List, Tuple
 
 import requests
+from eth_hash.auto import keccak
 from web3 import Web3
 
 from peth.core.config import config
@@ -13,21 +14,13 @@ from peth.core.log import logger
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 UINT256_MAX = 2**256 - 1
 
-try:
-    from Crypto.Hash import keccak
 
-    def sha3_256(x):
-        return keccak.new(digest_bits=256, data=x).digest()
-
-except ImportError:
-    import sha3 as _sha3
-
-    def sha3_256(x):
-        return _sha3.keccak_256(x).digest()
+def keccak256(x):
+    return keccak(x)
 
 
 def func_selector(func_sig: str):
-    return sha3_256(bytes(func_sig, "ascii", "ignore"))[:4]
+    return keccak256(bytes(func_sig, "ascii", "ignore"))[:4]
 
 
 # from: https://github.com/ethereum/eth-utils/blob/master/eth_utils/abi.py

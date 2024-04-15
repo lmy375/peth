@@ -1,7 +1,7 @@
 import rlp
 from web3 import Web3
 
-from ..utils import sha3_256
+from ..utils import keccak256
 
 UINT_256_MAX = 2**256 - 1
 UINT_256_CEILING = 2**256
@@ -57,7 +57,7 @@ def uint_to_address(i: int) -> int:
 def generate_contract_address(address: str, nonce: int):
     return uint_to_address(
         int.from_bytes(
-            sha3_256(rlp.encode([address_to_bytes(address), nonce]))[12:], "big"
+            keccak256(rlp.encode([address_to_bytes(address), nonce]))[12:], "big"
         )
     )
 
@@ -65,11 +65,11 @@ def generate_contract_address(address: str, nonce: int):
 def generate_safe_contract_address(address: str, salt: int, call_data: bytes):
     return uint_to_address(
         int.from_bytes(
-            sha3_256(
+            keccak256(
                 b"\xff"
                 + address_to_bytes(address)
                 + uint_to_data(salt)
-                + sha3_256(call_data)
+                + keccak256(call_data)
             )[12:],
             "big",
         )

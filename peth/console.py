@@ -26,8 +26,8 @@ from peth.eth.utils import (
     convert_value_list,
     guess_calldata_types,
     guess_single_calldata,
+    keccak256,
     selector_to_sigs,
-    sha3_256,
 )
 from peth.util import diff
 from peth.util.graph import ContractRelationGraph
@@ -278,7 +278,7 @@ class PethConsole(cmd.Cmd):
         """
         keccak256 <string> : Calculate Keccak256 hash.
         """
-        print(sha3_256(bytes(arg.strip(), "ascii", "ignore")).hex())
+        print(keccak256(bytes(arg.strip(), "ascii", "ignore")).hex())
 
     def do_int(self, arg):
         """
@@ -512,7 +512,7 @@ class PethConsole(cmd.Cmd):
         for i in range(count):
             if (i % 100000) == 0:
                 print("    %d %% \r" % (100 * i / count), end="")
-            password = sha3_256(password)
+            password = keccak256(password)
 
         pk = HexBytes(password).hex()
 

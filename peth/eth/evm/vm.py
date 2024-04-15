@@ -10,7 +10,7 @@ from .utils import (
     UINT_256_MAX,
     address_to_uint,
     data_to_uint,
-    sha3_256,
+    keccak256,
     to_int256,
     to_uint256,
     uint_to_address,
@@ -340,7 +340,7 @@ class VM(object):
     def _sha3(self):
         offset, size = self._stack_pop_values(2)
         data = self._read_memory(offset, size)
-        hash = sha3_256(data)
+        hash = keccak256(data)
         v = data_to_uint(hash)
         self._stack_push(v)
         self._trace(f"{data.hex()} => {hash.hex()}")
@@ -449,7 +449,7 @@ class VM(object):
         addr = uint_to_address(v)
         code = self.chain.get_code(addr)
         if code:
-            v = data_to_uint(sha3_256(code))
+            v = data_to_uint(keccak256(code))
         else:
             v = 0
 
