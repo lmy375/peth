@@ -1,4 +1,4 @@
-web3==6.15.1
+web3==5.31.1
 py_solc_x==1.1.1
 pyyaml==6.0.1
 requests==2.28.1
