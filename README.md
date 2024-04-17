@@ -44,11 +44,21 @@ Features include:
 From pypi
 ```
 ➜ pip install peth
+➜ peth
 ```
 
 From github
 ```
 ➜ pip install git+https://github.com/lmy375/peth
+➜ peth
+```
+
+From source
+```
+➜ git clone https://github.com/lmy375/peth
+➜ cd peth
+➜ pip -r requirements.txt
+➜ python main.py
 ```
 
 # Quick Usage

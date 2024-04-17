@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.7] - 2024-03-31
 
+### Changed 
+
+- Bug fix. Revert web3.py to 5.31.1 in requirements.txt. 
 
 ## [1.0.6] - 2024-03-31
 
