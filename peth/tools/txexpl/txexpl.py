@@ -2,12 +2,14 @@ import json
 import os
 from typing import Dict
 
+import eth_abi
 import yaml
 from hexbytes import HexBytes
 from web3 import Web3
 
 from peth import Peth
-from peth.eth.abi import ABI, ABIFunction, ExtProcessor, eth_abi
+from peth.eth.abi import ABI, ABIFunction
+from peth.eth.abi.abifunc import ExtProcessor
 
 EXPLANATIONS_PATH = os.path.join(os.path.dirname(__file__), "explanations")
 SUBCALLS_PATH = os.path.join(os.path.dirname(__file__), "subcalls.yaml")
@@ -51,7 +53,7 @@ class TxExplainer(ExtProcessor):
                 else:
                     # This is a sig.
                     func = ABIFunction(k)
-                    self.pattern_abi.add_func(func, True)
+                    self.pattern_abi.add_func(func)
             elif k.startswith("0x"):
                 func = self.pattern_abi.selectors[HexBytes(k)]
             else:
@@ -69,8 +71,8 @@ class TxExplainer(ExtProcessor):
         for path in _list_files(abi_dir, ".json"):
             print("Load ABI", path)
             abi = json.load(open(path))
-            abi = ABI(abi, True)
-            self.pattern_abi.merge(abi, True)
+            abi = ABI(abi)
+            self.pattern_abi.merge(abi)
 
     # ExtProcessor functions.
 

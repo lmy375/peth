@@ -12,7 +12,7 @@ avax:
 - https://snowtrace.io/address/
 base:
 - https://mainnet.base.org
-- https://basescan.org/api?
+- https://api.basescan.org/api?
 - https://basescan.org/address/
 blast:
 - https://rpc.ankr.com/blast
@@ -110,3 +110,7 @@ zksync:
 - https://mainnet.era.zksync.io
 - null
 - https://explorer.zksync.io/address/
+sepolia:
+- https://rpc-sepolia.rockx.com
+- https://api-sepolia.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
+- https://sepolia.etherscan.io/address/

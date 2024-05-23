@@ -1169,6 +1169,16 @@ class PethConsole(cmd.Cmd):
 
         print("Impl:", self.peth.call_contract(addr, "masterCopy()->(address)"))
 
+        fallback = self.web3.eth.get_storage_at(
+            addr, 0x6C9A6C4A39284E37ED1CF53D337577D14212A4870FB976A4366C693B939918D5
+        )[12:].hex()
+        print("Fallback handler:", self._get_full_name(fallback))
+
+        guard = self.web3.eth.get_storage_at(
+            addr, 0x4A204F620C8C5CCDCA3FD54D003BADD85BA500436A431F0CBDA4F558C93C34C8
+        )[12:].hex()
+        print("Guard:", self._get_full_name(guard))
+
         modules = self.peth.call_contract(
             addr,
             "getModulesPaginated(address,uint256)->(address[],address)",

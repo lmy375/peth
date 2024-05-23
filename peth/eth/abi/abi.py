@@ -54,14 +54,20 @@ class ABI(object):
                 self.add_func(func)
 
     def add_func(self, func: ABIFunction):
+
+        if func.signature in self.signatures:
+            # Signatures collision.
+            return
+        else:
+            self.signatures[func.signature] = func
+
+        if func.selector in self.selectors:
+            # Selector collision.
+            return
+        else:
+            self.selectors[func.selector] = func
+
         name = func.name
-
-        assert func.signature not in self.signatures, "Signatures collision."
-        self.signatures[func.signature] = func
-
-        assert func.selector not in self.selectors, "Selector collision."
-        self.selectors[func.selector] = func
-
         if name in self.functions:
             del self.functions[name]
             self._name_collisions[name] = True
