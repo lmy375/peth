@@ -237,8 +237,8 @@ def convert_value(value: str):
     DEC_PATTERN = r"^\d+$"
     HEX_PATTERN = r"^[0-9A-Fa-fXx]+$"
 
-    if Web3.isAddress(value):  # address
-        return Web3.toChecksumAddress(value)
+    if Web3.is_address(value):  # address
+        return Web3.to_check_sum_address(value)
     elif re.match(STR_PATTERN, value):  # string.
         return re.findall(STR_PATTERN, value)[0]
     elif re.match(DEC_PATTERN, value):  # decimal

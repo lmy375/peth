@@ -74,7 +74,7 @@ class Web3Ex(object):
         self.signer = Account.from_key(private_key)
 
     def is_contract(self, addr):
-        addr = self.web3.toChecksumAddress(addr)
+        addr = self.web3.to_check_sum_address(addr)
         return len(self.web3.eth.get_code(addr)) != 0
 
     def get_address_url(self, addr):
@@ -251,12 +251,12 @@ class Web3Ex(object):
             tx["data"] = data
 
         if to:
-            tx["to"] = Web3.toChecksumAddress(to)
+            tx["to"] = Web3.to_check_sum_address(to)
 
         if value:
             tx["value"] = value
 
-        self.send_tx(self, tx, dry_run, wait)
+        return self.send_tx(tx, dry_run, wait)
 
     def send_tx(self, tx, dry_run=False, wait=0):
         self.populate_tx(tx)
@@ -308,7 +308,7 @@ class Web3Ex(object):
             temp_start = end - step
             filter_params = {"fromBlock": temp_start, "toBlock": end}
             if address:
-                filter_params["address"] = Web3.toChecksumAddress(address)
+                filter_params["address"] = Web3.to_check_sum_address(address)
             if topics:
                 filter_params["topics"] = topics
 
@@ -319,7 +319,7 @@ class Web3Ex(object):
     def contract(self, address, abi: str | ABI | dict = None):
         if abi is None:
             abi = self.scan.get_abi(address)
-        elif self.web3.isAddress(str(abi)):
+        elif self.web3.is_address(str(abi)):
             abi = self.scan.get_abi(str(abi))
 
         return Contract(self, address, abi)

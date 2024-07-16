@@ -17,7 +17,7 @@ class AccountAnalysis(object):
 
     def __init__(self, peth, addr, project=None) -> None:
         self.peth = peth
-        self.addr = Web3.toChecksumAddress(addr)
+        self.addr = Web3.to_check_sum_address(addr)
         self.project = project
 
         self.url = self.peth.get_address_url(self.addr)
@@ -98,7 +98,7 @@ class AccountAnalysis(object):
 
         # Process proxy issue.
         impl = info["Implementation"]
-        while Web3.isAddress(impl):
+        while Web3.is_address(impl):
             self.is_proxy = True
             self.implmentation = impl
             logger.debug("Proxy found, implmentation %s", impl)
@@ -155,7 +155,7 @@ class AccountAnalysis(object):
 
     def analyze_unverified_contract(self):
         addr = self.addr
-        if Web3.isAddress(self.implmentation):
+        if Web3.is_address(self.implmentation):
             # If this is a proxy, analyze the implmentation code.
             addr = self.implmentation
         self.selectors = self.peth.get_selectors(addr)
@@ -307,7 +307,7 @@ class AccountAnalysis(object):
         added_addrs = []
         r = []  # relation, address
         for name, value in self.properties.items():
-            if Web3.isAddress(value) and value != ZERO_ADDRESS:
+            if Web3.is_address(value) and value != ZERO_ADDRESS:
                 r.append((name, value))
                 added_addrs.append(value)
 
@@ -345,7 +345,7 @@ class AccountAnalysis(object):
                 txt += f"- {self.__json_to_markdown(i, depth+1)}\n"
         else:
             s = str(data)
-            if Web3.isAddress(s):
+            if Web3.is_address(s):
                 s = self.get_addr_md_link(s)
             txt += s
         return txt
@@ -379,7 +379,7 @@ class AccountAnalysis(object):
                 txt += "无参 View 函数：\n\n"
                 data = []
                 for sig, value in self.view_sigs.items():
-                    if Web3.isAddress(value):
+                    if Web3.is_address(value):
                         value = self.get_addr_md_link(value)
                     elif isinstance(value, bytes):
                         value = value.hex()
@@ -431,7 +431,7 @@ class Project(object):
 
     def __init__(self, peth, addresses=[]) -> None:
         self.peth = peth
-        self.addresses = [Web3.toChecksumAddress(addr) for addr in addresses]
+        self.addresses = [Web3.to_check_sum_address(addr) for addr in addresses]
 
         self.analyzed = {}  # address => AccountAnalysis
         self.accounts = []
@@ -447,7 +447,7 @@ class Project(object):
             found_addrs = []
 
             for addr in addrs_to_analyze:
-                addr = Web3.toChecksumAddress(addr)
+                addr = Web3.to_check_sum_address(addr)
                 if addr in self.analyzed:
                     continue
 
@@ -465,7 +465,7 @@ class Project(object):
         logger.info(f"Project done. {len(self.analyzed)} addresses analyzed.")
 
     def analyze_one(self, addr) -> AccountAnalysis:
-        addr = Web3.toChecksumAddress(addr)
+        addr = Web3.to_check_sum_address(addr)
         if addr in self.analyzed:
             return self.analyzed[addr]
 
@@ -478,7 +478,7 @@ class Project(object):
         return self.analyze_one(addr).name
 
     def get_addr_md_link(self, addr) -> str:
-        addr = Web3.toChecksumAddress(addr)
+        addr = Web3.to_check_sum_address(addr)
         name = self.get_addr_name(addr)
         txt = f"{name}({addr})"
         url = self.peth.get_address_url(addr)

@@ -98,7 +98,7 @@ class ScanAPI(object):
             if "Implementation" in d:
                 impl = d["Implementation"]
                 if (
-                    auto_proxy and Web3.isAddress(impl) and impl.lower() != addr
+                    auto_proxy and Web3.is_address(impl) and impl.lower() != addr
                 ):  # Proxy found.
                     return self.get_contract_info(impl)
         return d
@@ -122,7 +122,7 @@ class ScanAPI(object):
                 return abi
 
     def get_contract_name(self, addr):
-        if not Web3.isAddress(addr):
+        if not Web3.is_address(addr):
             return None
 
         info = self.get_contract_info(addr)

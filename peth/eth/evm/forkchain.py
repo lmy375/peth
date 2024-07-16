@@ -72,7 +72,7 @@ class ForkChain(object):
         pickle.dump(data, open(self._cache_file_name, "wb"))
 
     def get_balance(self, address: str) -> int:
-        address = Web3.toChecksumAddress(address)
+        address = Web3.to_check_sum_address(address)
         if address in self.balances:
             return self.balances[address]
 
@@ -81,7 +81,7 @@ class ForkChain(object):
         return balance
 
     def get_nonce(self, address: str) -> int:
-        address = Web3.toChecksumAddress(address)
+        address = Web3.to_check_sum_address(address)
         if address in self.nonces:
             return self.nonces[address]
 
@@ -90,7 +90,7 @@ class ForkChain(object):
         return nonce
 
     def get_code(self, address: str) -> bytes:
-        address = Web3.toChecksumAddress(address)
+        address = Web3.to_check_sum_address(address)
         if address in self.codes:
             return self.codes[address]
 
@@ -99,7 +99,7 @@ class ForkChain(object):
         return code
 
     def get_storage(self, address: str, slot: int) -> int:
-        address = Web3.toChecksumAddress(address)
+        address = Web3.to_check_sum_address(address)
         if address in self.storage:
             if slot in self.storage[address]:
                 return self.storage[address][slot]

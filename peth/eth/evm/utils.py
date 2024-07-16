@@ -16,7 +16,7 @@ USER_2_ADDRESS = "0x2000000000000000000000000000000000000000"
 
 def to_lower_address(s: str):
     a = str(s).lower()
-    assert Web3.isAddress(a), f"{s} not a valid address"
+    assert Web3.is_address(a), f"{s} not a valid address"
     return a
 
 
@@ -51,7 +51,7 @@ def uint_to_data(i: int, size: int = 32) -> bytes:
 
 
 def uint_to_address(i: int) -> int:
-    return Web3.toChecksumAddress(int.to_bytes(i, 20, "big")).lower()
+    return Web3.to_check_sum_address(int.to_bytes(i, 20, "big")).lower()
 
 
 def generate_contract_address(address: str, nonce: int):

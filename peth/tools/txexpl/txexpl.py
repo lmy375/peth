@@ -100,7 +100,7 @@ class TxExplainer(ExtProcessor):
             return "%f * 1e18" % (value / 1e18)
 
     def _process_addr(self, addr):
-        addr = self.peth.web3.toChecksumAddress(addr)
+        addr = self.peth.web3.to_check_sum_address(addr)
         name = self.peth.call_contract(addr, "symbol()->(string)")
         if name is None:
             name = self.peth.scan.get_contract_name(addr)
@@ -143,7 +143,7 @@ class TxExplainer(ExtProcessor):
         if type(value) is int:
             return self._process_int(value)
 
-        if Web3.isAddress(value):
+        if Web3.is_address(value):
             return self._process_addr(value)
 
         if isinstance(value, bytes):

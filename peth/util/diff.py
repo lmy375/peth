@@ -31,12 +31,12 @@ def diff_uniswap(chain, factory=None, pair=None, router=None):
     peth = Peth.get_or_create(chain)
     if factory and not pair:
         r = peth.eth_call(factory, "allPairs(uint256)->(address)", [0])
-        if Web3.isAddress(r):
+        if Web3.is_address(r):
             pair = r
             print("[*] Auto find pair contract", r)
     if not factory and pair:
         r = peth.eth_call(pair, "factory()->(address)")
-        if Web3.isAddress(r):
+        if Web3.is_address(r):
             factory = r
             print("[*] Auto find factory contract", r)
 

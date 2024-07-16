@@ -57,7 +57,7 @@ class Peth(Web3Ex):
     def analyze_bytecode(self, addr, code, callback) -> List[Tuple[bytes, str]]:
 
         if code is None:
-            addr = Web3.toChecksumAddress(addr)
+            addr = Web3.to_check_sum_address(addr)
             bytes_code = bytes(self.web3.eth.get_code(addr))
             code = Code(bytes_code)
 
@@ -105,7 +105,7 @@ class Peth(Web3Ex):
                 if ins.opnd < 2**160:
                     raw_bytes = ins.opnd.to_bytes(20, "big")
                     addr = "0x" + raw_bytes.hex()
-                    addr = Web3.toChecksumAddress(addr)
+                    addr = Web3.to_check_sum_address(addr)
                     if addr not in addresses:
                         if self.web3.eth.get_transaction_count(addr):
                             # Use nonce to filter false positive cases.
