@@ -21,11 +21,11 @@ def to_lower_address(s: str):
 
 
 def address_to_bytes(addr: str):
-    return Web3.toBytes(hexstr=addr)
+    return Web3.to_bytes(hexstr=addr)
 
 
 def address_to_uint(addr: str):
-    return Web3.toInt(address_to_bytes(addr))
+    return Web3.to_int(address_to_bytes(addr))
 
 
 def to_int256(x: int) -> int:
@@ -51,7 +51,7 @@ def uint_to_data(i: int, size: int = 32) -> bytes:
 
 
 def uint_to_address(i: int) -> int:
-    return Web3.to_check_sum_address(int.to_bytes(i, 20, "big")).lower()
+    return Web3.to_checksum_address(int.to_bytes(i, 20, "big")).lower()
 
 
 def generate_contract_address(address: str, nonce: int):

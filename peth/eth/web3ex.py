@@ -74,7 +74,7 @@ class Web3Ex(object):
         self.signer = Account.from_key(private_key)
 
     def is_contract(self, addr):
-        addr = self.web3.to_check_sum_address(addr)
+        addr = self.web3.to_checksum_address(addr)
         return len(self.web3.eth.get_code(addr)) != 0
 
     def get_address_url(self, addr):
@@ -251,7 +251,7 @@ class Web3Ex(object):
             tx["data"] = data
 
         if to:
-            tx["to"] = Web3.to_check_sum_address(to)
+            tx["to"] = Web3.to_checksum_address(to)
 
         if value:
             tx["value"] = value
@@ -308,7 +308,7 @@ class Web3Ex(object):
             temp_start = end - step
             filter_params = {"fromBlock": temp_start, "toBlock": end}
             if address:
-                filter_params["address"] = Web3.to_check_sum_address(address)
+                filter_params["address"] = Web3.to_checksum_address(address)
             if topics:
                 filter_params["topics"] = topics
 

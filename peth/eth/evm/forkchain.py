@@ -10,8 +10,8 @@ from peth.core.config import config
 
 class ForkChain(object):
 
-    def __init__(self, web3, fix_block_number: int = 0) -> None:
-        self.web3 = web3
+    def __init__(self, web3: Web3, fix_block_number: int = 0) -> None:
+        self.web3: Web3 = web3
 
         if fix_block_number:
             self.fix_block_number = fix_block_number
@@ -72,7 +72,7 @@ class ForkChain(object):
         pickle.dump(data, open(self._cache_file_name, "wb"))
 
     def get_balance(self, address: str) -> int:
-        address = Web3.to_check_sum_address(address)
+        address = Web3.to_checksum_address(address)
         if address in self.balances:
             return self.balances[address]
 
@@ -81,7 +81,7 @@ class ForkChain(object):
         return balance
 
     def get_nonce(self, address: str) -> int:
-        address = Web3.to_check_sum_address(address)
+        address = Web3.to_checksum_address(address)
         if address in self.nonces:
             return self.nonces[address]
 
@@ -90,7 +90,7 @@ class ForkChain(object):
         return nonce
 
     def get_code(self, address: str) -> bytes:
-        address = Web3.to_check_sum_address(address)
+        address = Web3.to_checksum_address(address)
         if address in self.codes:
             return self.codes[address]
 
@@ -99,13 +99,13 @@ class ForkChain(object):
         return code
 
     def get_storage(self, address: str, slot: int) -> int:
-        address = Web3.to_check_sum_address(address)
+        address = Web3.to_checksum_address(address)
         if address in self.storage:
             if slot in self.storage[address]:
                 return self.storage[address][slot]
 
         value = self.web3.eth.get_storage_at(address, slot, self.fix_block_number)
-        value = self.web3.toInt(value)
+        value = self.web3.to_int(value)
         if address not in self.storage:
             self.storage[address] = {}
         self.storage[address][slot] = value

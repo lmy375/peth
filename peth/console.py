@@ -160,7 +160,7 @@ class PethConsole(cmd.Cmd):
             return convert_value_list(args)
         elif typ == "address":
             assert Web3.is_address(args[0]), f"{args[0]} not address"
-            return Web3.to_check_sum_address(args[0])
+            return Web3.to_checksum_address(args[0])
         elif typ == "number":
             value = ast.literal_eval(args[0])
             assert type(value) is int, f"{args[0]} not number"
@@ -637,8 +637,8 @@ class PethConsole(cmd.Cmd):
         try:
             ret = self.web3.eth.call(
                 {
-                    "from": self.web3.to_check_sum_address(sender),
-                    "to": self.web3.to_check_sum_address(to),
+                    "from": self.web3.to_checksum_address(sender),
+                    "to": self.web3.to_checksum_address(to),
                     "data": data,
                     "value": value,
                 },
@@ -671,8 +671,8 @@ class PethConsole(cmd.Cmd):
         try:
             ret = self.web3.eth.estimate_gas(
                 {
-                    "from": self.web3.to_check_sum_address(sender),
-                    "to": self.web3.to_check_sum_address(to),
+                    "from": self.web3.to_checksum_address(sender),
+                    "to": self.web3.to_checksum_address(to),
                     "data": data,
                     "value": value,
                 },
@@ -730,10 +730,10 @@ class PethConsole(cmd.Cmd):
         """
         address <address> : Print information of the account.
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
         b = self.web3.eth.get_balance(addr)
         print(
-            "Balance: %s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether")))
+            "Balance: %s Wei( %0.4f Ether)" % (b, float(self.web3.from_wei(b, "ether")))
         )
 
         print("Nonce:", self.web3.eth.get_transaction_count(addr))
@@ -746,7 +746,7 @@ class PethConsole(cmd.Cmd):
         storage <address> [<slot>] : Get storage of address.
         """
         args = arg.split()
-        addr = self.web3.to_check_sum_address(args[0])
+        addr = self.web3.to_checksum_address(args[0])
         slot = None
         if len(args) >= 2:
             slot_str = args[1]
@@ -1089,7 +1089,7 @@ class PethConsole(cmd.Cmd):
                 print(f"{name}: {self._get_full_name(_addr)}")
 
         for arg in args.split():
-            addr = self.web3.to_check_sum_address(arg)
+            addr = self.web3.to_checksum_address(arg)
             impl = self.web3.eth.get_storage_at(
                 addr, 0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC
             )[12:].hex()
@@ -1130,7 +1130,7 @@ class PethConsole(cmd.Cmd):
         proxy_all <address> [<address>]: Only print proxy addresses.
         """
         for arg in args.split():
-            addr = self.web3.to_check_sum_address(arg)
+            addr = self.web3.to_checksum_address(arg)
             impl = self.web3.eth.get_storage_at(
                 addr, 0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC
             )[12:].hex()
@@ -1144,7 +1144,7 @@ class PethConsole(cmd.Cmd):
         """
         owner <ownable-contract-address>: Print contract owner.
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
         try:
             owner = self.peth.call_contract(addr, "owner()->(address)")
             print("Owner: %s" % self._get_full_name(owner))
@@ -1155,7 +1155,7 @@ class PethConsole(cmd.Cmd):
         """
         safe <gnosis-proxy-address>: Print Gnosis information.
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
 
         print("Version:", self.peth.call_contract(addr, "VERSION()->(string)"))
 
@@ -1193,7 +1193,7 @@ class PethConsole(cmd.Cmd):
         """
         timelock <address>: Print TimelockController min delay.
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
         try:
             secs = self.peth.call_contract(addr, "getMinDelay()->(uint)", silent=True)
             print("Min Delay: %ds = %0.2fh" % (secs, secs / 3600))
@@ -1296,7 +1296,7 @@ class PethConsole(cmd.Cmd):
         """
         factory <factory address>
         """
-        factory = self.web3.to_check_sum_address(arg)
+        factory = self.web3.to_checksum_address(arg)
         size = self.peth.call_contract(factory, "allPairsLength()->(uint256)")
         print("%d pairs found." % size)
         for i in range(size):
@@ -1317,7 +1317,7 @@ class PethConsole(cmd.Cmd):
         cnt = len(arg.split(","))
         for addr in arg.split(","):
             addr = addr.strip()
-            addr = self.web3.to_check_sum_address(addr)
+            addr = self.web3.to_checksum_address(addr)
             try:
                 if cnt > 1:
                     print("---- [%s] ----" % i)
@@ -1409,12 +1409,12 @@ class PethConsole(cmd.Cmd):
                     and item.topics[0].hex()
                     == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
                 ):
-                    src = self.web3.to_check_sum_address(item.topics[1][-20:])
+                    src = self.web3.to_checksum_address(item.topics[1][-20:])
                     src = address_names.get(src, src)
-                    dst = self.web3.to_check_sum_address(item.topics[2][-20:])
+                    dst = self.web3.to_checksum_address(item.topics[2][-20:])
                     dst = address_names.get(dst, dst)
 
-                    amount = self.web3.toInt(hexstr=item.data)
+                    amount = self.web3.to_int(hexstr=item.data.hex())
                     token = item.address
                     symbol = self.peth.call_contract(
                         token, "symbol()->(string)", silent=True
@@ -1566,7 +1566,7 @@ class PethConsole(cmd.Cmd):
         """
         aml <address> : Print funding chain related to the address.
         """
-        addr = Web3.to_check_sum_address(arg)
+        addr = Web3.to_checksum_address(arg)
 
         print("Start", addr)
         i = 1
@@ -1594,7 +1594,7 @@ class PethConsole(cmd.Cmd):
                 sender = tx["from"]
                 to = tx["to"]
                 value = int(tx["value"])
-                ethers = "%0.5f" % Web3.fromWei(value, "ether")
+                ethers = "%0.5f" % self.web3.from_wei(value, "ether")
                 print(f"[{i}] {sender} sends {to} {ethers} ETH")
 
             addr = sender
@@ -1716,7 +1716,7 @@ class PethConsole(cmd.Cmd):
         """
         abi4byte <addr> : disassemble the code and print all signatures.
         """
-        addr = Web3.to_check_sum_address(arg)
+        addr = Web3.to_checksum_address(arg)
         selectors = self.peth.get_selectors(addr)
         for selector in selectors:
             sig = "0x" + selector.hex()
@@ -1739,12 +1739,12 @@ class PethConsole(cmd.Cmd):
         """
         disasm <address> : Get assembly code of address.
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
         print(Code.disasm(self.web3.eth.get_code(addr)))
 
     def _get_asm_lines(self, chain, addr):
         peth = Peth.get_or_create(chain)
-        addr = peth.web3.to_check_sum_address(addr)
+        addr = peth.web3.to_checksum_address(addr)
         return Code.disasm(peth.web3.eth.get_code(addr)).splitlines()
 
     def do_diffasm(self, arg):
@@ -1776,7 +1776,7 @@ class PethConsole(cmd.Cmd):
     # Contract source tools.
 
     def _get_name(self, addr):
-        addr = self.web3.to_check_sum_address(addr)
+        addr = self.web3.to_checksum_address(addr)
         codesize = len(self.web3.eth.get_code(addr))
         if codesize:
             name = self.peth.scan.get_contract_name(addr)
@@ -1812,7 +1812,7 @@ class PethConsole(cmd.Cmd):
         """
         contract <address> : print contract information (from Etherscan).
         """
-        addr = self.web3.to_check_sum_address(arg)
+        addr = self.web3.to_checksum_address(arg)
         info = self.peth.scan.get_contract_info(arg)
 
         if info is None:
@@ -1873,9 +1873,9 @@ class PethConsole(cmd.Cmd):
                 root = addrOrList
                 addrs = [addrOrList]
 
-            graph = ContractRelationGraph(Web3.to_check_sum_address(root), self)
+            graph = ContractRelationGraph(Web3.to_checksum_address(root), self)
             for addr in addrs:
-                addr = Web3.to_check_sum_address(addr)
+                addr = Web3.to_checksum_address(addr)
                 graph.visit(addr, False)
             graph.print_assets()
             print("=====================")
@@ -1967,7 +1967,7 @@ class PethConsole(cmd.Cmd):
     def _get_code(self, arg):
         code = None
         if Web3.is_address(arg):
-            addr = self.web3.to_check_sum_address(arg)
+            addr = self.web3.to_checksum_address(arg)
             code = self.web3.eth.get_code(addr).hex()
             if code.startswith("0x"):
                 code = code[2:]

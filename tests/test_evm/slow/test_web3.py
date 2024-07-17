@@ -40,7 +40,7 @@ def test_xsnx():
         chain=chain,
     )
 
-    r = xSNX.mint(0, value=Web3.toWei(10, "ether"))
+    r = xSNX.mint(0, value=Web3.to_wei(10, "ether"))
     assert r.success
     assert xSNX.balanceOf(chain.attacker) == 0x02FE241367B60954C998
 

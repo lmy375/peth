@@ -107,7 +107,8 @@ class ContractRelationGraph(object):
             b = self.web3.eth.get_balance(addr)
             if b:
                 print(
-                    "- %s Wei( %0.4f Ether)" % (b, float(self.web3.fromWei(b, "ether")))
+                    "- %s Wei( %0.4f Ether)"
+                    % (b, float(self.web3.from_wei(b, "ether")))
                 )
 
             for erc20 in self.erc20s.values():
