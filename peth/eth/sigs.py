@@ -95,7 +95,7 @@ class Signature(object):
         if with_selector:
             buf += self.selector
         if self.inputs:
-            buf += eth_abi.encode_single(self.inputs_sig, args)
+            buf += eth_abi.encode([self.inputs_sig], [args])
         return buf
 
     def decode_args(self, data, has_selector=True):
@@ -112,7 +112,7 @@ class Signature(object):
                 )
 
         if self.inputs:
-            return eth_abi.decode_single(self.inputs_sig, data)
+            return eth_abi.decode([self.inputs_sig], data)[0]
         else:
             return None
 
@@ -121,7 +121,7 @@ class Signature(object):
             data = hex2bytes(data)
 
         if self.outputs:
-            ret_values = eth_abi.decode_single(self.outputs_sig, data)
+            ret_values = eth_abi.decode([self.outputs_sig], data)[0]
             if len(ret_values) == 1:
                 return ret_values[0]
             else:

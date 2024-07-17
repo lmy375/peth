@@ -46,7 +46,7 @@ def swapSNXtoETH(amount_in):
 
 def mintxSNX(value):
     before = xSNX.balanceOf(chain.attacker)
-    r = xSNX.send("mint(uint256) payable", 0, value=Web3.toWei(value, "ether"))
+    r = xSNX.send("mint(uint256) payable", 0, value=Web3.to_wei(value, "ether"))
     print(r)
     assert r.success
     after = xSNX.balanceOf(chain.attacker)

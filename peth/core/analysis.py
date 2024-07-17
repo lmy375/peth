@@ -17,7 +17,7 @@ class AccountAnalysis(object):
 
     def __init__(self, peth, addr, project=None) -> None:
         self.peth = peth
-        self.addr = Web3.to_check_sum_address(addr)
+        self.addr = Web3.to_checksum_address(addr)
         self.project = project
 
         self.url = self.peth.get_address_url(self.addr)
@@ -431,7 +431,7 @@ class Project(object):
 
     def __init__(self, peth, addresses=[]) -> None:
         self.peth = peth
-        self.addresses = [Web3.to_check_sum_address(addr) for addr in addresses]
+        self.addresses = [Web3.to_checksum_address(addr) for addr in addresses]
 
         self.analyzed = {}  # address => AccountAnalysis
         self.accounts = []
@@ -447,7 +447,7 @@ class Project(object):
             found_addrs = []
 
             for addr in addrs_to_analyze:
-                addr = Web3.to_check_sum_address(addr)
+                addr = Web3.to_checksum_address(addr)
                 if addr in self.analyzed:
                     continue
 
@@ -465,7 +465,7 @@ class Project(object):
         logger.info(f"Project done. {len(self.analyzed)} addresses analyzed.")
 
     def analyze_one(self, addr) -> AccountAnalysis:
-        addr = Web3.to_check_sum_address(addr)
+        addr = Web3.to_checksum_address(addr)
         if addr in self.analyzed:
             return self.analyzed[addr]
 
@@ -478,7 +478,7 @@ class Project(object):
         return self.analyze_one(addr).name
 
     def get_addr_md_link(self, addr) -> str:
-        addr = Web3.to_check_sum_address(addr)
+        addr = Web3.to_checksum_address(addr)
         name = self.get_addr_name(addr)
         txt = f"{name}({addr})"
         url = self.peth.get_address_url(addr)
