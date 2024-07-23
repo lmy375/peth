@@ -76,7 +76,7 @@ class ScanAPI(object):
             print("[!] Etherscan API fail.", e, url)
             return None
 
-    def get_contract_info(self, addr, auto_proxy=True):
+    def get_contract_info(self, addr, auto_proxy=True, depth=0):
         addr = addr.lower()
 
         # Try cache load.
@@ -85,7 +85,11 @@ class ScanAPI(object):
             d = json.loads(d)
         else:
             url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
-            d = self.get(url)[0]  # The first.
+            d = self.get(url)
+            if d is None:
+                return None
+
+            d = d[0]  # The first.
             # Un-verified.
             if not d.get("ContractName", None):
                 return None
@@ -97,10 +101,9 @@ class ScanAPI(object):
         if d:
             if "Implementation" in d:
                 impl = d["Implementation"]
-                if (
-                    auto_proxy and Web3.is_address(impl) and impl.lower() != addr
-                ):  # Proxy found.
-                    return self.get_contract_info(impl)
+                if auto_proxy and depth < 4:
+                    if Web3.is_address(impl) and impl.lower() != addr.lower():
+                        return self.get_contract_info(impl, depth=depth + 1)
         return d
 
     def get_abi(self, addr) -> list:

@@ -11,18 +11,13 @@ setup(
     description="An all-in-one Ethereum SDK and command-line tool written in Python.",
     url="https://github.com/lmy375/peth",
     author="Moon",
-    version="1.0.9",
+    version="1.0.10",
     packages=find_packages(exclude=["tests", "scripts"]),
     python_requires=">=3.8",
     install_requires=requires,
     license="AGPL-3.0",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    entry_points={
-        "console_scripts": [
-            "peth = peth.cli:main",
-            "tx-expl-server = peth.tools.txexpl.server.server:main",
-        ]
-    },
+    entry_points={"console_scripts": ["peth = peth.cli:main"]},
     include_package_data=True,
 )

@@ -99,7 +99,7 @@ one:
 - null
 - https://explorer.harmony.one/address/
 op:
-- https://optimism-mainnet.public.blastapi.io
+- https://mainnet.optimism.io
 - https://api-optimistic.etherscan.io/api?
 - https://optimistic.etherscan.io/address/
 zkfair:
