@@ -114,3 +114,11 @@ sepolia:
 - https://rpc-sepolia.rockx.com
 - https://api-sepolia.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
 - https://sepolia.etherscan.io/address/
+mode:
+- https://mainnet.mode.network
+- https://explorer.mode.network/api?
+- https://explorer.mode.network/address/
+scroll:
+- https://rpc.scroll.io
+- https://api.scrollscan.com/api?
+- https://scrollscan.com/address/
