@@ -51,18 +51,15 @@ class Receipt(object):
             buf += f" create: {self.created_contract}"
 
         if self.returndata:
-            if self.reverted and len(self.returndata) > 4:
+            if self.reverted:
                 try:
                     buf += (
                         " message: "
                         + eth_abi.decode_single("(string)", self.returndata[4:])[0]
                     )
-                    return buf
                 except Exception:
-                    pass
-
-            buf += (
-                f" returndata({len(self.returndata)}): {self.returndata[:40].hex()}..."
-            )
+                    buf += f" revert({len(self.returndata)}): {self.returndata[:40].hex()}..."
+            else:
+                buf += f" returndata({len(self.returndata)}): {self.returndata[:40].hex()}..."
 
         return buf

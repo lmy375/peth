@@ -47,8 +47,16 @@ class OpCode(object):
 
     @property
     def print_level(self) -> int:
+        if (
+            self.mnemonic.startswith("PUSH")
+            or self.mnemonic.startswith("DUP")
+            or self.mnemonic.startswith("SWAP")
+        ):
+            # Most op codes but least important.
+            return 10
+
         if self.code >= 0xA0 and self.code <= 0xFF:
-            # Logging + System
+            # Logging + Call
             return 1
 
         if self.mnemonic in [
@@ -62,7 +70,14 @@ class OpCode(object):
             # Environment Information + Block Information
             return 3
 
-        return 4
+        if self.mnemonic in ["MLOAD", "MSTORE"]:
+            return 4
+
+        if self.mnemonic in ["LT", "GT" "SLT", "SGT"]:
+            # Compare
+            return 5
+
+        return 9
 
     @classmethod
     def from_mnemonic(cls, mnemonic: str) -> Optional["OpCode"]:

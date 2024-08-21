@@ -86,6 +86,8 @@ class ABI(object):
         raise KeyError(key)
 
     def __getitem__(self, key) -> ABIFunction:
+        if isinstance(key, bytearray):
+            key = bytes(key)
         if key in self.functions:
             return self.functions[key]
         elif key in self.signatures:

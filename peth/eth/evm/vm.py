@@ -700,14 +700,14 @@ class VM(object):
         offset, size = self._stack_pop_values(2)
         self.result.returndata = self._read_memory(offset, size)
         self._running = False
-        self._trace(f"return {offset}, {size}")
+        self._trace(f"return {offset}, {size}, data:{self.result.returndata.hex()}")
 
     def _revert(self):
         offset, size = self._stack_pop_values(2)
         self.result.returndata = self._read_memory(offset, size)
         self.result.reverted = True
         self._running = False
-        self._trace(f"revert {offset}, {size}")
+        self._trace(f"revert {offset}, {size}, data:{self.result.returndata.hex()}")
 
     def _selfdestruct(self):
         beneficiary = self._stack_pop()

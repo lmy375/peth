@@ -58,6 +58,10 @@ class PethConsole(cmd.Cmd):
         return self.peth.web3
 
     @property
+    def eth(self):
+        return self.web3.eth
+
+    @property
     def scan(self):
         return self.peth.scan
 
@@ -881,88 +885,94 @@ class PethConsole(cmd.Cmd):
                 print(f"\t topic[{i}] {topic.hex()}")
             print("\t data", data)
 
+    def _get_block(self, number):
+        start = time.time()
+        while True:
+            try:
+                return self.eth.get_block(number, True)
+            except Exception as e:
+                if time.time() - start > 5:  # Error for long time.
+                    raise (e)
+                else:
+                    time.sleep(0.5)
+
+    def _print_block(self, tag, block):
+        gas_used_rate = "%0.2f%%" % (100 * block.gasUsed / block.gasLimit)
+
+        txns = block.transactions
+        tx_cnt = len(txns)
+
+        if tx_cnt == 0:
+            print(f"\t{tag} - Block {block.number}, {tx_cnt} txns")
+            return
+
+        gas_used_total = 0
+        gas_used_max = 0
+        gas_used_min = 10**100
+
+        gas_price_total = 0
+        gas_price_max = 0
+        gas_price_min = 10**100
+
+        for tx in txns:
+            gas_used_total += tx.gas
+            if tx.gas > gas_used_max:
+                gas_used_max = tx.gas
+            if tx.gas < gas_used_min:
+                gas_used_min = tx.gas
+
+            gas_price_total += tx.gasPrice
+
+            if tx.gasPrice > gas_price_max:
+                gas_price_max = tx.gasPrice
+            if tx.gasPrice < gas_price_min:
+                gas_price_min = tx.gasPrice
+
+        gas_used_avg = gas_used_total / tx_cnt
+        gas_price_avg = gas_price_total / tx_cnt
+
+        gas_desc = "%8d < %8d < %8d" % (gas_used_min, gas_used_avg, gas_used_max)
+        GWEI = 10**9
+        gas_price_desc = "%0.2f < %0.2f < %0.2f" % (
+            gas_price_min / GWEI,
+            gas_price_avg / GWEI,
+            gas_price_max / GWEI,
+        )
+        tx_cnt = "%4d" % tx_cnt
+        print(
+            f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used, price {gas_price_desc} Gwei"
+        )
+
     def do_status(self, arg=None):
         """
         status: Run a infinite loop and print block and txs information.
         """
 
-        eth = self.web3.eth
+        cur = self._get_block("latest")
 
-        def get_block(number):
-            start = time.time()
-            while True:
-                try:
-                    return eth.get_block(number, True)
-                except Exception as e:
-                    if time.time() - start > 20:  # Error for long time.
-                        raise (e)
-                    else:
-                        time.sleep(0.5)
-
-        def print_block(tag, block):
-            gas_used_rate = "%0.2f%%" % (100 * block.gasUsed / block.gasLimit)
-
-            txns = block.transactions
-            tx_cnt = len(txns)
-
-            if tx_cnt == 0:
-                print(f"\t{tag} - Block {block.number}, {tx_cnt} txns")
-                return
-
-            gas_used_total = 0
-            gas_used_max = 0
-            gas_used_min = 10**100
-
-            gas_price_total = 0
-            gas_price_max = 0
-            gas_price_min = 10**100
-
-            for tx in txns:
-                gas_used_total += tx.gas
-                if tx.gas > gas_used_max:
-                    gas_used_max = tx.gas
-                if tx.gas < gas_used_min:
-                    gas_used_min = tx.gas
-
-                gas_price_total += tx.gasPrice
-
-                if tx.gasPrice > gas_price_max:
-                    gas_price_max = tx.gasPrice
-                if tx.gasPrice < gas_price_min:
-                    gas_price_min = tx.gasPrice
-
-            gas_used_avg = gas_used_total / tx_cnt
-            gas_price_avg = gas_price_total / tx_cnt
-
-            gas_desc = "%8d < %8d < %8d" % (gas_used_min, gas_used_avg, gas_used_max)
-            GWEI = 10**9
-            gas_price_desc = "%0.2f < %0.2f < %0.2f" % (
-                gas_price_min / GWEI,
-                gas_price_avg / GWEI,
-                gas_price_max / GWEI,
-            )
-            tx_cnt = "%4d" % tx_cnt
-            print(
-                f"\t{tag} - Block {block.number}, {tx_cnt} txns, gas {gas_desc}, {gas_used_rate} used, price {gas_price_desc} Gwei"
-            )
-
-        cur = get_block("latest")
+        start_time = time.time()
+        start_block_number = cur.number
 
         while True:
-            print(datetime.now())
-            print_block("latest ", cur)
+            total_blocks = cur.number - start_block_number or 1
+            total_time = (time.time() - start_time) or 1
+            print(
+                f"{datetime.now()} {total_blocks/total_time :.2f} b/s {total_time/total_blocks :.2f} s/b"
+            )
+
+            self._print_block("latest ", cur)
 
             while True:
-                pending = get_block("pending")
+                pending = self._get_block("pending")
 
                 if (
                     pending.number and pending.number <= cur.number
                 ):  # Not valid pending.
                     continue
 
-                print_block("pending", pending)
+                self._print_block("pending", pending)
 
-                new_cur = get_block("latest")
+                new_cur = self._get_block("latest")
                 if new_cur.number >= cur.number + 1:  # new block found.
                     cur = new_cur
                     break
@@ -971,6 +981,34 @@ class PethConsole(cmd.Cmd):
                         time.sleep(1)
                     else:
                         time.sleep(0.2)
+
+    def do_blocks(self, arg=None):
+        print("Blocks:")
+
+        finalized_block = self._get_block("finalized")
+        self._print_block("finalized", finalized_block)
+
+        safe_block = self._get_block("safe")
+        self._print_block("safe", safe_block)
+
+        latest_block = self._get_block("latest")
+        self._print_block("latest", latest_block)
+
+        safe_block_confs = latest_block.number - safe_block.number
+        finalized_block_confs = latest_block.number - finalized_block.number
+
+        safe_block_time = latest_block.timestamp - safe_block.timestamp
+        finalized_block_time = latest_block.timestamp - finalized_block.timestamp
+
+        print(
+            f"Block rate: {finalized_block_confs/(finalized_block_time or 1) :.2f} b/s {finalized_block_time/(finalized_block_confs or 1) :.2f} s/b"
+        )
+        print(
+            f"Safe gap: {safe_block_confs} blocks, {safe_block_time :.2f} secs = {safe_block_time/60 :.2f} mins"
+        )
+        print(
+            f"Finalized gap: {finalized_block_confs} blocks, {finalized_block_time :.2f} secs = {finalized_block_time/60 :.2f} mins"
+        )
 
     ##################################################################
     # Common used eth_call alias command.
@@ -1683,6 +1721,8 @@ class PethConsole(cmd.Cmd):
         VM.trace = True
 
         chain = Chain(ForkChain(self.web3, block_number))
+
+        # from .eth.evm.inspector import Inspector
         # ins = Inspector(chain, self.peth)
         r = chain.apply_transaction(
             Transaction(
@@ -1693,7 +1733,7 @@ class PethConsole(cmd.Cmd):
             )
         )
         # ins.print_call_trace()
-        r.trace.print()
+        r.trace.print(9)
 
     def do_evm_trace_call(self, arg):
         """
@@ -1701,13 +1741,20 @@ class PethConsole(cmd.Cmd):
             Simulate the transaction in a simple built-in EVM and print transaction trace.
         """
         to, data, sender, value = self._parse_tx_call_args(arg)
+        # Chain.debug = True
+        # VM.debug = True
         VM.trace = True
 
         chain = Chain(ForkChain(self.web3))
+
+        # from .eth.evm.inspector import Inspector
+        # ins = Inspector(chain, self.peth)
+
         r = chain.apply_transaction(
             Transaction(sender=sender, to=to, value=value, data=HexBytes(data))
         )
-        r.trace.print()
+        # ins.print_call_trace()
+        r.trace.print(9)
 
     ##################################################################
     # Bytecode tools.

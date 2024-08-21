@@ -122,3 +122,7 @@ scroll:
 - https://rpc.scroll.io
 - https://api.scrollscan.com/api?
 - https://scrollscan.com/address/
+bob:
+- https://rpc.gobob.xyz/
+- https://explorer.gobob.xyz/api?
+- https://explorer.gobob.xyz/address/
