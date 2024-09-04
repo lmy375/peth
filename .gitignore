@@ -19,6 +19,7 @@ reports
 build/
 dist/
 peth.egg-info/
+poetry.lock
 
 # Docs
 _build

@@ -8,7 +8,7 @@ cn_docs:
 
 release:
 	rm -rf dist
-	python -m build
+	poetry build
 
 publish:
 	twine upload dist/*
