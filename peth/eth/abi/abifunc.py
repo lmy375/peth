@@ -32,7 +32,7 @@ class ABIFunction(object):
         self.raw = raw
 
         self.name = self.raw["name"]
-        self.func_type = self.raw["stateMutability"]
+        self.func_type = self.raw.get("stateMutability", "nonpayable")
 
         self.inputs: List[ABIType] = []
         for item in self.raw["inputs"]:
@@ -53,9 +53,9 @@ class ABIFunction(object):
     @property
     def full(self):
         s = f"function {self.name}("
-        s += ", ".join(str(i) for i in self.inputs)
+        s += ",".join(str(i) for i in self.inputs)
         s += f") {self.func_type} returns ("
-        s += ", ".join(str(i) for i in self.outputs)
+        s += ",".join(str(i) for i in self.outputs)
         s += ")"
         return s
 
@@ -159,12 +159,12 @@ class ABIFunction(object):
         values = self.decode_input(calldata)
         return self.extract_value(indexes, values)
 
-    def map_values(self, values):
+    def map_values(self, values, include_type=False) -> List:
         assert len(values) == len(self.inputs), "Value not match arguments size"
 
         r = []
         for arg, value in zip(self.inputs, values):
-            r.append(arg.map_values(value))
+            r.append(arg.map_values(value, include_type))
         return r
 
     def explain_calldata(self, pattern: str, calldata, ext: ExtProcessor = None) -> str:

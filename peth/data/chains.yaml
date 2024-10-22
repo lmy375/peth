@@ -126,3 +126,7 @@ bob:
 - https://rpc.gobob.xyz/
 - https://explorer.gobob.xyz/api?
 - https://explorer.gobob.xyz/address/
+holesky:
+- https://holesky.drpc.org
+- https://api-holesky.etherscan.io/api?
+- https://holesky.etherscan.io/address/

@@ -54,20 +54,14 @@ class ABI(object):
                 self.add_func(func)
 
     def add_func(self, func: ABIFunction):
-
-        if func.signature in self.signatures:
-            # Signatures collision.
-            return
-        else:
-            self.signatures[func.signature] = func
-
-        if func.selector in self.selectors:
-            # Selector collision.
-            return
-        else:
-            self.selectors[func.selector] = func
-
         name = func.name
+
+        assert func.signature not in self.signatures, "Signatures collision."
+        self.signatures[func.signature] = func
+
+        assert func.selector not in self.selectors, "Selector collision."
+        self.selectors[func.selector] = func
+
         if name in self.functions:
             del self.functions[name]
             self._name_collisions[name] = True
@@ -86,8 +80,6 @@ class ABI(object):
         raise KeyError(key)
 
     def __getitem__(self, key) -> ABIFunction:
-        if isinstance(key, bytearray):
-            key = bytes(key)
         if key in self.functions:
             return self.functions[key]
         elif key in self.signatures:
@@ -143,24 +135,55 @@ class ABI(object):
         func = self._get_function_by_calldata(calldata)
         return func.explain_calldata(pattern, calldata, alias)
 
-    def map_values(self, calldata) -> list:
+    def map_values(self, calldata, include_type=False) -> list:
         func = self._get_function_by_calldata(calldata)
         values = func.decode_input(calldata)
-        return func.map_values(values)
+        return func.map_values(values, include_type)
 
     @classmethod
     def print_value_map(cls, value_map, indent=0):
-        for k, v in value_map:
-            if type(v) in (tuple, list):
-                print(" " * indent, k, ":")
-                cls.print_value_map(v, indent + 1)
+        for item in value_map:
+            if len(item) == 3:
+                name, typ, value = item
             else:
-                if type(v) is bytes:
-                    v = v.hex()
-                    if len(v) == 0:
-                        v = "0x"
+                name, value = item
+                typ = None
 
-                print(" " * indent, k, ":", v)
+            if type(value) in (tuple, list):
+                if typ:
+                    print(" " * indent, typ, name, ":")
+                else:
+                    print(" " * indent, name, ":")
+                cls.print_value_map(value, indent + 1)
+            else:
+                if isinstance(value, bytes):
+                    value = HexBytes(value).hex()
+
+                if typ:
+                    print(" " * indent, typ, name, ":", value)
+                else:
+                    print(" " * indent, name, ":", value)
+
+    @classmethod
+    def _convert_item(cls, item):
+        """
+        1. Convert bytes to hex format.
+        2. Convert int to string to avoid precision loss on other platform.
+        """
+
+        if isinstance(item, (int)):
+            return str(item)
+        elif isinstance(item, (bytes, bytearray)):
+            return HexBytes(item).hex()
+        elif isinstance(item, (tuple, list)):
+            return [cls._convert_item(i) for i in item]
+        else:
+            return item
+
+    @classmethod
+    def convert_value_map_to_json(cls, value_map) -> str:
+        value_map = cls._convert_item(value_map)
+        return json.dumps(value_map)
 
 
 ERC20_ABI = ABI(

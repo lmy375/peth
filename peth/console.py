@@ -8,7 +8,6 @@ import re
 import time
 from datetime import datetime
 
-import requests
 from eth_account import Account
 from hexbytes import HexBytes
 from web3 import Web3
@@ -668,7 +667,7 @@ class PethConsole(cmd.Cmd):
             sender = self.peth.sender
 
         if len(args) >= 4:
-            value = args[4]
+            value = args[3]
         else:
             value = "0"
 
@@ -678,7 +677,9 @@ class PethConsole(cmd.Cmd):
                     "from": self.web3.to_checksum_address(sender),
                     "to": self.web3.to_checksum_address(to),
                     "data": data,
-                    "value": value,
+                    "value": int(value),
+                    "gas": 0,
+                    "gasPrice": 0,
                 },
                 "latest",
             )
@@ -2142,40 +2143,43 @@ class PethConsole(cmd.Cmd):
             print("%s is not valid address." % addr)
             return
 
-        print(f"https://debank.com/profile/{addr}")
+        url = f"https://debank.com/profile/{addr}"
+        print(url)
+        self.do_open(url)
 
-        r = requests.get("https://api.debank.com/user/addr?addr=%s" % addr)
-        d = r.json()
-        assert d["error_code"] == 0, "DeBank addr API Error. %s" % d
-        print("Total USD Value: $ %0.2f" % d["data"]["usd_value"])
-        chains = d["data"]["used_chains"]
+        # deprecated api
+        # r = requests.get("https://api.debank.com/user/addr?addr=%s" % addr)
+        # d = r.json()
+        # assert d["error_code"] == 0, "DeBank addr API Error. %s" % d
+        # print("Total USD Value: $ %0.2f" % d["data"]["usd_value"])
+        # chains = d["data"]["used_chains"]
 
-        for chain in chains:
-            time.sleep(1)  # Debank API limit.
-            r = requests.get(
-                "https://api.debank.com/token/balance_list?user_addr=%s&chain=%s"
-                % (addr, chain)
-            )
-            d = r.json()
-            assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
-            print("-", chain.upper())
-            print(
-                "\t%-5s %-30s\t%-12s\t$ %-12s\t%-10s\t%-20s"
-                % ("Symbol", "Name", "Balance", "USD Value", "Raw balance", "Price")
-            )
-            for token in d["data"]:
-                name = token["name"].strip()
-                symbol = token["symbol"].strip()
-                decimals = token["decimals"]
-                price = token["price"] if token["price"] else 0
-                raw_balance = token["balance"]
-                balance = token["balance"] / (10**decimals)
+        # for chain in chains:
+        #     time.sleep(1)  # Debank API limit.
+        #     r = requests.get(
+        #         "https://api.debank.com/token/balance_list?user_addr=%s&chain=%s"
+        #         % (addr, chain)
+        #     )
+        #     d = r.json()
+        #     assert d["error_code"] == 0, "DeBank balance_list API Error. %s" % d
+        #     print("-", chain.upper())
+        #     print(
+        #         "\t%-5s %-30s\t%-12s\t$ %-12s\t%-10s\t%-20s"
+        #         % ("Symbol", "Name", "Balance", "USD Value", "Raw balance", "Price")
+        #     )
+        #     for token in d["data"]:
+        #         name = token["name"].strip()
+        #         symbol = token["symbol"].strip()
+        #         decimals = token["decimals"]
+        #         price = token["price"] if token["price"] else 0
+        #         raw_balance = token["balance"]
+        #         balance = token["balance"] / (10**decimals)
 
-                if balance * price > 1:  # Only print asset more than $1.0
-                    print(
-                        "\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s"
-                        % (symbol, name, balance, balance * price, raw_balance, price)
-                    )
+        #         if balance * price > 1:  # Only print asset more than $1.0
+        #             print(
+        #                 "\t%-5s %-30s\t%-10.2f\t$ %-10.2f\t%-10s\t%-20s"
+        #                 % (symbol, name, balance, balance * price, raw_balance, price)
+        #             )
 
     def do_price(self, arg):
         """

@@ -1,6 +1,6 @@
 import ast
 import re
-from typing import List
+from typing import List, Tuple
 
 from hexbytes import HexBytes
 
@@ -130,7 +130,15 @@ class ABIType(object):
         return s.type
 
     def __repr__(self):
-        return f"{self.type_str} {self.name}"
+        if self.is_tuple:
+            s = "("
+            s += ",".join(str(i) for i in self.components)
+            s += ")"
+            assert self.type.startswith("tuple")
+            s += self.type.strip("tuple")
+            return f"{s} {self.name}"
+        else:
+            return f"{self.type_str} {self.name}"
 
     def tuple_get_static_offset(self, name):
         assert self.is_tuple
@@ -195,27 +203,32 @@ class ABIType(object):
             assert type(values) in (bytes, str)
             return len(values)
 
-    def map_values(self, values):
+    def map_values(self, values, include_type=False) -> Tuple:
         """
-        foo(uint256 a, uint256 b, (uint256 e) c)
-        (1, 2, (3,))
+        uint256 a
+        1
         =>
-        [
-            ("a", 1),
-            ("b", 2),
-            ("c", (
-                ("e", 3),
-            ))
-        ]
+        ("a", 1)
+
+        include_type=True
+        ("a", "uint256", 1)
         """
         if self.is_array:
             assert type(values) in (list, tuple), "Value not array"
             r = []
             for i, v in enumerate(values):
                 name = f"[{i}]"
-                _, v = self.base_type.map_values(values[i])
-                r.append((name, v))
-            return (self.name, r)
+                if include_type:
+                    _, _, v = self.base_type.map_values(values[i], True)
+                    r.append((name, self.base_type.type, v))
+                else:
+                    _, v = self.base_type.map_values(values[i], False)
+                    r.append((name, v))
+
+            if include_type:
+                return (self.name, self.type, r)
+            else:
+                return (self.name, r)
 
         elif self.is_tuple:
             assert type(values) in (list, tuple), "Value not tuple"
@@ -224,11 +237,22 @@ class ABIType(object):
             r = []
             for i, arg in enumerate(self.components):
                 name = f"{arg.name}"
-                _, v = arg.map_values(values[i])
-                r.append((name, v))
-            return (self.name, r)
+                if include_type:
+                    _, _, v = arg.map_values(values[i], True)
+                    r.append((name, arg.type, v))
+                else:
+                    _, v = arg.map_values(values[i], False)
+                    r.append((name, v))
+
+            if include_type:
+                return (self.name, self.type, r)
+            else:
+                return (self.name, r)
         else:
-            return (self.name, values)
+            if include_type:
+                return (self.name, self.type, values)
+            else:
+                return (self.name, values)
 
     def _convert_list(self, value):
         if type(value) is str:
@@ -266,53 +290,71 @@ class ABIType(object):
                 r.append(v)
             return tuple(r)
         else:
-            if self.type == "string":
-                _assert(isinstance(value, str), "string expected")
-                return value
-            elif self.type.startswith("bytes"):
-                _assert(isinstance(value, (str, bytes)), "hexstring/bytes expected")
-                _value = HexBytes(value)
-                if len(self.type) > 5:
-                    expected_size = int(self.type[5:])
-                    bytes_size = len(_value)
+            return self._normalize_basic(value)
 
-                    if bytes_size < expected_size:
-                        # Note: for bytes use rjust.
-                        # 0x1 -> 0x010000....
-                        _value = _value.ljust(expected_size, b"\x00")
-                        _value = HexBytes(_value)
-                    _assert(
-                        len(_value) == expected_size,
-                        f"bytes too long, expects {expected_size} but got {bytes_size}",
-                    )
-
-                # v1.0.0 does not add prefix.
-                hexed = _value.hex()
-                if not hexed.startswith("0x"):
-                    hexed = "0x" + hexed
-                return hexed.lower()  # lower case.
-
-            elif self.type.startswith("uint") or self.type.startswith("int"):
-                _assert(isinstance(value, int), "int expected")
-                bits = int(self.type.strip("uint"))  # remove u, i, n, t chars.
-                assert bits % 8 == 0
-                size = bits // 8
-                signed = self.type.startswith("int")
-                try:
-                    int.to_bytes(value, size, "big", signed=signed)
-                except OverflowError:
-                    _assert(False, "Integer value overflow")
-                return value
-            elif self.type == "bool":
-                _assert(isinstance(value, bool), "bool value expected")
-                return value
-            else:
-                _assert(self.type == "address", f"Invalid type str `{self.type}`")
-                _assert(
-                    type(value) is str and re.match("0x[0-9a-fA-F]{40}", value),
-                    "Invalid address",
+    def _normalize_basic(self, value):
+        def _assert(condition, msg):
+            if not condition:
+                raise ValueError(
+                    f"Error while casting `{value}` to `{self.type_str}`: {msg}"
                 )
-                return value.lower()  # lower case.
+
+        if self.type == "string":
+            _assert(isinstance(value, str), "string expected")
+            return value
+
+        elif self.type.startswith("bytes"):
+            _assert(isinstance(value, (str, bytes)), "hexstring/bytes expected")
+            _value = HexBytes(value)
+            if len(self.type) > 5:
+                expected_size = int(self.type[5:])
+                bytes_size = len(_value)
+
+                if bytes_size < expected_size:
+                    # Note: for bytes use rjust.
+                    # 0x1 -> 0x010000....
+                    _value = _value.ljust(expected_size, b"\x00")
+                    _value = HexBytes(_value)
+                _assert(
+                    len(_value) == expected_size,
+                    f"bytes too long, expects {expected_size} but got {bytes_size}",
+                )
+            return bytes(_value)
+
+        elif self.type.startswith("uint") or self.type.startswith("int"):
+            if type(value) is str:
+                if value.startswith("0x"):
+                    value = int(value, 16)
+                else:
+                    value = int(value)
+            _assert(isinstance(value, int), "int expected")
+            bits = int(self.type.strip("uint"))  # remove u, i, n, t chars.
+            assert bits % 8 == 0
+            size = bits // 8
+            signed = self.type.startswith("int")
+            try:
+                int.to_bytes(value, size, "big", signed=signed)
+            except OverflowError:
+                _assert(False, "Integer value overflow")
+            return value
+
+        elif self.type == "bool":
+            if type(value) is str:
+                if value.lower() == "true":
+                    value = True
+                elif value.lower() == "false":
+                    value = False
+
+            _assert(isinstance(value, bool), "bool value expected")
+            return value
+
+        else:
+            _assert(self.type == "address", f"Invalid type str `{self.type}`")
+            _assert(
+                type(value) is str and re.match("0x[0-9a-fA-F]{40}", value),
+                "Invalid address",
+            )
+            return value.lower()  # lower case.
 
     @classmethod
     def cast(cls, type, value):

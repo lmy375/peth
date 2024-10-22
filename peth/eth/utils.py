@@ -244,10 +244,7 @@ def convert_value(value: str):
     elif re.match(DEC_PATTERN, value):  # decimal
         return int(value)
     elif re.match(HEX_PATTERN, value):  # hexcimal
-        if len(value) in [64, 66]:
-            return hex2bytes(value)
-        else:
-            return int(value, 16)
+        return hex2bytes(value)
     elif value.strip().lower() == "true":
         return True
     elif value.strip().upper() == "false":
