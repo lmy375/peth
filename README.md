@@ -39,6 +39,8 @@ Features include:
 
 [中文](https://peth.readthedocs.io/zh-cn/)
 
+[Deepwiki](https://deepwiki.com/lmy375/peth)
+
 # Installation
 
 From pypi

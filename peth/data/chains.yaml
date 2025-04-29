@@ -7,7 +7,7 @@ arb:
 - https://api.arbiscan.io/api?
 - https://arbiscan.io/address/
 avax:
-- https://rpc.ankr.com/avalanche
+- https://avalanche.drpc.org
 - https://api.snowtrace.io/api?
 - https://snowtrace.io/address/
 base:
@@ -15,7 +15,7 @@ base:
 - https://api.basescan.org/api?
 - https://basescan.org/address/
 blast:
-- https://rpc.ankr.com/blast
+- https://rpc.blast.io
 - https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan/api?
 - https://blastexplorer.io/address/
 boba:
@@ -23,7 +23,7 @@ boba:
 - https://blockexplorer.boba.network/api?
 - https://blockexplorer.boba.network/address/
 bsc:
-- https://rpc.ankr.com/bsc
+- https://binance.llamarpc.com
 - https://api.bscscan.com/api?
 - https://bscscan.com/address/
 canto:
@@ -39,15 +39,15 @@ etf:
 - https://explorer.etherfair.org/api?
 - https://explorer.etherfair.org/address/
 eth:
-- https://rpc.ankr.com/eth
-- https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
+- https://eth.llamarpc.com
+- https://api.etherscan.io/api?
 - https://etherscan.io/address/
 ethw:
 - https://mainnet.ethereumpow.org
 - null
 - https://www.oklink.com/en/ethw/address/
 ftm:
-- https://rpc.ankr.com/fantom
+- https://api.zan.top/ftm-mainnet
 - https://api.ftmscan.com/api?
 - https://ftmscan.com/address/
 gnosis:
@@ -71,7 +71,7 @@ mantle:
 - https://explorer.mantle.xyz/api?
 - https://explorer.mantle.xyz/address/
 matic:
-- https://rpc.ankr.com/polygon
+- https://polygon-rpc.com
 - https://api.polygonscan.com/api?
 - https://polygonscan.com/address/
 merlin:
@@ -112,7 +112,7 @@ zksync:
 - https://explorer.zksync.io/address/
 sepolia:
 - https://rpc-sepolia.rockx.com
-- https://api-sepolia.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
+- https://api-sepolia.etherscan.io/api?
 - https://sepolia.etherscan.io/address/
 mode:
 - https://mainnet.mode.network
@@ -130,3 +130,15 @@ holesky:
 - https://holesky.drpc.org
 - https://api-holesky.etherscan.io/api?
 - https://holesky.etherscan.io/address/
+sonic:
+- https://rpc.soniclabs.com
+- https://api.sonicscan.org/api?
+- https://sonicscan.org/address/
+corn:
+- https://mainnet.corn-rpc.com
+- https://api.routescan.io/v2/network/mainnet/evm/21000000/etherscan/api?
+- https://cornscan.io/address/
+uni:
+- https://unichain-rpc.publicnode.com
+- https://unichain.blockscout.com/api?
+- https://unichain.blockscout.com/address/
