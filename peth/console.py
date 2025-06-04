@@ -1323,7 +1323,7 @@ class PethConsole(cmd.Cmd):
 
         r0 = r0 / (10**token0_decimal)
         r1 = r1 / (10**token1_decimal)
-        print("Reseves: %0.4f %s, %0.4f %s" % (r0, token0_name, r1, token1_name))
+        print("Reserves: %0.4f %s, %0.4f %s" % (r0, token0_name, r1, token1_name))
 
         if fee is None:
             # Only for V2.
