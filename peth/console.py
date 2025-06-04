@@ -141,7 +141,7 @@ class PethConsole(cmd.Cmd):
         """
         Simple command line arguments parser.
 
-        auto: Split to arguments and covert numbers and addresses.
+        auto: Split to arguments and convert numbers and addresses.
 
         address: if not address raise an error.
         number: if not number raise an error.
