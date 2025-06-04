@@ -647,7 +647,7 @@ class VM(object):
     def _do_call(self):
         gas, to = self._stack_pop_values(2)
         to = uint_to_address(to)
-        if self._current_ins.op in [OpCode.CALL or OpCode.CALLCODE]:
+        if self._current_ins.op in [OpCode.CALL, OpCode.CALLCODE]:
             value = self._stack_pop()
         else:
             value = 0
