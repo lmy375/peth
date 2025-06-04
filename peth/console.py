@@ -179,7 +179,7 @@ class PethConsole(cmd.Cmd):
             ), f"Invalid args count: {len(typ)} need. {len(args)} found."
             r = []
             for a, t in zip(args, typ):
-                return self._parse_args(a, t)
+                r.append(self._parse_args(a, t))
             return r
         else:
             raise Exception("_parse_args: invalid type")
