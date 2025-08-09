@@ -35,7 +35,7 @@ class Peth(Web3Ex):
 
     def get_view_value(self, contract, name, typ=None):
         """
-        Retrive contract view values. such as `name()->(string)`.
+        Retrieve contract view values, such as ``name()->(string)``.
         """
         if typ:
             sig = f"{name}()->({typ})"

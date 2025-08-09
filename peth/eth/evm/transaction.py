@@ -124,7 +124,7 @@ class Transaction(object):
         if op in [OpCode.CALLCODE, OpCode.DELEGATECALL]:
             tx.to = self.to  # Keep the storage address unchanged.
             tx.code_address = to  # And use the `to` code.
-        elif op is [OpCode.CREATE, OpCode.CREATE2]:
+        elif op in [OpCode.CREATE, OpCode.CREATE2]:
             tx.to = None
         else:
             tx.to = to

@@ -141,7 +141,7 @@ class PethConsole(cmd.Cmd):
         """
         Simple command line arguments parser.
 
-        auto: Split to arguments and covert numbers and addresses.
+        auto: Split to arguments and convert numbers and addresses.
 
         address: if not address raise an error.
         number: if not number raise an error.
@@ -179,7 +179,7 @@ class PethConsole(cmd.Cmd):
             ), f"Invalid args count: {len(typ)} need. {len(args)} found."
             r = []
             for a, t in zip(args, typ):
-                return self._parse_args(a, t)
+                r.append(self._parse_args(a, t))
             return r
         else:
             raise Exception("_parse_args: invalid type")
@@ -1323,7 +1323,7 @@ class PethConsole(cmd.Cmd):
 
         r0 = r0 / (10**token0_decimal)
         r1 = r1 / (10**token1_decimal)
-        print("Reseves: %0.4f %s, %0.4f %s" % (r0, token0_name, r1, token1_name))
+        print("Reserves: %0.4f %s, %0.4f %s" % (r0, token0_name, r1, token1_name))
 
         if fee is None:
             # Only for V2.
