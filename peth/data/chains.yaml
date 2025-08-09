@@ -40,7 +40,7 @@ etf:
 - https://explorer.etherfair.org/address/
 eth:
 - https://eth.llamarpc.com
-- https://api.etherscan.io/api?
+- https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
 - https://etherscan.io/address/
 ethw:
 - https://mainnet.ethereumpow.org
@@ -112,7 +112,7 @@ zksync:
 - https://explorer.zksync.io/address/
 sepolia:
 - https://rpc-sepolia.rockx.com
-- https://api-sepolia.etherscan.io/api?
+- https://api-sepolia.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
 - https://sepolia.etherscan.io/address/
 mode:
 - https://mainnet.mode.network
@@ -132,7 +132,7 @@ holesky:
 - https://holesky.etherscan.io/address/
 sonic:
 - https://rpc.soniclabs.com
-- https://api.sonicscan.org/api?
+- https://api.sonicscan.org/api?apikey=CJRB5MPKIUWA95EJJYCA5MA1ATV1NTK76K&
 - https://sonicscan.org/address/
 corn:
 - https://mainnet.corn-rpc.com
