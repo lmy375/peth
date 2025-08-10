@@ -17,6 +17,7 @@ from peth.core.tracer import GethTracer, TxTrace
 from peth.eth.abi import ABI, ABIFunction
 from peth.eth.bytecode import Code
 from peth.eth.evm import VM, Chain, ForkChain, Transaction
+from peth.eth.scan import ScanAPI
 from peth.eth.sigs import Signature
 from peth.eth.utils import (
     CoinPrice,
@@ -227,8 +228,6 @@ class PethConsole(cmd.Cmd):
 
         # Handle "chain v2" commands
         if args[0] == "v2":
-            from peth.eth.scan import ScanAPI
-
             # List v2 chains
             if len(args) == 1:
                 print("\nFetching v2 supported chains...")
@@ -286,13 +285,10 @@ class PethConsole(cmd.Cmd):
                 # Create a v2 Peth instance
                 if rpc_url:
                     old_sender = self.peth.sender
-                    # Create a new Peth instance with v2 API
-                    from peth import Peth
-                    from peth.eth.web3ex import Web3Ex
 
                     # Create Web3Ex instance
                     scan_v2 = ScanAPI.get_or_create_v2(chain_id)
-                    self.peth = Web3Ex(
+                    self.peth = Peth(
                         rpc_url=rpc_url,
                         api_url="https://api.etherscan.io/v2/api",
                         address_url=address_url,

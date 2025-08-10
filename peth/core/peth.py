@@ -145,7 +145,7 @@ class Peth(Web3Ex):
         project.analyze_all()
         return project
 
-    def get_portfolio(self, addresses=[]) -> List[dict]:
+    def get_portfolio(self, addresses=[]) -> dict:
         infos = {}  # addr => info
         for token in config.tokens[self.chain]:
             infos[token["address"].lower()] = token

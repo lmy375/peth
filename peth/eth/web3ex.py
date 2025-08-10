@@ -168,9 +168,13 @@ class Web3Ex(object):
         if not sender:
             sender = self.sender
 
+        data = HexBytes(data).hex()
+        if not data.startswith("0x"):
+            data = "0x" + data
+
         tx = {
             "from": sender,
-            "data": HexBytes(data).hex(),
+            "data": data,
             "value": hex(value),
         }
         if to:

@@ -173,7 +173,7 @@ def test_abi():
     )
     assert (
         abi.batchSwap.full
-        == "function batchSwap(uint8 kind, (bytes32,uint256,uint256,uint256,bytes)[] swaps, address[] assets, (address,bool,address,bool) funds, int256[] limits, uint256 deadline) payable returns (int256[] assetDeltas)"
+        == "function batchSwap(uint8 kind,(bytes32 poolId,uint256 assetInIndex,uint256 assetOutIndex,uint256 amount,bytes userData)[] swaps,address[] assets,(address sender,bool fromInternalBalance,address recipient,bool toInternalBalance) funds,int256[] limits,uint256 deadline) payable returns (int256[] assetDeltas)"
     )
 
     ret = (1, -1)  # abi.decode convert array to tuple.

@@ -21,19 +21,22 @@ make cn_docs   # Build Chinese documentation
 
 ### Build and Release
 ```bash
-make release  # Build distribution packages with Poetry
-make publish  # Publish to PyPI using twine
+make release  # Build distribution packages with uv
+make publish  # Publish to PyPI
 make install  # Install the package locally
 make uninstall  # Uninstall the package
 ```
 
 ### Development Setup
 ```bash
-# Install dependencies using Poetry
-poetry install
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies using uv
+uv sync
 
 # Run from source
-python main.py
+uv run python main.py
 ```
 
 ## Architecture Overview
@@ -86,6 +89,6 @@ python main.py
 ## Dependencies
 
 - Python 3.10+
-- web3.py ^6.20.0
-- Poetry for dependency management
+- web3.py >=6.20.0
+- uv for dependency management
 - py-solc-x for Solidity compilation

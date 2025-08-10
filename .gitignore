@@ -20,6 +20,8 @@ build/
 dist/
 peth.egg-info/
 poetry.lock
+uv.lock
+
 
 # Docs
 _build

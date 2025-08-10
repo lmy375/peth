@@ -8,16 +8,16 @@ cn_docs:
 
 release:
 	rm -rf dist
-	poetry build
+	uv build
 
 publish:
-	twine upload dist/*
+	uv publish
 
 test:
-	pytest
+	uv run pytest
 
 install:
-	python setup.py install
+	uv pip install -e .
 
 uninstall:
-	pip uninstall peth
+	uv pip uninstall peth

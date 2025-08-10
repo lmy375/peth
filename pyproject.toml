@@ -1,23 +1,34 @@
-[tool.poetry]
+[project]
 name = "peth"
 version = "1.0.10"
 description = "An all-in-one Ethereum SDK and command-line tool written in python."
-authors = ["Moon <lmy375@139.com>"]
-license = "AGPL-3.0"
+authors = [{name = "Moon", email = "lmy375@139.com"}]
+license = {text = "AGPL-3.0"}
 readme = "README.md"
-repository = "https://github.com/lmy375/peth/"
-documentation = "https://peth.readthedocs.io/"
+requires-python = ">=3.10"
+dependencies = [
+    "web3>=6.20.0",
+    "hexbytes>=1.2.0",
+    "requests>=2.28.0",
+    "pyyaml>=6.0.0",
+    "py-solc-x>=1.1.1",
+]
 
-[tool.poetry.scripts]
-peth = 'peth.cli:main'
+[project.urls]
+Repository = "https://github.com/lmy375/peth/"
+Documentation = "https://peth.readthedocs.io/"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-web3 = "^6.20.0"
-requests = "^2.28.0"
-pyyaml = "^6.0.0"
-py-solc-x = "^1.1.1"
+[project.scripts]
+peth = "peth.cli:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "sphinx>=4.0.0",
+    "sphinx-autobuild>=2021.0.0",
+    "twine>=4.0.0",
+]
