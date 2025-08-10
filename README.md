@@ -59,8 +59,8 @@ From source
 ```
 ➜ git clone https://github.com/lmy375/peth
 ➜ cd peth
-➜ pip -r requirements.txt
-➜ python main.py
+➜ uv sync
+➜ uv run python main.py
 ```
 
 # Quick Usage
