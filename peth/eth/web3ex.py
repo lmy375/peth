@@ -11,7 +11,7 @@ from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from peth.core.log import logger
 from peth.util.solc import compile_with_eth_call
 
-from ..core.config import DATA_DIR
+from ..core.config import DATA_DIR, config
 from . import utils
 from .abi import ABI, ABIFunction
 from .contract import Contract
@@ -31,6 +31,8 @@ class Web3Ex(object):
         chain="Custom",
         sender=utils.ZERO_ADDRESS,
         private_key=None,
+        api_key=None,
+        use_v2=None,
     ) -> None:
         self.chain = chain
         self.rpc_url = rpc_url
@@ -66,7 +68,29 @@ class Web3Ex(object):
                 raise e
 
         if api_url:
-            self.scan: ScanAPI = ScanAPI.get_or_create(api_url)
+            # Get chain_id and api_key_env from config if available
+            chain_id = None
+            api_key_env = None
+            if chain in config.chains:
+                chain_config = config.chains[chain]
+
+                # Support both old list format and new dict format
+                if isinstance(chain_config, list):
+                    # Old format: extract from list items
+                    for item in chain_config:
+                        if isinstance(item, dict):
+                            if "chain_id" in item:
+                                chain_id = item["chain_id"]
+                            elif "api_key_env" in item:
+                                api_key_env = item["api_key_env"]
+                else:
+                    # New format: direct dict access
+                    chain_id = chain_config.get("chain_id")
+                    api_key_env = chain_config.get("api_key_env")
+
+            self.scan: ScanAPI = ScanAPI.get_or_create(
+                api_url, api_key, chain_id, api_key_env, use_v2
+            )
         else:
             self.scan = None
 

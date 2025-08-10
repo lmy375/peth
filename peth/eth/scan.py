@@ -13,39 +13,227 @@ class ScanAPI(object):
 
     cache = {}
 
-    def __init__(self, api_url) -> None:
+    def __init__(
+        self, api_url, api_key=None, chain_id=None, api_key_env=None, use_v2=None
+    ) -> None:
         """
         Do NOT use this, use get_or_create instead to
         bypass API rate.
+
+        Args:
+            api_url: The base API URL for the blockchain explorer
+            api_key: Optional API key. If not provided, will try to get from environment variables.
+            chain_id: Chain ID for v2 API support
+            api_key_env: Environment variable name for API key
+            use_v2: Force use of v2 API if True, v1 if False, auto-detect if None
         """
         self.api_url = api_url
+        self._api_key = api_key
+        self.chain_id = chain_id
+        self.api_key_env = api_key_env
+        self.use_v2 = use_v2
+
+        # Auto-detect v2 if not specified
+        if self.use_v2 is None and api_url:
+            # Use v2 for Etherscan domains when chain_id is available
+            self.use_v2 = "etherscan.io" in api_url and chain_id is not None
 
         self._cache_path = os.path.join(
-            config.contracts_cache_path, re.findall("//(.*)?/", api_url)[0]
+            config.contracts_cache_path,
+            re.findall("//(.*)?/", api_url)[0] if api_url else "unknown",
         )
         if not os.path.exists(self._cache_path):
             os.makedirs(self._cache_path)
 
         self._source_path = os.path.join(
-            config.sources_path, re.findall("//(.*)?/", self.api_url)[0]
+            config.sources_path,
+            re.findall("//(.*)?/", self.api_url)[0] if self.api_url else "unknown",
         )
 
     @classmethod
-    def get_or_create(cls, api_url):
-        if api_url not in cls.cache:
-            cls.cache[api_url] = cls(api_url)
-        return cls.cache[api_url]
+    def get_or_create(
+        cls, api_url, api_key=None, chain_id=None, api_key_env=None, use_v2=None
+    ):
+        # Use api_url + api_key + chain_id as cache key to support different configurations
+        cache_key = (
+            f"{api_url}:{api_key}:{chain_id}:{use_v2}"
+            if api_key or chain_id
+            else api_url
+        )
+        if cache_key not in cls.cache:
+            cls.cache[cache_key] = cls(api_url, api_key, chain_id, api_key_env, use_v2)
+        return cls.cache[cache_key]
 
     @classmethod
-    def get_or_create_by_chain(cls, chain):
+    def get_or_create_by_chain(cls, chain, api_key=None, use_v2=None):
         assert (
             chain in config.chains.keys()
         ), f"Invalid chain {chain}. See {config.chains_path}."
-        return ScanAPI.get_or_create(config.chains[chain][1])
+
+        chain_config = config.chains[chain]
+
+        # Support both old list format and new dict format
+        if isinstance(chain_config, list):
+            # Old format: [rpc_url, scan_url, address_url, ...]
+            api_url = chain_config[1]
+            # Extract api_key_env and chain_id from chain config if available
+            api_key_env = None
+            chain_id = None
+            for item in chain_config:
+                if isinstance(item, dict):
+                    if "api_key_env" in item:
+                        api_key_env = item["api_key_env"]
+                    elif "chain_id" in item:
+                        chain_id = item["chain_id"]
+        else:
+            # New format: {rpc_url: ..., scan_url: ..., address_url: ..., api_key_env: ..., chain_id: ...}
+            api_url = chain_config["scan_url"]
+            api_key_env = chain_config.get("api_key_env")
+            chain_id = chain_config.get("chain_id")
+
+        return ScanAPI.get_or_create(api_url, api_key, chain_id, api_key_env, use_v2)
 
     @classmethod
-    def get_source_by_chain(cls, chain, addr):
-        return ScanAPI.get_or_create_by_chain(chain).get_source(addr)
+    def get_source_by_chain(cls, chain, addr, api_key=None):
+        return ScanAPI.get_or_create_by_chain(chain, api_key).get_source(addr)
+
+    @classmethod
+    def get_or_create_v2(cls, chain_id, api_key=None):
+        """
+        Create a v2 API instance for any supported chain using Etherscan v2 API.
+
+        Args:
+            chain_id: The chain ID (e.g., 1 for Ethereum, 56 for BSC, 137 for Polygon)
+            api_key: Etherscan API key. If not provided, will use ETHERSCAN_API_KEY env var.
+
+        Returns:
+            ScanAPI instance configured for v2 API
+        """
+        # v2 API doesn't need a specific API URL as it uses the unified endpoint
+        api_url = "https://api.etherscan.io/v2/api"
+        api_key_env = "ETHERSCAN_API_KEY"
+
+        return cls.get_or_create(api_url, api_key, chain_id, api_key_env, use_v2=True)
+
+    @classmethod
+    def get_v2_chainlist(cls, api_key=None):
+        """
+        Get the list of chains supported by Etherscan v2 API.
+
+        Args:
+            api_key: Etherscan API key. If not provided, will use ETHERSCAN_API_KEY env var.
+
+        Returns:
+            List of chain information dictionaries or None if failed
+        """
+        if not api_key:
+            api_key = os.environ.get("ETHERSCAN_API_KEY", "")
+
+        if not api_key:
+            return None
+
+        try:
+            url = f"https://api.etherscan.io/v2/chainlist?apikey={api_key}"
+            response = requests.get(url, timeout=10)
+            data = response.json()
+
+            if data.get("result"):
+                return data["result"]
+            return None
+        except Exception as e:
+            print(f"Failed to fetch v2 chainlist: {e}")
+            return None
+
+    def _get_api_key(self):
+        """Get API key from environment variable based on the API URL or api_key_env."""
+        if self._api_key:
+            return self._api_key
+
+        # First try to use api_key_env from chains.yaml
+        if self.api_key_env:
+            self._api_key = os.environ.get(self.api_key_env, "")
+            if self._api_key:
+                return self._api_key
+
+        # If using v2 API with Etherscan, always use ETHERSCAN_API_KEY
+        if self.use_v2 and self.api_url and "etherscan.io" in self.api_url:
+            self._api_key = os.environ.get("ETHERSCAN_API_KEY", "")
+            return self._api_key
+
+        # Fallback to URL-based detection for backward compatibility
+        if self.api_url:
+            if "etherscan.io" in self.api_url:
+                self._api_key = os.environ.get("ETHERSCAN_API_KEY", "")
+            elif "bscscan.com" in self.api_url:
+                self._api_key = os.environ.get("BSCSCAN_API_KEY", "")
+            elif "polygonscan.com" in self.api_url:
+                self._api_key = os.environ.get("POLYGONSCAN_API_KEY", "")
+            elif "arbiscan.io" in self.api_url:
+                self._api_key = os.environ.get("ARBISCAN_API_KEY", "")
+            elif "snowtrace.io" in self.api_url:
+                self._api_key = os.environ.get("SNOWTRACE_API_KEY", "")
+            else:
+                # Generic fallback
+                self._api_key = os.environ.get("SCAN_API_KEY", "")
+
+        return self._api_key
+
+    def _build_url(self, base_url):
+        """Build URL with API key if available, supporting both v1 and v2 APIs."""
+        api_key = self._get_api_key()
+
+        # For v2 API, use Etherscan v2 endpoint with chain ID
+        if self.use_v2 and self.chain_id is not None:
+            # If base_url is already v2 API URL, just ensure chain ID and API key
+            if "api.etherscan.io/v2/api" in base_url:
+                import urllib.parse
+
+                parsed = urllib.parse.urlparse(base_url)
+                params = urllib.parse.parse_qs(parsed.query)
+
+                # Rebuild with chain ID
+                v2_params = [f"chainid={self.chain_id}"]
+
+                # Add existing params (excluding chainid and apikey)
+                for key, values in params.items():
+                    if key not in ["chainid", "apikey"]:
+                        for value in values:
+                            v2_params.append(f"{key}={value}")
+
+                # Add API key
+                if api_key:
+                    v2_params.append(f"apikey={api_key}")
+
+                return f"https://api.etherscan.io/v2/api?{'&'.join(v2_params)}"
+            else:
+                # Convert v1 URL to v2 format
+                import urllib.parse
+
+                parsed = urllib.parse.urlparse(base_url)
+                params = urllib.parse.parse_qs(parsed.query)
+
+                # Build v2 URL
+                v2_url = "https://api.etherscan.io/v2/api"
+                v2_params = [f"chainid={self.chain_id}"]
+
+                # Add existing params
+                for key, values in params.items():
+                    if key != "apikey":  # Skip apikey as we'll add it later
+                        for value in values:
+                            v2_params.append(f"{key}={value}")
+
+                # Add API key if available
+                if api_key:
+                    v2_params.append(f"apikey={api_key}")
+
+                return f"{v2_url}?{'&'.join(v2_params)}"
+
+        # For v1 API, use the original logic
+        if api_key:
+            # Check if URL already has parameters
+            separator = "&" if "?" in base_url else "?"
+            return f"{base_url}{separator}apikey={api_key}&"
+        return base_url
 
     def _cache_get(self, id: str):
         path = os.path.join(self._cache_path, id)
@@ -84,7 +272,8 @@ class ScanAPI(object):
         if d:
             d = json.loads(d)
         else:
-            url = f"{self.api_url}module=contract&action=getsourcecode&address={addr}"
+            base_url = f"{self.api_url}{'?' if not self.api_url.endswith('?') else ''}module=contract&action=getsourcecode&address={addr}"
+            url = self._build_url(base_url)
             d = self.get(url)
             if d is None:
                 return None
@@ -295,27 +484,28 @@ class ScanAPI(object):
         reverse=False,
         internal=False,
     ):
-        url = f"{self.api_url}module=account"
+        base_url = f"{self.api_url}{'?' if not self.api_url.endswith('?') else ''}module=account"
 
         if internal:
-            url += "&action=txlistinternal"
+            base_url += "&action=txlistinternal"
         else:
-            url += "&action=txlist"
+            base_url += "&action=txlist"
 
-        url += f"&address={sender}"
+        base_url += f"&address={sender}"
 
         if startblock is not None:
-            url += f"&startblock={startblock}"
+            base_url += f"&startblock={startblock}"
         if endblock is not None:
-            url += f"&endblock={endblock}"
+            base_url += f"&endblock={endblock}"
 
-        url += f"&page=1&offset={count}"
+        base_url += f"&page=1&offset={count}"
 
         if reverse:
-            url += "&sort=desc"
+            base_url += "&sort=desc"
         else:
-            url += "&sort=asc"
+            base_url += "&sort=asc"
 
+        url = self._build_url(base_url)
         txs = self.get(url)
         return txs
 

@@ -203,6 +203,9 @@ class PethConsole(cmd.Cmd):
         """
         chain : Print configuration of the connected chain.
         chain <name> : Change to new chain.
+        chain <name> v2 : Change to new chain using Etherscan v2 API.
+        chain v2 : List all v2 supported chains.
+        chain v2 <chain_id> : Switch to any v2 supported chain by chain ID.
         """
 
         print("Current:")
@@ -215,10 +218,120 @@ class PethConsole(cmd.Cmd):
         print("  RPC:", self.peth.rpc_url)
         print("  API:", self.peth.api_url)
         print("  Address:", self.peth.address_url)
+        if hasattr(self.peth.scan, "use_v2") and self.peth.scan.use_v2:
+            print("  API Version: v2")
 
-        if arg in config.chains:
+        args = arg.split()
+        if not args:
+            return
+
+        # Handle "chain v2" commands
+        if args[0] == "v2":
+            from peth.eth.scan import ScanAPI
+
+            # List v2 chains
+            if len(args) == 1:
+                print("\nFetching v2 supported chains...")
+                chains = ScanAPI.get_v2_chainlist()
+                if chains:
+                    print(f"\nEtherscan v2 supports {len(chains)} chains:")
+                    print(f"{'Chain ID':<12} {'Chain Name':<40} {'Status'}")
+                    print("-" * 70)
+                    for chain in sorted(chains, key=lambda x: int(x["chainid"])):
+                        status = (
+                            "✓ Online"
+                            if chain["status"] == 1
+                            else "✗ Offline" if chain["status"] == 0 else "⚠ Degraded"
+                        )
+                        print(
+                            f"{chain['chainid']:<12} {chain['chainname']:<40} {status}"
+                        )
+                    print("\nUse 'chain v2 <chain_id>' to switch to a v2 chain")
+                else:
+                    print(
+                        "Failed to fetch v2 chainlist. Make sure ETHERSCAN_API_KEY is set."
+                    )
+                return
+
+            # Switch to v2 chain by ID
+            try:
+                chain_id = int(args[1])
+
+                # Fetch chainlist to get chain info
+                chains = ScanAPI.get_v2_chainlist()
+                chain_info = None
+                if chains:
+                    for chain in chains:
+                        if int(chain["chainid"]) == chain_id:
+                            chain_info = chain
+                            break
+
+                if not chain_info:
+                    print(f"Chain ID {chain_id} not found in v2 supported chains")
+                    return
+
+                # Get RPC URL from chain_info if available, otherwise try to find in config
+                rpc_url = None
+                address_url = chain_info.get("blockexplorer", "")
+
+                # Try to find RPC URL from existing config
+                for chain_name, chain_config in config.chains.items():
+                    if (
+                        isinstance(chain_config, dict)
+                        and chain_config.get("chain_id") == chain_id
+                    ):
+                        rpc_url = chain_config.get("rpc_url")
+                        break
+
+                # Create a v2 Peth instance
+                if rpc_url:
+                    old_sender = self.peth.sender
+                    # Create a new Peth instance with v2 API
+                    from peth import Peth
+                    from peth.eth.web3ex import Web3Ex
+
+                    # Create Web3Ex instance
+                    scan_v2 = ScanAPI.get_or_create_v2(chain_id)
+                    self.peth = Web3Ex(
+                        rpc_url=rpc_url,
+                        api_url="https://api.etherscan.io/v2/api",
+                        address_url=address_url,
+                        chain=chain_info["chainname"],
+                        sender=old_sender,
+                        use_v2=True,
+                    )
+                    self.peth.scan = scan_v2
+
+                    print("Changed:")
+                    print(f"  Chain: {chain_info['chainname']} (v2)")
+                    print(f"     Chain ID: {chain_id}")
+                    try:
+                        print(f"     Block number: {self.peth.web3.eth.block_number}")
+                    except Exception:
+                        pass
+                    print(f"  RPC: {rpc_url}")
+                    print("  API: https://api.etherscan.io/v2/api")
+                    print(f"  Explorer: {address_url}")
+                    print("  API Version: v2")
+                else:
+                    print(
+                        f"Chain {chain_info['chainname']} ({chain_id}) found but no RPC URL available"
+                    )
+                    print(
+                        "You can still use the v2 scan API but Web3 functions won't work"
+                    )
+
+            except ValueError:
+                print(f"Invalid chain ID: {args[1]}")
+            return
+
+        # Handle "chain <name> v2" or "chain <name>"
+        chain_name = args[0]
+        use_v2 = len(args) > 1 and args[1] == "v2"
+
+        if chain_name in config.chains:
             old_sender = self.peth.sender
-            self.peth = Peth.get_or_create(arg)
+            self.peth = Peth.get_or_create(chain_name, use_v2=use_v2)
             self.peth.sender = old_sender  # Keep the sender value.
             print("Changed:")
             print("  Chain:", self.peth.chain)
@@ -230,6 +343,8 @@ class PethConsole(cmd.Cmd):
             print("  RPC:", self.peth.rpc_url)
             print("  API:", self.peth.api_url)
             print("  Address:", self.peth.address_url)
+            if hasattr(self.peth.scan, "use_v2") and self.peth.scan.use_v2:
+                print("  API Version: v2")
 
         else:
             print("Supported chains: %s" % ", ".join(config.chains.keys()))

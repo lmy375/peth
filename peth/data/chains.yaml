@@ -1,144 +1,216 @@
 aoa:
-- https://mainnet.aurora.dev
-- https://api.aurorascan.dev/api?
-- https://aurorascan.dev/address/
+  rpc_url: https://mainnet.aurora.dev
+  scan_url: https://api.aurorascan.dev/api?
+  address_url: https://aurorascan.dev/address/
+  api_key_env: AURORA_API_KEY
+  chain_id: 1313161554
 arb:
-- https://arb1.arbitrum.io/rpc
-- https://api.arbiscan.io/api?
-- https://arbiscan.io/address/
+  rpc_url: https://arb1.arbitrum.io/rpc
+  scan_url: https://api.arbiscan.io/api?
+  address_url: https://arbiscan.io/address/
+  api_key_env: ARBISCAN_API_KEY
+  chain_id: 42161
 avax:
-- https://avalanche.drpc.org
-- https://api.snowtrace.io/api?
-- https://snowtrace.io/address/
+  rpc_url: https://avalanche.drpc.org
+  scan_url: https://api.snowtrace.io/api?
+  address_url: https://snowtrace.io/address/
+  api_key_env: SNOWTRACE_API_KEY
+  chain_id: 43114
 base:
-- https://mainnet.base.org
-- https://api.basescan.org/api?
-- https://basescan.org/address/
+  rpc_url: https://mainnet.base.org
+  scan_url: https://api.basescan.org/api?
+  address_url: https://basescan.org/address/
+  api_key_env: BASESCAN_API_KEY
+  chain_id: 8453
 blast:
-- https://rpc.blast.io
-- https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan/api?
-- https://blastexplorer.io/address/
+  rpc_url: https://rpc.blast.io
+  scan_url: https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan/api?
+  address_url: https://blastexplorer.io/address/
+  api_key_env: BLAST_API_KEY
+  chain_id: 81457
 boba:
-- https://mainnet.boba.network/
-- https://blockexplorer.boba.network/api?
-- https://blockexplorer.boba.network/address/
+  rpc_url: https://mainnet.boba.network/
+  scan_url: https://blockexplorer.boba.network/api?
+  address_url: https://blockexplorer.boba.network/address/
+  api_key_env: BOBA_API_KEY
+  chain_id: 288
 bsc:
-- https://binance.llamarpc.com
-- https://api.bscscan.com/api?
-- https://bscscan.com/address/
+  rpc_url: https://binance.llamarpc.com
+  scan_url: https://api.bscscan.com/api?
+  address_url: https://bscscan.com/address/
+  api_key_env: BSCSCAN_API_KEY
+  chain_id: 56
 canto:
-- https://canto.slingshot.finance
-- https://tuber.build/api?
-- https://tuber.build/address/
+  rpc_url: https://canto.slingshot.finance
+  scan_url: https://tuber.build/api?
+  address_url: https://tuber.build/address/
+  api_key_env: CANTO_API_KEY
+  chain_id: 7700
 cro:
-- https://evm.cronos.org
-- https://api.cronoscan.com/api?
-- https://cronoscan.com/address/
+  rpc_url: https://evm.cronos.org
+  scan_url: https://api.cronoscan.com/api?
+  address_url: https://cronoscan.com/address/
+  api_key_env: CRONOSCAN_API_KEY
+  chain_id: 25
 etf:
-- https://rpc.etherfair.org
-- https://explorer.etherfair.org/api?
-- https://explorer.etherfair.org/address/
+  rpc_url: https://rpc.etherfair.org
+  scan_url: https://explorer.etherfair.org/api?
+  address_url: https://explorer.etherfair.org/address/
+  api_key_env: ETHERFAIR_API_KEY
+  chain_id: 513100
 eth:
-- https://eth.llamarpc.com
-- https://api.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
-- https://etherscan.io/address/
+  rpc_url: https://eth.llamarpc.com
+  scan_url: https://api.etherscan.io/api?
+  address_url: https://etherscan.io/address/
+  api_key_env: ETHERSCAN_API_KEY
+  chain_id: 1
 ethw:
-- https://mainnet.ethereumpow.org
-- null
-- https://www.oklink.com/en/ethw/address/
+  rpc_url: https://mainnet.ethereumpow.org
+  scan_url: null
+  address_url: https://www.oklink.com/en/ethw/address/
+  api_key_env: ETHW_API_KEY
+  chain_id: 10001
 ftm:
-- https://api.zan.top/ftm-mainnet
-- https://api.ftmscan.com/api?
-- https://ftmscan.com/address/
+  rpc_url: https://api.zan.top/ftm-mainnet
+  scan_url: https://api.ftmscan.com/api?
+  address_url: https://ftmscan.com/address/
+  api_key_env: FTMSCAN_API_KEY
+  chain_id: 250
 gnosis:
-- https://rpc.gnosischain.com
-- https://api.gnosisscan.io/api?
-- https://gnosisscan.io/address/
+  rpc_url: https://rpc.gnosischain.com
+  scan_url: https://api.gnosisscan.io/api?
+  address_url: https://gnosisscan.io/address/
+  api_key_env: GNOSISSCAN_API_KEY
+  chain_id: 100
 heco:
-- https://http-mainnet.hecochain.com
-- https://api.hecoinfo.com/api?
-- https://hecoinfo.com/address/
+  rpc_url: https://http-mainnet.hecochain.com
+  scan_url: https://api.hecoinfo.com/api?
+  address_url: https://hecoinfo.com/address/
+  api_key_env: HECOSCAN_API_KEY
+  chain_id: 128
 local:
-- http://127.0.0.1:8545
-- https://api.etherscan.io/api?
-- https://etherscan.io/address/
+  rpc_url: http://127.0.0.1:8545
+  scan_url: https://api.etherscan.io/api?
+  address_url: https://etherscan.io/address/
+  api_key_env: ETHERSCAN_API_KEY
+  chain_id: 1337
 manta:
-- https://pacific-rpc.manta.network/http
-- https://pacific-explorer.manta.network/api?
-- https://pacific-explorer.manta.network/address/
+  rpc_url: https://pacific-rpc.manta.network/http
+  scan_url: https://pacific-explorer.manta.network/api?
+  address_url: https://pacific-explorer.manta.network/address/
+  api_key_env: MANTA_API_KEY
+  chain_id: 169
 mantle:
-- https://rpc.mantle.xyz
-- https://explorer.mantle.xyz/api?
-- https://explorer.mantle.xyz/address/
+  rpc_url: https://rpc.mantle.xyz
+  scan_url: https://explorer.mantle.xyz/api?
+  address_url: https://explorer.mantle.xyz/address/
+  api_key_env: MANTLE_API_KEY
+  chain_id: 5000
 matic:
-- https://polygon-rpc.com
-- https://api.polygonscan.com/api?
-- https://polygonscan.com/address/
+  rpc_url: https://polygon-rpc.com
+  scan_url: https://api.polygonscan.com/api?
+  address_url: https://polygonscan.com/address/
+  api_key_env: POLYGONSCAN_API_KEY
+  chain_id: 137
 merlin:
-- https://rpc.merlinchain.io
-- https://scan.merlinchain.io/api?
-- https://scan.merlinchain.io/address/
+  rpc_url: https://rpc.merlinchain.io
+  scan_url: https://scan.merlinchain.io/api?
+  address_url: https://scan.merlinchain.io/address/
+  api_key_env: MERLIN_API_KEY
+  chain_id: 4200
 metis:
-- https://andromeda.metis.io/?owner=1088
-- https://andromeda-explorer.metis.io/api?
-- https://andromeda-explorer.metis.io/address/
+  rpc_url: https://andromeda.metis.io/?owner=1088
+  scan_url: https://andromeda-explorer.metis.io/api?
+  address_url: https://andromeda-explorer.metis.io/address/
+  api_key_env: METIS_API_KEY
+  chain_id: 1088
 moonbeam:
-- https://rpc.api.moonbeam.network
-- https://api-moonbeam.moonscan.io/api?
-- https://moonbeam.moonscan.io/address/
+  rpc_url: https://rpc.api.moonbeam.network
+  scan_url: https://api-moonbeam.moonscan.io/api?
+  address_url: https://moonbeam.moonscan.io/address/
+  api_key_env: MOONSCAN_API_KEY
+  chain_id: 1284
 moonriver:
-- https://rpc.moonriver.moonbeam.network
-- https://api-moonriver.moonscan.io/api?
-- https://moonriver.moonscan.io/address/
+  rpc_url: https://rpc.moonriver.moonbeam.network
+  scan_url: https://api-moonriver.moonscan.io/api?
+  address_url: https://moonriver.moonscan.io/address/
+  api_key_env: MOONSCAN_API_KEY
+  chain_id: 1285
 oasis:
-- https://emerald.oasis.dev
-- https://explorer.emerald.oasis.dev/api?
-- https://explorer.emerald.oasis.dev/address/
+  rpc_url: https://emerald.oasis.dev
+  scan_url: https://explorer.emerald.oasis.dev/api?
+  address_url: https://explorer.emerald.oasis.dev/address/
+  api_key_env: OASIS_API_KEY
+  chain_id: 42262
 one:
-- https://api.harmony.one
-- null
-- https://explorer.harmony.one/address/
+  rpc_url: https://api.harmony.one
+  scan_url: null
+  address_url: https://explorer.harmony.one/address/
+  api_key_env: HARMONY_API_KEY
+  chain_id: 1666600000
 op:
-- https://mainnet.optimism.io
-- https://api-optimistic.etherscan.io/api?
-- https://optimistic.etherscan.io/address/
+  rpc_url: https://mainnet.optimism.io
+  scan_url: https://api-optimistic.etherscan.io/api?
+  address_url: https://optimistic.etherscan.io/address/
+  api_key_env: OPTIMISM_API_KEY
+  chain_id: 10
 zkfair:
-- https://rpc.zkfair.io
-- https://scan.zkfair.io/api?
-- https://scan.zkfair.io/address/
+  rpc_url: https://rpc.zkfair.io
+  scan_url: https://scan.zkfair.io/api?
+  address_url: https://scan.zkfair.io/address/
+  api_key_env: ZKFAIR_API_KEY
+  chain_id: 42766
 zksync:
-- https://mainnet.era.zksync.io
-- null
-- https://explorer.zksync.io/address/
+  rpc_url: https://mainnet.era.zksync.io
+  scan_url: null
+  address_url: https://explorer.zksync.io/address/
+  api_key_env: ZKSYNC_API_KEY
+  chain_id: 324
 sepolia:
-- https://rpc-sepolia.rockx.com
-- https://api-sepolia.etherscan.io/api?apikey=TDMPDZU8RD4V9FVB66P5S47QETEJ6R61UY&
-- https://sepolia.etherscan.io/address/
+  rpc_url: https://rpc-sepolia.rockx.com
+  scan_url: https://api-sepolia.etherscan.io/api?
+  address_url: https://sepolia.etherscan.io/address/
+  api_key_env: ETHERSCAN_API_KEY
+  chain_id: 11155111
 mode:
-- https://mainnet.mode.network
-- https://explorer.mode.network/api?
-- https://explorer.mode.network/address/
+  rpc_url: https://mainnet.mode.network
+  scan_url: https://explorer.mode.network/api?
+  address_url: https://explorer.mode.network/address/
+  api_key_env: MODE_API_KEY
+  chain_id: 34443
 scroll:
-- https://rpc.scroll.io
-- https://api.scrollscan.com/api?
-- https://scrollscan.com/address/
+  rpc_url: https://rpc.scroll.io
+  scan_url: https://api.scrollscan.com/api?
+  address_url: https://scrollscan.com/address/
+  api_key_env: SCROLLSCAN_API_KEY
+  chain_id: 534352
 bob:
-- https://rpc.gobob.xyz/
-- https://explorer.gobob.xyz/api?
-- https://explorer.gobob.xyz/address/
+  rpc_url: https://rpc.gobob.xyz/
+  scan_url: https://explorer.gobob.xyz/api?
+  address_url: https://explorer.gobob.xyz/address/
+  api_key_env: BOB_API_KEY
+  chain_id: 60808
 holesky:
-- https://holesky.drpc.org
-- https://api-holesky.etherscan.io/api?
-- https://holesky.etherscan.io/address/
+  rpc_url: https://holesky.drpc.org
+  scan_url: https://api-holesky.etherscan.io/api?
+  address_url: https://holesky.etherscan.io/address/
+  api_key_env: ETHERSCAN_API_KEY
+  chain_id: 17000
 sonic:
-- https://rpc.soniclabs.com
-- https://api.sonicscan.org/api?apikey=CJRB5MPKIUWA95EJJYCA5MA1ATV1NTK76K&
-- https://sonicscan.org/address/
+  rpc_url: https://rpc.soniclabs.com
+  scan_url: https://api.sonicscan.org/api?apikey=CJRB5MPKIUWA95EJJYCA5MA1ATV1NTK76K&
+  address_url: https://sonicscan.org/address/
+  api_key_env: SONIC_API_KEY
+  chain_id: 146
 corn:
-- https://mainnet.corn-rpc.com
-- https://api.routescan.io/v2/network/mainnet/evm/21000000/etherscan/api?
-- https://cornscan.io/address/
+  rpc_url: https://mainnet.corn-rpc.com
+  scan_url: https://api.routescan.io/v2/network/mainnet/evm/21000000/etherscan/api?
+  address_url: https://cornscan.io/address/
+  api_key_env: CORN_API_KEY
+  chain_id: 21000000
 uni:
-- https://unichain-rpc.publicnode.com
-- https://unichain.blockscout.com/api?
-- https://unichain.blockscout.com/address/
+  rpc_url: https://unichain-rpc.publicnode.com
+  scan_url: https://unichain.blockscout.com/api?
+  address_url: https://unichain.blockscout.com/address/
+  api_key_env: UNI_API_KEY
+  chain_id: 1301

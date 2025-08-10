@@ -20,18 +20,38 @@ class Peth(Web3Ex):
     __cache__ = {}
 
     @classmethod
-    def get_or_create(cls, chain) -> "Peth":
+    def get_or_create(cls, chain, api_key=None, use_v2=None) -> "Peth":
         """
         Better entry to create the Peth instance.
+
+        Args:
+            chain: The blockchain name (e.g., 'eth', 'bsc')
+            api_key: Optional API key for blockchain explorer. If not provided, will use environment variables.
+            use_v2: Force use of v2 API if True, v1 if False, auto-detect if None
         """
         cfg = config.chains
         assert chain in cfg.keys(), f"Invalid chain {chain}. See {config.chains_path}."
-        if chain not in cls.__cache__:
-            rpc_url = cfg[chain][0]
-            api_url = cfg[chain][1]
-            address_url = cfg[chain][2]
-            cls.__cache__[chain] = cls(rpc_url, api_url, address_url, chain)
-        return cls.__cache__[chain]
+
+        # Use chain + api_key + use_v2 as cache key to support different configurations
+        cache_key = f"{chain}:{api_key}:{use_v2}"
+
+        if cache_key not in cls.__cache__:
+            chain_config = cfg[chain]
+            # Support both old list format and new dict format
+            if isinstance(chain_config, list):
+                # Old format: [rpc_url, scan_url, address_url]
+                rpc_url = chain_config[0]
+                api_url = chain_config[1]
+                address_url = chain_config[2]
+            else:
+                # New format: {rpc_url: ..., scan_url: ..., address_url: ...}
+                rpc_url = chain_config["rpc_url"]
+                api_url = chain_config["scan_url"]
+                address_url = chain_config["address_url"]
+            cls.__cache__[cache_key] = cls(
+                rpc_url, api_url, address_url, chain, api_key=api_key, use_v2=use_v2
+            )
+        return cls.__cache__[cache_key]
 
     def get_view_value(self, contract, name, typ=None):
         """
