@@ -187,9 +187,11 @@ def address_click(ctx, address, code):
 @command_click(name="storage")
 @click.argument("address")
 @click.argument("slot", required=False)
-@click.option("--range", "-r", type=int, default=16, help="Number of slots to show")
+@click.option(
+    "--range", "-r", "slot_range", type=int, default=16, help="Number of slots to show"
+)
 @click.pass_context
-def storage_click(ctx, address, slot, range):
+def storage_click(ctx, address, slot, slot_range):
     """
     Get storage of an address.
 
@@ -219,7 +221,7 @@ def storage_click(ctx, address, slot, range):
         click.echo(f"{hex(slot_num)} : {value.hex()}")
     else:
         # Show range of slots
-        for slot_num in range(range):
+        for slot_num in range(slot_range):
             value = console.web3.eth.get_storage_at(addr, slot_num)
             click.echo(f"{hex(slot_num)} : {value.hex()}")
 

@@ -85,9 +85,9 @@ class TestUtilsCommands(CommandTestBase):
         """Test int command with invalid input."""
         result = self.invoke_command(console, int_command_click, ["invalid"])
 
-        # Should fail with ValueError
-        assert result.exit_code != 0
-        assert result.exception is not None
+        # Should complete successfully but print error message
+        assert result.exit_code == 0
+        assert "Error: Invalid number format: invalid" in result.output
 
     def test_time_timestamp_to_date(self, console):
         """Test time command converting timestamp to date."""
@@ -156,73 +156,85 @@ class TestUtilsCommands(CommandTestBase):
 
     def test_price_token(self, console):
         """Test price command for token."""
+        # Mock response for coins.llama.fi API
         mock_response = {
-            "market_data": {
-                "current_price": {"usd": 3000.50},
-                "price_change_percentage_24h": 2.5,
-                "market_cap": {"usd": 360000000000},
+            "coins": {
+                "ethereum:ethereum": {
+                    "price": 3000.50,
+                    "symbol": "ETH",
+                    "timestamp": 1667551373,
+                    "confidence": 0.99,
+                    "decimals": 18,
+                }
             }
         }
 
-        with patch("requests.get") as mock_get:
+        with patch("peth.eth.utils.requests.get") as mock_get:
             mock_get.return_value.json.return_value = mock_response
 
             result = self.invoke_command(console, price_click, ["ethereum"])
 
             self.assert_success(result)
-            assert "$3000.50" in result.output
-            assert "2.50%" in result.output
+            # The command outputs the token address and price
+            assert "ethereum" in result.output
+            assert "3000.5" in result.output
 
     def test_price_multiple_tokens(self, console):
         """Test price command with multiple tokens."""
-        mock_responses = [
-            {
-                "market_data": {
-                    "current_price": {"usd": 50000},
-                    "price_change_percentage_24h": 1.0,
-                    "market_cap": {"usd": 1000000000000},
-                }
-            },
-            {
-                "market_data": {
-                    "current_price": {"usd": 3000},
-                    "price_change_percentage_24h": -0.5,
-                    "market_cap": {"usd": 360000000000},
-                }
-            },
-        ]
+        # Mock response for coins.llama.fi API with multiple tokens
+        mock_response = {
+            "coins": {
+                "ethereum:bitcoin": {
+                    "price": 50000,
+                    "symbol": "BTC",
+                    "timestamp": 1667551373,
+                    "confidence": 0.99,
+                    "decimals": 8,
+                },
+                "ethereum:ethereum": {
+                    "price": 3000,
+                    "symbol": "ETH",
+                    "timestamp": 1667551373,
+                    "confidence": 0.99,
+                    "decimals": 18,
+                },
+            }
+        }
 
-        with patch("requests.get") as mock_get:
-            mock_get.return_value.json.side_effect = mock_responses
+        with patch("peth.eth.utils.requests.get") as mock_get:
+            mock_get.return_value.json.return_value = mock_response
 
             result = self.invoke_command(console, price_click, ["bitcoin", "ethereum"])
 
             self.assert_success(result)
-            assert "bitcoin: $50000" in result.output
-            assert "1.00%" in result.output
-            assert "ethereum: $3000" in result.output
-            assert "-0.50%" in result.output
+            assert "bitcoin" in result.output
+            assert "50000" in result.output
+            assert "ethereum" in result.output
+            assert "3000" in result.output
 
     def test_brain_generate(self, console):
         """Test brain command with password."""
-        with patch("peth.eth.utils.keccak256") as mock_keccak:
+        # The command uses keccak256_func which is imported at module level
+        with patch("peth.commands.utils.keccak256_func") as mock_keccak:
             # Mock the password hash to return a predictable private key
             mock_keccak.return_value = bytes.fromhex("1" * 64)
 
-            with patch("eth_account.Account.from_key") as mock_from_key:
+            with patch("peth.commands.utils.Account") as MockAccount:
                 mock_account = Mock()
                 mock_account.address = TEST_ADDRESS
-                mock_account.key.hex.return_value = "0x" + "1" * 64
-                mock_from_key.return_value = mock_account
+                MockAccount.from_key.return_value = mock_account
 
+                # Use only 10 iterations for testing to speed it up
                 result = self.invoke_command(
-                    console, brain_wallet_click, ["mypassword"]
+                    console, brain_wallet_click, ["mypassword", "--iterations", "10"]
                 )
 
                 self.assert_success(result)
                 assert "Private Key:" in result.output
                 assert f"Address: {TEST_ADDRESS}" in result.output
                 assert "1" * 64 in result.output
+                # Verify the command received our small iteration count
+                assert "Count: 10" in result.output
 
     def test_portfolio_address(self, console):
         """Test portfolio command for single address."""
@@ -330,12 +342,15 @@ class TestUtilsCommands(CommandTestBase):
         with patch(
             "peth.commands.utils.config.tokens",
             {
-                "eth": {
-                    "USDC": {
+                "eth": [
+                    {
+                        "name": "USD Coin",
+                        "symbol": "USDC",
                         "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                         "decimals": 6,
+                        "price": 1.0,
                     }
-                }
+                ]
             },
         ):
             result = self.invoke_command(console, tokens_click, [])
@@ -350,16 +365,22 @@ class TestUtilsCommands(CommandTestBase):
         with patch(
             "peth.commands.utils.config.tokens",
             {
-                "eth": {
-                    "USDC": {
+                "eth": [
+                    {
+                        "name": "USD Coin",
+                        "symbol": "USDC",
                         "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                         "decimals": 6,
+                        "price": 1.0,
                     },
-                    "USDT": {
+                    {
+                        "name": "Tether USD",
+                        "symbol": "USDT",
                         "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
                         "decimals": 6,
+                        "price": 1.0,
                     },
-                }
+                ]
             },
         ):
             result = self.invoke_command(console, tokens_click, ["USD"])

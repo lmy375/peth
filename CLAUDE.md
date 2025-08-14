@@ -92,3 +92,22 @@ uv run python main.py
 - web3.py >=6.20.0
 - uv for dependency management (Important: Do NOT use raw pip, use `uv pip` instead)
 - py-solc-x for Solidity compilation
+
+## IMPORTANT: Python Execution
+
+**All Python commands must be run with `uv run python` instead of direct `python` command.**
+
+This project uses uv for dependency management. To ensure correct virtual environment and dependencies are used:
+- Always use: `uv run python script.py`
+- Never use: `python script.py`
+
+Examples:
+```bash
+# Correct way
+uv run python -m pytest tests/
+uv run python main.py
+
+# Incorrect way (DO NOT USE)
+python -m pytest tests/
+python main.py
+```

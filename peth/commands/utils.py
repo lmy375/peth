@@ -63,12 +63,16 @@ def int_command_click(ctx, value, format, unit):
     value = value.replace(",", "")
 
     # Parse the value
-    if "e" in value.lower():
-        num_value = int(float(value))
-    elif re.findall("[xXa-fA-f]", value):
-        num_value = int(value, 16)
-    else:
-        num_value = int(value)
+    try:
+        if "e" in value.lower():
+            num_value = int(float(value))
+        elif re.findall("[xXa-fA-f]", value):
+            num_value = int(value, 16)
+        else:
+            num_value = int(value)
+    except ValueError:
+        click.echo(f"Error: Invalid number format: {value}", err=True)
+        return
 
     if unit:
         # Show specific unit conversion
@@ -296,7 +300,7 @@ def portfolio_click(ctx, address, sort, min_value):
             f"{asset['info']['name']:<30}\t"
             f"{asset['info']['symbol']:<10}\t"
             f"{asset['info']['address']:<45}\t"
-            f"{asset['info']['price']:<10}\t"
+            f"{asset['price']:<10}\t"
             f"{asset['balance']:<20}\t"
             f"{asset['usd']:<20}"
         )
@@ -313,8 +317,11 @@ def tokens_click(ctx, search):
         tokens                  # List all tokens
         tokens usdt            # Search for tokens containing 'usdt'
     """
-    tokens = config.tokens[ctx.obj.peth.chain]
+    tokens = config.tokens.get(ctx.obj.peth.chain, [])
     search_text = search or ""
+
+    if not search_text:
+        click.echo("All known tokens:")
 
     click.echo(
         f"{'Name':<30} {'Symbol':<10} {'Address':<45} " f"{'Decimals':>8} {'Price':>15}"
@@ -323,7 +330,7 @@ def tokens_click(ctx, search):
         line = (
             f"{token['name']:<30} {token['symbol']:<10} "
             f"{token['address']:<45} {token['decimals']:>8} "
-            f"{token['price']:>15}"
+            f"{token.get('price', 0):>15}"
         )
         if search_text.lower() in line.lower():
             click.echo(line)
@@ -344,24 +351,14 @@ def aes_click(ctx, operation, text, password):
 
     NOTE: IV used as MD5 of password, which is not so safe.
     """
-    import hashlib
-
-    from Crypto.Cipher import AES
-    from Crypto.Util.Padding import pad, unpad
-
-    key = pad(bytes(password, "utf-8"), 16)
-    iv = hashlib.md5(bytes(password, "utf-8")).digest()
+    from peth.eth.utils import decrypt_with_aes, encrypt_with_aes
 
     if operation == "enc":
-        plain = pad(bytes(text, "utf-8"), 16)
-        aes = AES.new(key, AES.MODE_CBC, iv=iv)
-        secret = aes.encrypt(plain)
-        click.echo(secret.hex())
+        result = encrypt_with_aes(text, password)
+        click.echo(result)
     else:  # dec
         try:
-            aes = AES.new(key, AES.MODE_CBC, iv=iv)
-            secret = bytes.fromhex(text)
-            plain = unpad(aes.decrypt(secret), 16)
-            click.echo(plain.decode("utf-8"))
+            result = decrypt_with_aes(text, password)
+            click.echo(result)
         except Exception as e:
-            click.echo(f"[!] {e} (Password may be wrong)", err=True)
+            click.echo(f"Error: {e}", err=True)

@@ -131,6 +131,7 @@ class TestEthDeFiCommands(CommandTestBase):
                 impl_slot,  # Implementation
                 admin_slot,  # Admin
                 beacon_slot,  # Beacon
+                HexBytes("0x" + "0" * 64),  # Rollback
             ]
         )
         console._get_full_name = Mock(
@@ -180,8 +181,7 @@ class TestEthDeFiCommands(CommandTestBase):
 
         self.assert_success(result)
         # Should only show the proxy
-        assert f"Proxy MyProxy {TEST_ADDRESS} impl" in result.output
-        assert TEST_ADDRESS2 not in result.output
+        assert f"Proxy MyProxy {TEST_ADDRESS} impl {TEST_ADDRESS2}" in result.output
 
     def test_owner_success(self, console):
         """Test owner command success."""

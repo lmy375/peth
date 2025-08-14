@@ -57,7 +57,7 @@ def tx_click(ctx, args):
             if (
                 len(item.topics) == 3
                 and item.topics[0].hex()
-                == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                == "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
             ):
 
                 src = console.web3.to_checksum_address(item.topics[1][-20:])

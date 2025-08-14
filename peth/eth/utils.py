@@ -373,7 +373,11 @@ class CoinPrice(object):
         for address in addresses:
             tokens.append("%s:%s" % (chain, address))
         url = cls.url + ",".join(tokens)
-        ret = requests.get(url).json()["coins"]
+        try:
+            ret = requests.get(url).json()["coins"]
+        except Exception:
+            # Return empty dict if request fails
+            ret = {}
 
         prices = []
         for token in tokens:
@@ -384,3 +388,35 @@ class CoinPrice(object):
             else:
                 prices.append(None)
         return prices
+
+
+def encrypt_with_aes(text: str, password: str) -> str:
+    """Encrypt text with AES using password."""
+    import hashlib
+
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad
+
+    key = pad(bytes(password, "utf-8"), 16)
+    iv = hashlib.md5(bytes(password, "utf-8")).digest()
+
+    plain = pad(bytes(text, "utf-8"), 16)
+    aes = AES.new(key, AES.MODE_CBC, iv=iv)
+    secret = aes.encrypt(plain)
+    return secret.hex()
+
+
+def decrypt_with_aes(encrypted_text: str, password: str) -> str:
+    """Decrypt text with AES using password."""
+    import hashlib
+
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad, unpad
+
+    key = pad(bytes(password, "utf-8"), 16)
+    iv = hashlib.md5(bytes(password, "utf-8")).digest()
+
+    aes = AES.new(key, AES.MODE_CBC, iv=iv)
+    secret = bytes.fromhex(encrypted_text)
+    plain = unpad(aes.decrypt(secret), 16)
+    return plain.decode("utf-8")

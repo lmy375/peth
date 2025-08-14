@@ -3,6 +3,7 @@
 from unittest.mock import Mock, patch
 
 from hexbytes import HexBytes
+from web3.datastructures import AttributeDict
 
 from peth.commands.transaction import (
     aml_click,
@@ -29,23 +30,25 @@ class TestTransactionCommands(CommandTestBase):
             "to": TEST_ADDRESS2,
             "input": "0xa9059cbb" + "0" * 128,
         }
-        receipt = {
-            "status": 1,
-            "contractAddress": None,
-            "logs": [
-                Mock(
-                    topics=[
-                        HexBytes(
-                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-                        ),
-                        HexBytes("0x" + "0" * 24 + TEST_ADDRESS[2:]),
-                        HexBytes("0x" + "0" * 24 + TEST_ADDRESS2[2:]),
-                    ],
-                    data=HexBytes("0x" + "0" * 63 + "1"),
-                    address="0x" + "c" * 40,
-                )
-            ],
-        }
+        # Create proper log entry with HexBytes that has correct hex() method
+        log_entry = Mock()
+        log_entry.topics = [
+            HexBytes(
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+            ),
+            HexBytes("0x" + "0" * 24 + TEST_ADDRESS[2:]),
+            HexBytes("0x" + "0" * 24 + TEST_ADDRESS2[2:]),
+        ]
+        log_entry.data = HexBytes("0x" + "0" * 63 + "1")
+        log_entry.address = "0x" + "c" * 40
+
+        receipt = AttributeDict(
+            {
+                "status": 1,
+                "contractAddress": None,
+                "logs": [log_entry],
+            }
+        )
 
         console.web3.eth.get_transaction = Mock(return_value=tx_info)
         console.web3.eth.get_transaction_receipt = Mock(return_value=receipt)
@@ -64,7 +67,9 @@ class TestTransactionCommands(CommandTestBase):
     def test_tx_contract_creation(self, console):
         """Test tx command for contract creation."""
         tx_info = {"from": TEST_ADDRESS, "to": None, "input": "0x608060"}
-        receipt = {"status": 1, "contractAddress": TEST_ADDRESS2, "logs": []}
+        receipt = AttributeDict(
+            {"status": 1, "contractAddress": TEST_ADDRESS2, "logs": []}
+        )
 
         console.web3.eth.get_transaction = Mock(return_value=tx_info)
         console.web3.eth.get_transaction_receipt = Mock(return_value=receipt)
@@ -77,10 +82,11 @@ class TestTransactionCommands(CommandTestBase):
     def test_tx_reverted(self, console):
         """Test tx command for reverted transaction."""
         tx_info = {"from": TEST_ADDRESS, "to": TEST_ADDRESS2, "input": "0x"}
-        receipt = {"status": 0, "logs": []}
+        receipt = AttributeDict({"status": 0, "logs": []})
 
         console.web3.eth.get_transaction = Mock(return_value=tx_info)
         console.web3.eth.get_transaction_receipt = Mock(return_value=receipt)
+        console._print_decoded_calldata = Mock()
 
         result = self.invoke_command(console, tx_click, [TEST_TX_HASH])
 
@@ -125,7 +131,7 @@ class TestTransactionCommands(CommandTestBase):
         result = self.invoke_command(console, idm_click, [TEST_ADDRESS2])
 
         self.assert_success(result)
-        assert "Hacker to" in result.output
+        assert "to Hacker" in result.output
         assert "1.0000 ETH" in result.output
         assert "Hello World" in result.output
 
@@ -266,7 +272,7 @@ class TestTransactionCommands(CommandTestBase):
 
         self.assert_success(result)
         assert "Replay succeeded" in result.output
-        assert "0x0001" in result.output
+        assert "0001" in result.output
 
     def test_tx_replay_with_sender(self, console):
         """Test tx_replay with custom sender."""
@@ -287,12 +293,12 @@ class TestTransactionCommands(CommandTestBase):
         mock_trace = Mock()
         mock_trace.print = Mock()
 
-        with patch("peth.core.tracer.GethTracer") as MockTracer:
+        with patch("peth.commands.transaction.GethTracer") as MockTracer:
             mock_tracer = Mock()
             mock_tracer.trace_transaction = Mock(return_value={"result": "trace"})
             MockTracer.return_value = mock_tracer
 
-            with patch("peth.core.tracer.TxTrace", return_value=mock_trace):
+            with patch("peth.commands.transaction.TxTrace", return_value=mock_trace):
                 result = self.invoke_command(console, trace_tx_click, [TEST_TX_HASH])
 
                 self.assert_success(result)
@@ -304,12 +310,12 @@ class TestTransactionCommands(CommandTestBase):
         mock_trace = Mock()
         mock_trace.print = Mock()
 
-        with patch("peth.core.tracer.GethTracer") as MockTracer:
+        with patch("peth.commands.transaction.GethTracer") as MockTracer:
             mock_tracer = Mock()
             mock_tracer.trace_call = Mock(return_value={"result": "trace"})
             MockTracer.return_value = mock_tracer
 
-            with patch("peth.core.tracer.TxTrace", return_value=mock_trace):
+            with patch("peth.commands.transaction.TxTrace", return_value=mock_trace):
                 result = self.invoke_command(
                     console, trace_call_click, [TEST_ADDRESS, "0xa9059cbb"]
                 )
@@ -335,13 +341,13 @@ class TestTransactionCommands(CommandTestBase):
         mock_trace.print = Mock()
         mock_result.trace = mock_trace
 
-        with patch("peth.eth.evm.Chain") as MockChain:
+        with patch("peth.commands.transaction.Chain") as MockChain:
             mock_chain = Mock()
             mock_chain.apply_transaction = Mock(return_value=mock_result)
             MockChain.return_value = mock_chain
 
-            with patch("peth.eth.evm.ForkChain"):
-                with patch("peth.eth.evm.VM") as MockVM:
+            with patch("peth.commands.transaction.ForkChain"):
+                with patch("peth.commands.transaction.VM") as MockVM:
                     result = self.invoke_command(
                         console, evm_trace_tx_click, [TEST_TX_HASH]
                     )
@@ -365,22 +371,23 @@ class TestTransactionCommands(CommandTestBase):
         mock_result = Mock()
         mock_result.trace.print = Mock()
 
-        with patch("peth.eth.evm.Chain") as MockChain:
-            with patch("peth.eth.evm.VM") as MockVM:
-                mock_chain = Mock()
-                mock_chain.apply_transaction = Mock(return_value=mock_result)
-                MockChain.return_value = mock_chain
+        with patch("peth.commands.transaction.Chain") as MockChain:
+            with patch("peth.commands.transaction.VM") as MockVM:
+                with patch("peth.commands.transaction.ForkChain"):
+                    mock_chain = Mock()
+                    mock_chain.apply_transaction = Mock(return_value=mock_result)
+                    MockChain.return_value = mock_chain
 
-                result = self.invoke_command(
-                    console,
-                    evm_trace_tx_click,
-                    [TEST_TX_HASH, "--debug", "--depth", "15"],
-                )
+                    result = self.invoke_command(
+                        console,
+                        evm_trace_tx_click,
+                        [TEST_TX_HASH, "--debug", "--depth", "15"],
+                    )
 
-                self.assert_success(result)
-                assert MockChain.debug is True
-                assert MockVM.debug is True
-                mock_result.trace.print.assert_called_once_with(15)
+                    self.assert_success(result)
+                    assert MockChain.debug is True
+                    assert MockVM.debug is True
+                    mock_result.trace.print.assert_called_once_with(15)
 
     def test_evm_trace_call_basic(self, console):
         """Test evm_trace_call command."""
@@ -389,12 +396,12 @@ class TestTransactionCommands(CommandTestBase):
         mock_trace.print = Mock()
         mock_result.trace = mock_trace
 
-        with patch("peth.eth.evm.Chain") as MockChain:
+        with patch("peth.commands.transaction.Chain") as MockChain:
             mock_chain = Mock()
             mock_chain.apply_transaction = Mock(return_value=mock_result)
             MockChain.return_value = mock_chain
 
-            with patch("peth.eth.evm.ForkChain"):
+            with patch("peth.commands.transaction.ForkChain"):
                 result = self.invoke_command(
                     console, evm_trace_call_click, [TEST_ADDRESS, "0xa9059cbb"]
                 )

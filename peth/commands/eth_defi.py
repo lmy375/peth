@@ -169,7 +169,14 @@ def proxy_click(ctx, addresses, show_all):
 
             if "ProxyAdmin" in admin_name:
                 click.echo("\nProxyAdmin owner:")
-                ctx.invoke(owner_click, address=admin_addr)
+                try:
+                    owner = console.peth.call_contract(admin_addr, "owner()->(address)")
+                    click.echo(f"Owner: {console._get_full_name(owner)}")
+                except Exception as e:
+                    click.echo(
+                        f"Error: Ensure the address is an Ownable contract. {e}",
+                        err=True,
+                    )
 
 
 @command_click(name="proxy_all")
