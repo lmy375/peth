@@ -27,6 +27,8 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 dev-dependencies = [
+    "ipython>=8.37.0",
+    "myst-parser>=4.0.1",
     "pytest>=7.0.0",
     "sphinx>=4.0.0",
     "sphinx-autobuild>=2021.0.0",

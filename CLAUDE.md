@@ -90,5 +90,5 @@ uv run python main.py
 
 - Python 3.10+
 - web3.py >=6.20.0
-- uv for dependency management
+- uv for dependency management (Important: Do NOT use raw pip, use `uv pip` instead)
 - py-solc-x for Solidity compilation
