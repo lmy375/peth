@@ -9,6 +9,9 @@ from typing import Callable, Optional
 
 import click
 
+# Make every console Click command accept both -h and --help.
+CONSOLE_CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
 
 class ClickCommand:
     """Decorator for creating Click-based commands that work with cmd.Cmd."""
@@ -25,12 +28,19 @@ class ClickCommand:
 
         # Get the Click command if it's already decorated
         if hasattr(func, "callback"):
-            # Function is already a Click command
+            # Function is already a Click command — merge our help-option names
+            # into whatever context_settings it already has.
             self.click_command = func
+            existing = getattr(func, "context_settings", None) or {}
+            merged = {**CONSOLE_CONTEXT_SETTINGS, **existing}
+            merged["help_option_names"] = CONSOLE_CONTEXT_SETTINGS["help_option_names"]
+            func.context_settings = merged
             original_func = func.callback
         else:
             # Create a Click command from the function
-            self.click_command = click.command(name=self.name)(func)
+            self.click_command = click.command(
+                name=self.name, context_settings=CONSOLE_CONTEXT_SETTINGS
+            )(func)
             original_func = func
 
         @wraps(original_func)
@@ -48,19 +58,10 @@ class ClickCommand:
             old_stderr = sys.stderr
 
             try:
-                # Create a context for the Click command
-                try:
-                    # Try newer Click API
-                    ctx = self.click_command.make_context(
-                        self.name,
-                        args,
-                        standalone_mode=False,
-                        obj=console_self,  # Pass console instance as context object
-                    )
-                except (TypeError, click.ClickException):
-                    # Fall back to creating context manually for older Click versions
-                    ctx = click.Context(self.click_command, obj=console_self)
-                    self.click_command.parse_args(ctx, args)
+                # make_context honors the command's context_settings
+                # (including our help_option_names). standalone_mode lives
+                # on Command.main(), not make_context.
+                ctx = self.click_command.make_context(self.name, args, obj=console_self)
 
                 # Execute the Click command
                 with ctx:
@@ -68,11 +69,13 @@ class ClickCommand:
                     # Return the result to support exit command
                     return result
 
+            except click.exceptions.Exit:
+                # Raised by --help / -h after printing help text. Swallow it.
+                pass
             except click.ClickException as e:
-                # Handle Click exceptions (like --help or missing arguments)
+                # Handle Click exceptions (missing arguments, bad options, ...)
                 e.show()
             except SystemExit:
-                # Catch SystemExit from --help
                 pass
             except Exception as e:
                 # Handle other exceptions
