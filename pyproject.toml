@@ -1,6 +1,6 @@
 [project]
 name = "peth"
-version = "1.0.10"
+version = "1.0.11"
 description = "An all-in-one Ethereum SDK and command-line tool written in python."
 authors = [{name = "Moon", email = "lmy375@139.com"}]
 license = {text = "AGPL-3.0"}
