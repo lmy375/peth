@@ -59,7 +59,7 @@ etf:
   api_key_env: ETHERFAIR_API_KEY
   chain_id: 513100
 eth:
-  rpc_url: https://eth.llamarpc.com
+  rpc_url: https://eth.drpc.org
   scan_url: https://api.etherscan.io/api?
   address_url: https://etherscan.io/address/
   api_key_env: ETHERSCAN_API_KEY

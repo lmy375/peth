@@ -1,3 +1,4 @@
+import functools
 from typing import List, Union
 
 from eth_hash.auto import keccak
@@ -14,19 +15,19 @@ from .utils import (
 )
 
 
-class ExtProcessor(object):
+class ExtProcessor:
     SEP_MARKER = ":"
 
     def process(self, func: "ABIFunction", key: str, values) -> str:
         return str(func.extract_value(key, values))
 
 
-class ABIFunction(object):
+class ABIFunction:
     def __init__(self, raw: Union[dict, str]) -> None:
         """
         raw: type string or full json.
         """
-        if type(raw) is str:
+        if isinstance(raw, str):
             raw = parse_simple_to_json(raw)
 
         self.raw = raw
@@ -89,14 +90,16 @@ class ABIFunction(object):
     def signature(self):
         return f"{self.name}{self.input_type_str}"
 
-    @property
+    @functools.cached_property
     def selector(self) -> bytes:
         return HexBytes(keccak(self.signature.encode())[:4])
 
     def __repr__(self):
         return self.full
 
-    def encode_input(self, args=[], include_selector=True) -> HexBytes:
+    def encode_input(self, args=None, include_selector=True) -> HexBytes:
+        if args is None:
+            args = []
         calldata = HexBytes(abi_encode(self.input_types, args))
         if include_selector:
             calldata = HexBytes(self.selector) + calldata
@@ -104,13 +107,20 @@ class ABIFunction(object):
 
     def decode_input(self, calldata):
         calldata = HexBytes(calldata)
-        assert (
-            calldata[0:4] == self.selector
-        ), f"selector not match: {calldata[0:4]} {self.selector}"
+        if len(calldata) < 4:
+            raise ValueError(
+                f"Calldata too short ({len(calldata)} bytes), at least 4 bytes required."
+            )
+        if calldata[0:4] != self.selector:
+            raise ValueError(
+                f"Selector not match: {calldata[0:4].hex()} != {self.selector.hex()}"
+            )
         calldata = calldata[4:]
         return abi_decode(self.input_types, calldata)
 
-    def encode_output(self, rets=[], auto_tuple=True) -> HexBytes:
+    def encode_output(self, rets=None, auto_tuple=True) -> HexBytes:
+        if rets is None:
+            rets = []
         if auto_tuple and len(self.outputs) == 1:
             rets = [rets]
         return HexBytes(abi_encode(self.output_types, rets))
@@ -131,7 +141,7 @@ class ABIFunction(object):
             if arg.name == name:
                 return static_offset
             static_offset += arg.static_size
-        raise (NameError(f"{name} not in arguments of {self}"))
+        raise NameError(f"{name} not in arguments of {self}")
 
     def get_type(self, indexes="") -> ABIType:
         indexes = normal_indexes(indexes)
@@ -143,8 +153,11 @@ class ABIFunction(object):
         arg = get_item_by_index(indexes[0], self.inputs)
         return arg.get_type(indexes[1:])
 
-    def extract_value(self, indexes="", values=[]):
-        assert len(values) == len(self.inputs), "Value not match arguments size"
+    def extract_value(self, indexes="", values=None):
+        if values is None:
+            values = []
+        if len(values) != len(self.inputs):
+            raise ValueError("Value not match arguments size")
 
         indexes = normal_indexes(indexes)
 
@@ -160,7 +173,8 @@ class ABIFunction(object):
         return self.extract_value(indexes, values)
 
     def map_values(self, values, include_type=False) -> List:
-        assert len(values) == len(self.inputs), "Value not match arguments size"
+        if len(values) != len(self.inputs):
+            raise ValueError("Value not match arguments size")
 
         r = []
         for arg, value in zip(self.inputs, values):
@@ -185,7 +199,8 @@ class ABIFunction(object):
 
             r.append(pattern[:start])
             end = pattern.find(END_MARKER)
-            assert end != -1, "Unclosed marker"
+            if end == -1:
+                raise ValueError("Unclosed marker")
             key = pattern[start + len(START_MARKER) : end]
 
             try:

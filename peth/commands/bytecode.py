@@ -116,7 +116,7 @@ def diffasm_click(ctx, chain1, addr1, chain2, addr2, output, open_file):
 
     # Write the file
     full_path = os.path.join(config.diff_path, output_filename + ".html")
-    with open(full_path, "w") as f:
+    with open(full_path, "w", encoding="utf-8") as f:
         f.write(buf)
 
     click.echo(f"Written to {full_path}")

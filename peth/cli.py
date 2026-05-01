@@ -123,11 +123,34 @@ def main():
     elif args.cmd:
         c = PethConsole(peth)
         cmd_str = " ".join(args.cmd)
-        for cmd in cmd_str.split(";"):
-            c.single_command(cmd)
+        # Split on semicolons but respect quoted strings.
+        cmds = []
+        current = []
+        in_quotes = False
+        quote_char = None
+        for ch in cmd_str:
+            if ch in ('"', "'") and not in_quotes:
+                in_quotes = True
+                quote_char = ch
+                current.append(ch)
+            elif ch == quote_char and in_quotes:
+                in_quotes = False
+                quote_char = None
+                current.append(ch)
+            elif ch == ";" and not in_quotes:
+                cmds.append("".join(current))
+                current = []
+            else:
+                current.append(ch)
+        if current:
+            cmds.append("".join(current))
+        for cmd in cmds:
+            cmd = cmd.strip()
+            if cmd:
+                c.single_command(cmd)
     else:
-        logger.debug("Config file: %s" % config.config_path)
-        logger.debug("Root path: %s" % config.root)
+        logger.debug("Config file: %s", config.config_path)
+        logger.debug("Root path: %s", config.root)
 
         # Default: Open console.
         c = PethConsole(peth)

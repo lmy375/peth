@@ -152,7 +152,7 @@ class TestContractCommands(CommandTestBase):
                 )
 
                 self.assert_success(result)
-                m.assert_called_once_with("graph.json", "w")
+                m.assert_called_once_with("graph.json", "w", encoding="utf-8")
                 m().write.assert_called_once_with('{"data": "test"}')
                 assert "Graph saved to graph.json" in result.output
 

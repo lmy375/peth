@@ -123,7 +123,7 @@ def graph_click(ctx, addresses, output):
     click.echo("=====================")
 
     if output:
-        with open(output, "w") as f:
+        with open(output, "w", encoding="utf-8") as f:
             f.write(graph_json)
         click.echo(f"Graph saved to {output}")
 
@@ -266,7 +266,7 @@ def verify_click(ctx, source1, source2, open_diff):
         os.makedirs(config.diff_path)
 
     path = os.path.join(config.diff_path, "bytecode_diff.html")
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(buf)
     click.echo(f"Written to {path}")
 

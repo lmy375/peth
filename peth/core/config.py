@@ -1,3 +1,4 @@
+import functools
 import json
 import os
 import sys
@@ -10,7 +11,7 @@ DATA_DIR = os.path.join(PETH_ROOT, "data")
 CONFIG_FILE_NAME = "config.ini"
 
 
-class PethConfig(object):
+class PethConfig:
 
     def __init__(self, config_file=CONFIG_FILE_NAME) -> None:
         self.load(config_file)
@@ -29,19 +30,23 @@ class PethConfig(object):
     def load_contracts(self, filename):
         self.contracts = self.load_yaml(filename)
 
-    def load_tokens(self, dir):
-        assert os.path.isdir(dir), f"dir {dir} not found."
+    def load_tokens(self, directory):
+        if not os.path.isdir(directory):
+            raise FileNotFoundError(f"Token directory {directory} not found.")
 
         self.tokens = {}
-        for name in os.listdir(dir):
+        for name in os.listdir(directory):
             chain = name.split(".")[0]
-            path = os.path.join(dir, name)
-            with open(path, encoding="utf-8") as f:
-                tokens = json.load(f)
-            self.tokens[chain] = tokens
+            path = os.path.join(directory, name)
+            try:
+                with open(path, encoding="utf-8") as f:
+                    tokens = json.load(f)
+                self.tokens[chain] = tokens
+            except json.JSONDecodeError as e:
+                print(f"[!] Failed to load token file {path}: {e}")
 
     def load_yaml(self, chain_file):
-        with open(chain_file) as f:
+        with open(chain_file, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     @property
@@ -62,35 +67,35 @@ class PethConfig(object):
     def contracts_path(self):
         return self._find_file(self.cfg.get("root", "contracts"), self.root, DATA_DIR)
 
-    @property
+    @functools.cached_property
     def output_path(self):
         return os.path.join(self.root, self.cfg.get("root", "output"))
 
-    @property
+    @functools.cached_property
     def sig_db_path(self):
         return os.path.join(self.root, self.cfg.get("root", "sig_db"))
 
-    @property
+    @functools.cached_property
     def cache_path(self):
         return os.path.join(self.root, self.cfg.get("root", "cache"))
 
-    @property
+    @functools.cached_property
     def diff_path(self):
         return os.path.join(self.output_path, self.cfg.get("output", "diff"))
 
-    @property
+    @functools.cached_property
     def report_path(self):
         return os.path.join(self.output_path, self.cfg.get("output", "report"))
 
-    @property
+    @functools.cached_property
     def sources_path(self):
         return os.path.join(self.output_path, self.cfg.get("output", "sources"))
 
-    @property
+    @functools.cached_property
     def evm_cache_path(self):
         return os.path.join(self.cache_path, self.cfg.get("cache", "evm"))
 
-    @property
+    @functools.cached_property
     def contracts_cache_path(self):
         return os.path.join(self.cache_path, self.cfg.get("cache", "contracts"))
 
@@ -114,12 +119,14 @@ class PethConfig(object):
         if os.path.exists(file):
             return file
 
-        for dir in dirs:
-            path = os.path.join(dir, file)
+        searched = []
+        for directory in dirs:
+            path = os.path.join(directory, file)
+            searched.append(path)
             if os.path.exists(path):
                 return path
 
-        raise FileNotFoundError(f"{file} not found")
+        raise FileNotFoundError(f"{file} not found. Searched: {searched}")
 
     def print_config(self):
         for name, value in self.__class__.__dict__.items():

@@ -8,7 +8,7 @@ from .exceptions import TransactionRevert
 from .transaction import Transaction
 
 
-class ContractFunction(object):
+class ContractFunction:
 
     def __init__(self, contract: "Contract", abi: ABIFunction) -> None:
         self.contract = contract
@@ -49,20 +49,23 @@ class ContractFunction(object):
         data = self.abi.encode_input(args)
         value = kwds.get("value", 0)
         if value != 0:
-            assert self.abi.is_payable, "Value not allowed for non-payable function"
+            if not self.abi.is_payable:
+                raise ValueError("Value not allowed for non-payable function")
         return {"to": to, "from": sender, "data": data, "value": value}
 
 
-class Contract(object):
+class Contract:
     def __init__(
         self,
         to: str = None,
-        abi: Union[str, dict, ABI] = [],
+        abi: Union[str, dict, ABI] = None,
         sender: str = None,
         deploycode=None,
         value: int = 0,
         chain: Chain = None,
     ) -> None:
+        if abi is None:
+            abi = []
         if chain:
             self.chain = chain
         else:
@@ -78,10 +81,10 @@ class Contract(object):
             r = self.chain.apply_transaction(tx)
             self.address = r.created_contract
         else:
-            assert to, "either `deploycode` or `to` must be provided."
+            if not to:
+                raise ValueError("either `deploycode` or `to` must be provided.")
             self.address = to
 
-        assert abi is not None, ValueError("ABI not provided")
         self.abi: ABI = self._load_abi(abi)
 
         self._bind_methods()
@@ -96,7 +99,8 @@ class Contract(object):
         """
         if type(abi) is str:
             if os.path.exists(abi):
-                abi = open(abi).read()
+                with open(abi, encoding="utf-8") as f:
+                    abi = f.read()
 
             abi = json.loads(abi)
             return ABI(abi)

@@ -18,10 +18,14 @@ from .utils import (
 )
 
 
-class VM(object):
+class VM:
 
     debug = False
     trace = False
+
+    # Class-level handler template: maps opcode -> (handler_name, partial_arg)
+    # Built once and shared across all VM instances for performance.
+    _handler_template = None
 
     def __init__(self, chain=None, tx: Transaction = None) -> None:
         if chain:
@@ -43,25 +47,40 @@ class VM(object):
         self._current_ins = None
         self.result = Receipt()
 
-        # TODO: try to optimize this so we don't have _init_handlers
-        #       each time we create a new vm instance.
-        self._handlers = [self._invalid] * 256
         self._init_handlers()
 
-    def _init_handlers(self) -> None:
+    @classmethod
+    def _build_handler_template(cls):
+        """Build handler template once at class level."""
+        if cls._handler_template is not None:
+            return
+        template = [None] * 256  # None means _invalid
         for mnemonic, op in OpCode.mnemonic_map.items():
             code = op.code
             if op.is_push:
-                handler = functools.partial(self._push, code - 0x5F)
+                template[code] = ("_push", code - 0x5F)
             elif op.is_dup:
-                handler = functools.partial(self._dup, code - 0x7F)
+                template[code] = ("_dup", code - 0x7F)
             elif op.is_swap:
-                handler = functools.partial(self._swap, code - 0x8F)
+                template[code] = ("_swap", code - 0x8F)
             elif op.is_log:
-                handler = functools.partial(self._log, code - 0xA0)
+                template[code] = ("_log", code - 0xA0)
             else:
-                handler = getattr(self, "_" + mnemonic.lower(), self._invalid)
-            self._handlers[code] = handler
+                template[code] = ("_" + mnemonic.lower(), None)
+        cls._handler_template = template
+
+    def _init_handlers(self) -> None:
+        VM._build_handler_template()
+        self._handlers = [self._invalid] * 256
+        for code, entry in enumerate(VM._handler_template):
+            if entry is None:
+                continue
+            method_name, partial_arg = entry
+            method = getattr(self, method_name, self._invalid)
+            if partial_arg is not None:
+                self._handlers[code] = functools.partial(method, partial_arg)
+            else:
+                self._handlers[code] = method
 
     def _trace(self, msg: str):
         if self.trace or self.debug:
@@ -85,13 +104,17 @@ class VM(object):
         if offset + size > len(self._memory):
             self._memory.extend(b"\x00" * (offset + size - len(self._memory)))
         data = self._memory[offset : offset + size]
-        assert len(data) == size
+        if len(data) != size:
+            raise RuntimeError(
+                f"Memory read size mismatch: expected {size}, got {len(data)}"
+            )
         return data
 
     def _write_memory(
         self, offset: int, size: int, data: Union[bytearray, bytes]
     ) -> None:
-        assert len(data) == size, "Wrong data size."
+        if len(data) != size:
+            raise ValueError("Wrong data size.")
         if offset + size > len(self._memory):
             self._memory.extend(b"\x00" * (offset + size - len(self._memory)))
         self._memory[offset : offset + size] = data
@@ -105,14 +128,15 @@ class VM(object):
     def _stack_pop_values(self, n: int) -> List[int]:
         return [self._stack.pop() for _ in range(n)]
 
-    def execute(self, code=None, input=None, reset=True) -> Receipt:
+    def execute(self, code=None, input_data=None, reset=True) -> Receipt:
         if code:
             self.code = Code(code)
 
-        if input:
-            self.transaction.data = input
+        if input_data:
+            self.transaction.data = input_data
 
-        assert self.code, "EVM: No code set."
+        if not self.code:
+            raise VMExecutionError("EVM: No code set.")
 
         if reset:
             self.reset()
@@ -191,19 +215,23 @@ class VM(object):
 
     def _sdiv(self):
         r1, r2 = self._stack_pop_values(2)
+        s1 = to_int256(r1)
+        s2 = to_int256(r2)
         v = (
             0
-            if r2 == 0
-            else to_uint256(abs(r1) // abs(r2) * (-1 if r1 * r2 < 0 else 1))
+            if s2 == 0
+            else to_uint256(abs(s1) // abs(s2) * (-1 if s1 * s2 < 0 else 1))
         )
         self._stack_push(v)
-        self._trace(f"{r1} / {r2} => {v}")
+        self._trace(f"{s1} / {s2} => {v}")
 
     def _smod(self):
         r1, r2 = self._stack_pop_values(2)
-        v = 0 if r2 == 0 else to_uint256(abs(r1) % abs(r2) * (-1 if r1 < 0 else 1))
+        s1 = to_int256(r1)
+        s2 = to_int256(r2)
+        v = 0 if s2 == 0 else to_uint256(abs(s1) % abs(s2) * (-1 if s1 < 0 else 1))
         self._stack_push(v)
-        self._trace(f"{r1} % {r2} => {v}")
+        self._trace(f"{s1} % {s2} => {v}")
 
     def _addmod(self):
         r1, r2, r3 = self._stack_pop_values(3)
@@ -254,15 +282,19 @@ class VM(object):
 
     def _slt(self):
         r1, r2 = self._stack_pop_values(2)
-        v = 1 if r1 < r2 else 0
+        s1 = to_int256(r1)
+        s2 = to_int256(r2)
+        v = 1 if s1 < s2 else 0
         self._stack_push(v)
-        self._trace(f"{r1} < {r2} => {v}")
+        self._trace(f"{s1} < {s2} => {v}")
 
     def _sgt(self):
         r1, r2 = self._stack_pop_values(2)
-        v = 1 if r1 > r2 else 0
+        s1 = to_int256(r1)
+        s2 = to_int256(r2)
+        v = 1 if s1 > s2 else 0
         self._stack_push(v)
-        self._trace(f"{r1} > {r2} => {v}")
+        self._trace(f"{s1} > {s2} => {v}")
 
     def _eq(self):
         r1, r2 = self._stack_pop_values(2)
@@ -271,7 +303,7 @@ class VM(object):
         self._trace(f"{hex(r1)} == {hex(r2)} => {v}")
 
     def _iszero(self):
-        r1 = to_int256(self._stack_pop())
+        r1 = self._stack_pop()
         v = 1 if r1 == 0 else 0
         self._stack_push(v)
         self._trace(f"{hex(r1)} == 0 => {v}")
@@ -380,7 +412,10 @@ class VM(object):
 
     def _calldataload(self):
         r = self._stack_pop()
-        data = self.transaction.data[r : r + 32]
+        data = bytearray(self.transaction.data[r : r + 32])
+        # Zero-pad if reading past end of calldata (EVM spec).
+        if len(data) < 32:
+            data.extend(b"\x00" * (32 - len(data)))
         v = data_to_uint(data)
         self._stack_push(v)
         self._trace(f"calldata[{r}] => {hex(v)}")
@@ -551,9 +586,8 @@ class VM(object):
         self.code.pc = target
         op = self.code.get_op()
         if op is None or not op.is_jumpdest:
-            raise InvalidJumpDestination(
-                f"Invalid jumpdest({op} {hex(op.code)}) at {target}"
-            )
+            op_info = f"{op} {hex(op.code)}" if op is not None else "None"
+            raise InvalidJumpDestination(f"Invalid jumpdest({op_info}) at {target}")
 
     def _jumpi(self):
         target, flag = self._stack_pop_values(2)
@@ -562,9 +596,8 @@ class VM(object):
             self.code.pc = target
             op = self.code.get_op()
             if op is None or not op.is_jumpdest:
-                raise InvalidJumpDestination(
-                    f"Invalid jumpdest({op} {hex(op.code)}) at {target}"
-                )
+                op_info = f"{op} {hex(op.code)}" if op is not None else "None"
+                raise InvalidJumpDestination(f"Invalid jumpdest({op_info}) at {target}")
 
     def _pc(self):
         v = self.code.pc - 1

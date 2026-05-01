@@ -27,7 +27,10 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 dev-dependencies = [
+    "black>=26.3.1",
+    "flake8>=7.3.0",
     "ipython>=8.37.0",
+    "isort>=8.0.1",
     "myst-parser>=4.0.1",
     "pytest>=7.0.0",
     "sphinx>=4.0.0",

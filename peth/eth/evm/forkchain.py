@@ -8,7 +8,7 @@ from peth import Peth
 from peth.core.config import config
 
 
-class ForkChain(object):
+class ForkChain:
 
     def __init__(self, web3: Web3, fix_block_number: int = 0) -> None:
         self.web3: Web3 = web3
@@ -46,15 +46,16 @@ class ForkChain(object):
     def load(self) -> bool:
         # TODO: Use faster method.
         if os.path.exists(self._cache_file_name):
-            [
-                self.addresses,
-                self.balances,
-                self.nonces,
-                self.codes,
-                self.storage,
-                self.chainid,
-                self.block,
-            ] = pickle.load(open(self._cache_file_name, "rb"))
+            with open(self._cache_file_name, "rb") as f:
+                [
+                    self.addresses,
+                    self.balances,
+                    self.nonces,
+                    self.codes,
+                    self.storage,
+                    self.chainid,
+                    self.block,
+                ] = pickle.load(f)
             return True
         else:
             return False
@@ -69,7 +70,8 @@ class ForkChain(object):
             self.chainid,
             self.block,
         ]
-        pickle.dump(data, open(self._cache_file_name, "wb"))
+        with open(self._cache_file_name, "wb") as f:
+            pickle.dump(data, f)
 
     def get_balance(self, address: str) -> int:
         address = Web3.to_checksum_address(address)

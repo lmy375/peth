@@ -16,7 +16,8 @@ USER_2_ADDRESS = "0x2000000000000000000000000000000000000000"
 
 def to_lower_address(s: str):
     a = str(s).lower()
-    assert Web3.is_address(a), f"{s} not a valid address"
+    if not Web3.is_address(a):
+        raise ValueError(f"{s} not a valid address")
     return a
 
 

@@ -7,7 +7,7 @@ import eth_abi
 from .utils import collapse_if_tuple, func_selector, hex2bytes
 
 
-class Signature(object):
+class Signature:
     """
     Deprecated class. Use `ABIFunction` instead.
 
@@ -244,7 +244,7 @@ class Signature(object):
         return sig
 
 
-class Signatures(object):
+class Signatures:
     def __init__(self, human_abi_or_json_abi=None) -> None:
         self.sigs = []
         self.name_map = {}

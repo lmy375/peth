@@ -1,7 +1,7 @@
 from typing import Optional
 
 
-class OpCode(object):
+class OpCode:
 
     mnemonic_map = {}
     code_map = {}
@@ -85,7 +85,8 @@ class OpCode(object):
 
     @classmethod
     def from_code(cls, code: int) -> Optional["OpCode"]:
-        assert code in cls.code_map, "Invalid opcode %s" % code
+        if code not in cls.code_map:
+            raise ValueError("Invalid opcode %s" % code)
         return cls.code_map[code]
 
     @classmethod

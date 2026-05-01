@@ -30,7 +30,8 @@ class Peth(Web3Ex):
             use_v2: Force use of v2 API if True, v1 if False, auto-detect if None
         """
         cfg = config.chains
-        assert chain in cfg.keys(), f"Invalid chain {chain}. See {config.chains_path}."
+        if chain not in cfg.keys():
+            raise ValueError(f"Invalid chain {chain}. See {config.chains_path}.")
 
         # Use chain + api_key + use_v2 as cache key to support different configurations
         cache_key = f"{chain}:{api_key}:{use_v2}"
@@ -63,12 +64,19 @@ class Peth(Web3Ex):
             sig = f"{name}()"
         return self.call_contract(contract, sig, [])
 
-    def get_decompile_url(self, addr):
+    # Map chain names to Dedaub network names.
+    _DEDAUB_CHAINS = {
+        "eth": "Ethereum",
+        "goerli": "Ethereum",
+        "sepolia": "Ethereum",
+        "matic": "Polygon",
+        "polygon": "Polygon",
+    }
 
-        if "eth" in self.chain:
-            url = "https://library.dedaub.com/contracts/Ethereum/" + addr
-        elif "matic" in self.chain:
-            url = "https://library.dedaub.com/contracts/Polygon/" + addr
+    def get_decompile_url(self, addr):
+        dedaub_network = self._DEDAUB_CHAINS.get(self.chain)
+        if dedaub_network:
+            url = f"https://library.dedaub.com/contracts/{dedaub_network}/{addr}"
         else:
             url = self.address_url.replace("address/", "bytecode-decompiler?a=") + addr
 
@@ -92,10 +100,10 @@ class Peth(Web3Ex):
         """
         Disassemble the bytecode and return extracted selectors.
         """
+        seen = set()
         selectors = []
 
         def _collect(ins):
-            # TODO: opt this.
             # DUP1 PUSH4 0x2E64CEC1 EQ PUSH1 0x37 JUMPI --> DEST
             # https://github.com/shazow/whatsabi/blob/main/src.ts/index.ts
             if ins.op is OpCode.PUSH4:
@@ -108,7 +116,8 @@ class Peth(Web3Ex):
                     # Skip ASCII string.
                     return
 
-                if selector not in selectors:
+                if selector not in seen:
+                    seen.add(selector)
                     selectors.append(selector)
 
         self.analyze_bytecode(addr, None, _collect)
@@ -145,7 +154,9 @@ class Peth(Web3Ex):
         project.analyze_all()
         return project
 
-    def get_portfolio(self, addresses=[]) -> dict:
+    def get_portfolio(self, addresses=None) -> dict:
+        if addresses is None:
+            addresses = []
         infos = {}  # addr => info
         for token in config.tokens[self.chain]:
             infos[token["address"].lower()] = token
@@ -167,14 +178,15 @@ class Peth(Web3Ex):
         return portfolio
 
     def withdraw_balance(self, to, gas_price_rate=1.2, gas_limit_rate=1):
-        assert self.signer
+        if not self.signer:
+            raise ValueError("No signer configured.")
 
         balance = self.web3.eth.get_balance(self.signer.address)
         tx = {"to": to, "value": 1}
         self.populate_tx(tx, self.signer.address, gas_price_rate, gas_limit_rate)
         fee = self.get_tx_gas_fee(tx)
         if balance <= fee:
-            raise Exception(f"balance {balance} > fee {fee}")
+            raise Exception(f"Insufficient balance: balance {balance} <= fee {fee}")
 
         tx["value"] = balance - fee
         return self.send_tx(tx)

@@ -9,7 +9,7 @@ from .abitype import ABIType
 from .utils import normal_indexes, parse_simple_to_json
 
 
-class ABI(object):
+class ABI:
     def __init__(self, arg: str | list, name: str = "Default") -> None:
         """
         arg:
@@ -22,21 +22,23 @@ class ABI(object):
 
         self.raw = arg
 
-        if type(arg) is list:
+        if isinstance(arg, list):
             if len(arg) > 0:
-                if type(arg[0]) is str:
+                if isinstance(arg[0], str):
                     self.raw = list(parse_simple_to_json(i) for i in arg)
 
-        elif type(arg) is str:
+        elif isinstance(arg, str):
             if os.path.exists(arg):
-                self.raw = json.load(open(arg))
+                with open(arg, encoding="utf-8") as f:
+                    self.raw = json.load(f)
             else:
                 try:
                     self.raw = json.loads(arg)
                 except json.JSONDecodeError:
                     raise TypeError(f"not valid ABI or file path: {arg}")
 
-        assert type(self.raw) is list, f"Invalid ABI: {arg}"
+        if not isinstance(self.raw, list):
+            raise TypeError(f"Invalid ABI: {arg}")
 
         self.functions: Dict[str, ABIFunction] = (
             {}
@@ -56,10 +58,12 @@ class ABI(object):
     def add_func(self, func: ABIFunction):
         name = func.name
 
-        assert func.signature not in self.signatures, "Signatures collision."
+        if func.signature in self.signatures:
+            raise ValueError(f"Signature collision: {func.signature}")
         self.signatures[func.signature] = func
 
-        assert func.selector not in self.selectors, "Selector collision."
+        if func.selector in self.selectors:
+            raise ValueError(f"Selector collision: {func.selector.hex()}")
         self.selectors[func.selector] = func
 
         if name in self.functions:
@@ -75,9 +79,12 @@ class ABI(object):
             self.add_func(func)
 
     def __getattr__(self, key):
+        # Guard against infinite recursion during __init__ or unpickling
+        if key == "functions":
+            raise AttributeError(key)
         if key in self.functions:
             return self.functions[key]
-        raise KeyError(key)
+        raise AttributeError(f"ABI has no function '{key}'")
 
     def __getitem__(self, key) -> ABIFunction:
         if key in self.functions:
@@ -101,10 +108,12 @@ class ABI(object):
 
     def _get_function_by_calldata(self, calldata):
         calldata = bytes(HexBytes(calldata))
-        assert len(calldata) >= 4, "Calldata too short"
+        if len(calldata) < 4:
+            raise ValueError("Calldata too short")
 
         selector = calldata[:4]
-        assert selector in self.selectors, "Selector not found"
+        if selector not in self.selectors:
+            raise KeyError(f"Selector {selector.hex()} not found")
 
         return self.selectors[selector]
 
@@ -131,7 +140,7 @@ class ABI(object):
         values = func.decode_input(calldata)
         return func.extract_value(indexes, values)
 
-    def explain_calldata(self, pattern: str, calldata, alias: dict = {}) -> list:
+    def explain_calldata(self, pattern: str, calldata, alias: dict = None) -> list:
         func = self._get_function_by_calldata(calldata)
         return func.explain_calldata(pattern, calldata, alias)
 
@@ -149,7 +158,7 @@ class ABI(object):
                 name, value = item
                 typ = None
 
-            if type(value) in (tuple, list):
+            if isinstance(value, (tuple, list)):
                 if typ:
                     print(" " * indent, typ, name, ":")
                 else:

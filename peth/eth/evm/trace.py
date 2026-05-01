@@ -4,7 +4,7 @@ from typing import List, Optional
 from ..opcodes import OpCode
 
 
-class Step(object):
+class Step:
     def __init__(
         self,
         pc: int,
@@ -56,7 +56,7 @@ class Step(object):
         return True
 
 
-class Trace(object):
+class Trace:
     def __init__(self) -> None:
         self.steps: List[Step] = []
 
@@ -84,7 +84,7 @@ class Trace(object):
         step.msg = msg
 
     def add_sub_trace(self, other: "Trace") -> None:
-        self.steps += other.steps
+        self.steps.extend(other.steps)
 
     def compare(self, other: "Trace", outputfile: Optional[str] = None) -> bool:
         self_size = len(self.steps)
@@ -94,51 +94,60 @@ class Trace(object):
             # When we don't care about the detail, we can return earlier.
             return False
 
+        f = None
         if outputfile:
-            f = open(outputfile, "w")
-            f.write(
-                "%-10s %-10s %-20s %-100s %-10s\n"
-                % ("Index", "PC", "OpCode", "Message", "Stack")
-            )
+            f = open(outputfile, "w", encoding="utf-8")
 
-        for i, (this, that) in enumerate(zip(self.steps, other.steps)):
+        try:
+            if f:
+                f.write(
+                    "%-10s %-10s %-20s %-100s %-10s\n"
+                    % ("Index", "PC", "OpCode", "Message", "Stack")
+                )
 
-            if not this.same_as(that, False):  #
-                break
+            diverge_idx = 0
+            for i, (this, that) in enumerate(zip(self.steps, other.steps)):
 
-            if this.same_as(that):
-                if outputfile:
-                    f.write("%-10s %s\n" % (i, this))
-            else:
-                if outputfile:
-                    f.write(">>>> %-10s %s\n" % (i, this))
-                    f.write(">>>> %-10s %s\n" % (i, that))
+                if not this.same_as(that, False):
+                    diverge_idx = i
+                    break
 
-        if outputfile:
-            # print more lines.
-            f.write("\n" + "=" * 100 + "\n\n")
-
-            end = min(i + 200, self_size, other_size)
-            for j in range(i, end):
-                this = self.steps[j]
-                that = other.steps[j]
                 if this.same_as(that):
-                    f.write("%-10s %s\n" % (i, this))
+                    if f:
+                        f.write("%-10s %s\n" % (i, this))
                 else:
-                    f.write(">>>> %-10s %s\n" % (i, this))
-                    f.write(">>>> %-10s %s\n" % (i, that))
+                    if f:
+                        f.write(">>>> %-10s %s\n" % (i, this))
+                        f.write(">>>> %-10s %s\n" % (i, that))
+                diverge_idx = i
 
-            if self_size != other_size:
-                f.write(f"Different size: {self_size} vs {other_size}")
+            if f:
+                # print more lines.
+                f.write("\n" + "=" * 100 + "\n\n")
 
-            f.close()
+                end = min(diverge_idx + 200, self_size, other_size)
+                for j in range(diverge_idx, end):
+                    this = self.steps[j]
+                    that = other.steps[j]
+                    if this.same_as(that):
+                        f.write("%-10s %s\n" % (j, this))
+                    else:
+                        f.write(">>>> %-10s %s\n" % (j, this))
+                        f.write(">>>> %-10s %s\n" % (j, that))
+
+                if self_size != other_size:
+                    f.write(f"Different size: {self_size} vs {other_size}")
+        finally:
+            if f:
+                f.close()
 
         return self_size == other_size
 
     def compare_debug_trace_transaction(
         self, tracefile: str, outputfile: Optional[str] = None
     ):
-        trace = json.load(open(tracefile))["structLogs"]
+        with open(tracefile, encoding="utf-8") as f:
+            trace = json.load(f)["structLogs"]
         other = Trace()
         for d in trace:
             other.steps.append(Step.fromJSON(d))

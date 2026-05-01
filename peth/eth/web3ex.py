@@ -18,10 +18,25 @@ from .contract import Contract
 from .scan import ScanAPI
 
 
-class Web3Ex(object):
+class Web3Ex:
     """
     The base class of Peth which implements basic eth_call related functions.
     """
+
+    # Class-level cache for bytecode/ABI files to avoid repeated disk I/O.
+    _file_cache = {}
+
+    @classmethod
+    def _load_cached_json(cls, filepath, key, transform=None):
+        """Load a JSON file field with caching. Optionally transform the value."""
+        cache_key = (filepath, key, transform is not None)
+        if cache_key not in cls._file_cache:
+            with open(filepath, encoding="utf-8") as f:
+                value = json.load(f)[key]
+            if transform:
+                value = transform(value)
+            cls._file_cache[cache_key] = value
+        return cls._file_cache[cache_key]
 
     def __init__(
         self,
@@ -60,12 +75,14 @@ class Web3Ex(object):
         try:
             self.web3.eth.get_block("latest")
         except Exception as e:
-            if "POA chain" in str(e):
-                from web3.middleware import geth_poa_middleware
-
-                self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            if "POA chain" in str(e) or "extraData" in str(e):
+                try:
+                    from web3.middleware import ExtraDataToPOAMiddleware as _poa
+                except ImportError:
+                    from web3.middleware import geth_poa_middleware as _poa
+                self.web3.middleware_onion.inject(_poa, layer=0)
             else:
-                raise e
+                raise
 
         if api_url:
             # Get chain_id and api_key_env from config if available
@@ -102,10 +119,13 @@ class Web3Ex(object):
         return len(self.web3.eth.get_code(addr)) != 0
 
     def get_address_url(self, addr):
-        assert self.address_url, "address_url not set"
+        if not self.address_url:
+            raise ValueError("address_url not set")
         return self.address_url + addr
 
-    def rpc_call(self, method, args=[]):
+    def rpc_call(self, method, args=None):
+        if args is None:
+            args = []
         logger.debug(f"rpc_call: {method} {args}")
         r = self.web3.provider.make_request(method, args)
         logger.debug(f"rpc_call returns: {r}")
@@ -129,7 +149,7 @@ class Web3Ex(object):
         data = HexBytes(data) if data else HexBytes("0x")
         selector = data[:4] if len(data) >= 4 else None
 
-        if to:
+        if to and self.scan:
             abi_json = self.scan.get_abi(to)
             if abi_json:
                 abi = ABI(abi_json)
@@ -141,7 +161,8 @@ class Web3Ex(object):
 
                 if selector:
                     if func:
-                        assert func.selector == selector, "Function not match calldata"
+                        if func.selector != selector:
+                            raise ValueError("Function not match calldata")
                     else:
                         if selector in abi.selectors:
                             func = abi.selectors[selector]
@@ -153,7 +174,8 @@ class Web3Ex(object):
             func = ABIFunction(sig)
             if func:
                 if selector:
-                    assert func.selector == selector, "Function not match calldata"
+                    if func.selector != selector:
+                        raise ValueError("Function not match calldata")
                 return func
 
         if selector:
@@ -182,7 +204,7 @@ class Web3Ex(object):
         return self.rpc_call("eth_call", [tx, "latest"])
 
     def _sig_name_to_func(self, to, sig_or_name):
-        if type(sig_or_name) is str:
+        if isinstance(sig_or_name, str):
             if "(" in sig_or_name:
                 func = ABIFunction(sig_or_name)
             else:
@@ -199,7 +221,7 @@ class Web3Ex(object):
         self,
         to,
         sig_or_name,
-        args=[],
+        args=None,
         sender=None,
         value: int = 0,
         silent: bool = False,
@@ -208,6 +230,8 @@ class Web3Ex(object):
         Construct tx data and perform eth_call RPC call.
         If silent=False raise exceptions when tx reverts or return data is not properly decodes.
         """
+        if args is None:
+            args = []
         func = self._sig_name_to_func(to, sig_or_name)
 
         try:
@@ -217,12 +241,18 @@ class Web3Ex(object):
             ret = func.decode_output(output)
             if ret is not None:
                 return ret
-        except Exception as e:
+        except Exception:
             if not silent:
-                raise e
+                raise
 
     def call_contract(
-        self, contract, sig_or_name, args=[], sender=None, value: int = 0, silent=False
+        self,
+        contract,
+        sig_or_name,
+        args=None,
+        sender=None,
+        value: int = 0,
+        silent=False,
     ):
         """
         If tx reverts, print error message and return None.
@@ -244,7 +274,8 @@ class Web3Ex(object):
         if not sender:
             sender = self.signer.address
 
-        assert sender, "sender not set"
+        if not sender:
+            raise ValueError("sender not set")
 
         if "from" not in tx:
             tx["from"] = sender
@@ -272,7 +303,8 @@ class Web3Ex(object):
         return int(tx["gasPrice"] * tx["gas"])
 
     def send_transaction(self, data=None, to=None, value=None, dry_run=False, wait=0):
-        assert self.signer, "send_transaction: signer not set."
+        if not self.signer:
+            raise ValueError("send_transaction: signer not set.")
 
         tx = {}
         if data:
@@ -314,14 +346,16 @@ class Web3Ex(object):
             return self.web3.eth.get_transaction_receipt(txid)
 
     def send(
-        self, contract, sig_or_name, args=[], value: int = 0, dry_run=False, wait=0
+        self, contract, sig_or_name, args=None, value: int = 0, dry_run=False, wait=0
     ):
+        if args is None:
+            args = []
         func = self._sig_name_to_func(contract, sig_or_name)
         data = func.encode_input(args)
         return self.send_transaction(data, contract, value, dry_run, wait)
 
     def get_logs(
-        self, address=None, topics=[], start=None, end=None, step=100, count=100
+        self, address=None, topics=None, start=None, end=None, step=100, count=100
     ):
         eth = self.web3.eth
         if end is None:
@@ -357,21 +391,21 @@ class Web3Ex(object):
         Compile and run the Executor.run() code with Wrapper contract constructor.
         """
 
-        assert (
-            "Executor" in code and "run" in code
-        ), "Executor.run() is not defined in such code."
+        if "Executor" not in code or "run" not in code:
+            raise ValueError("Executor.run() is not defined in such code.")
 
         output = compile_with_eth_call(code)
         calldata = output["<stdin>:Wrapper"]["bin"]
-        abi = None
-        for abi in output["<stdin>:Executor"]["abi"]:
-            if abi["type"] == "function" and abi["name"] == "run":
+        run_abi = None
+        for abi_item in output["<stdin>:Executor"]["abi"]:
+            if abi_item["type"] == "function" and abi_item["name"] == "run":
+                run_abi = abi_item
                 break
 
-        if abi is None:
-            raise Exception("Executor.run() not found in the code")
+        if run_abi is None:
+            raise ValueError("Executor.run() not found in the code")
 
-        func = ABIFunction(abi)
+        func = ABIFunction(run_abi)
 
         tx = {"from": self.sender, "data": "0x" + calldata}
 
@@ -400,8 +434,8 @@ class Web3Ex(object):
         """
         BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "GetBalanceWrapper.json")
         ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
-        code = HexBytes(json.load(open(BYTECODE_PATH))["bytecode"])
-        fn = ABI(json.load(open(ABI_PATH))["abi"]).getBalance
+        code = self._load_cached_json(BYTECODE_PATH, "bytecode", lambda v: HexBytes(v))
+        fn = self._load_cached_json(ABI_PATH, "abi", lambda v: ABI(v).getBalance)
 
         data = fn.encode_input([tokens, users, min_balance], False)
 
@@ -420,8 +454,8 @@ class Web3Ex(object):
         """
         BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "ExecTxWrapper.json")
         ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
-        code = HexBytes(json.load(open(BYTECODE_PATH))["bytecode"])
-        fn = ABI(json.load(open(ABI_PATH))["abi"]).execTxs
+        code = self._load_cached_json(BYTECODE_PATH, "bytecode", lambda v: HexBytes(v))
+        fn = self._load_cached_json(ABI_PATH, "abi", lambda v: ABI(v).execTxs)
 
         data = fn.encode_input([txs], False)
 
@@ -437,10 +471,8 @@ class Web3Ex(object):
         Ref: https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-eth#eth-call
         """
         BYTECODE_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
-        ABI_PATH = os.path.join(DATA_DIR, "bytecode", "MockSender.json")
-
-        code = json.load(open(BYTECODE_PATH))["deployedBytecode"]
-        fn = ABI(json.load(open(ABI_PATH))["abi"]).execTxs
+        code = self._load_cached_json(BYTECODE_PATH, "deployedBytecode")
+        fn = self._load_cached_json(BYTECODE_PATH, "abi", lambda v: ABI(v).execTxs)
 
         if sender is None:
             sender = self.sender

@@ -416,7 +416,7 @@ def status_click(ctx, interval):
             total_time = (time.time() - start_time) or 1
 
             click.echo(
-                f"{datetime.now()} {total_blocks/total_time:.2f} b/s {total_time/total_blocks:.2f} s/b"
+                f"{datetime.now()} {total_blocks / total_time:.2f} b/s {total_time / total_blocks:.2f} s/b"
             )
 
             console._print_block("latest ", cur)
@@ -468,16 +468,16 @@ def blocks_click(ctx):
     finalized_block_time = latest_block.timestamp - finalized_block.timestamp
 
     click.echo(
-        f"\nBlock rate: {finalized_block_confs/(finalized_block_time or 1):.2f} b/s "
-        f"{finalized_block_time/(finalized_block_confs or 1):.2f} s/b"
+        f"\nBlock rate: {finalized_block_confs / (finalized_block_time or 1):.2f} b/s "
+        f"{finalized_block_time / (finalized_block_confs or 1):.2f} s/b"
     )
     click.echo(
         f"Safe gap: {safe_block_confs} blocks, {safe_block_time:.2f} secs = "
-        f"{safe_block_time/60:.2f} mins"
+        f"{safe_block_time / 60:.2f} mins"
     )
     click.echo(
         f"Finalized gap: {finalized_block_confs} blocks, {finalized_block_time:.2f} secs = "
-        f"{finalized_block_time/60:.2f} mins"
+        f"{finalized_block_time / 60:.2f} mins"
     )
 
 
@@ -516,7 +516,7 @@ def run_click(ctx, solidity_file, sender):
         click.echo(f"Error: File {solidity_file} not exists", err=True)
         return
 
-    with open(solidity_file) as f:
+    with open(solidity_file, encoding="utf-8") as f:
         code = f.read()
 
     if sender:

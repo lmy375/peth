@@ -5,7 +5,7 @@ from typing import Any, Union
 from .abi import ABI, ABIFunction
 
 
-class ContractFunction(object):
+class ContractFunction:
 
     def __init__(self, contract: "Contract", abi: ABIFunction) -> None:
         self.contract = contract
@@ -43,17 +43,19 @@ class ContractFunction(object):
         data = self.abi.encode_input(args)
         value = kwds.get("value", 0)
         if value != 0:
-            assert self.abi.is_payable, "Value not allowed for non-payable function"
+            if not self.abi.is_payable:
+                raise ValueError("Value not allowed for non-payable function")
         return {"to": to, "data": data, "value": value}
 
 
-class Contract(object):
+class Contract:
 
     def __init__(self, web3ex, address: str, abi: Union[str, dict, ABI]) -> None:
         self.web3ex = web3ex
         self.address: str = address
 
-        assert abi is not None, ValueError("ABI not provided")
+        if abi is None:
+            raise ValueError("ABI not provided")
         self.abi: ABI = self._load_abi(abi)
 
         self._bind_methods()
@@ -74,13 +76,14 @@ class Contract(object):
             list: ABI list.
             ABI: ABI object
         """
-        if type(abi) is str:
+        if isinstance(abi, str):
             if os.path.exists(abi):
-                abi = open(abi).read()
+                with open(abi, encoding="utf-8") as f:
+                    abi = f.read()
 
             abi = json.loads(abi)
             return ABI(abi)
-        elif type(abi) is list:
+        elif isinstance(abi, list):
             return ABI(abi)
         elif isinstance(abi, ABI):
             return abi

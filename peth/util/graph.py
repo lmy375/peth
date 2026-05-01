@@ -3,7 +3,7 @@ import json
 from peth.eth.sigs import Signature
 
 
-class ERC20Contract(object):
+class ERC20Contract:
 
     def __init__(self, contract_name, contract) -> None:
         self.contract_name = contract_name
@@ -28,7 +28,7 @@ class ERC20Contract(object):
         return f"{self.name}({self.symbol}) {self.totalSupply}*(10**{self.decimals})"
 
 
-class ContractRelationGraph(object):
+class ContractRelationGraph:
 
     # for: http://relation-graph.com/#/options-tools
 
@@ -58,7 +58,8 @@ class ContractRelationGraph(object):
         return self.peth.scan.get_contract_info(addr)
 
     def _add_node(self, **kwargs):
-        assert "id" in kwargs, "id not exist."
+        if "id" not in kwargs:
+            raise ValueError("id not exist.")
 
         node = {}
         for k, v in kwargs.items():
@@ -69,8 +70,10 @@ class ContractRelationGraph(object):
             self.data["nodes"].append(node)
 
     def _add_link(self, **kwargs):
-        assert "from" in kwargs, "from not exist."
-        assert "to" in kwargs, "from not exist."
+        if "from" not in kwargs:
+            raise ValueError("from not exist.")
+        if "to" not in kwargs:
+            raise ValueError("to not exist.")
         link = {}
         for k, v in kwargs.items():
             link[k] = str(v)
@@ -96,7 +99,8 @@ class ContractRelationGraph(object):
 
     def dump(self, file=None):
         if file:
-            json.dump(self.data, open(file, "w"))
+            with open(file, "w", encoding="utf-8") as f:
+                json.dump(self.data, f)
         else:
             return json.dumps(self.data)
 

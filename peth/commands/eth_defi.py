@@ -324,7 +324,7 @@ def timelock_click(ctx, address):
         try:
             secs = console.peth.call_contract(addr, method, silent=True)
             if secs is not None:
-                click.echo(f"{name}: {secs}s = {secs/3600:.2f}h")
+                click.echo(f"{name}: {secs}s = {secs / 3600:.2f}h")
                 found_any = True
         except Exception:
             pass
@@ -429,7 +429,7 @@ def pair_click(ctx, args, v3):
         # Check for V3 fee
         fee = console.peth.call_contract(pair_addr, "fee()->(uint)", silent=True)
         if fee:
-            click.echo(f"V3 Fee: {fee/1e4:.2f}%")
+            click.echo(f"V3 Fee: {fee / 1e4:.2f}%")
             if v3:
                 # Additional V3 info
                 try:
@@ -455,8 +455,8 @@ def pair_click(ctx, args, v3):
         if fee is None and r0_decimal > 0 and r1_decimal > 0:
             # V2 price calculation
             click.echo("\nV2 Price:")
-            click.echo(f"1 {token0_name} = {r1_decimal/r0_decimal:.4f} {token1_name}")
-            click.echo(f"1 {token1_name} = {r0_decimal/r1_decimal:.4f} {token0_name}")
+            click.echo(f"1 {token0_name} = {r1_decimal / r0_decimal:.4f} {token1_name}")
+            click.echo(f"1 {token1_name} = {r0_decimal / r1_decimal:.4f} {token0_name}")
 
     except Exception as e:
         click.echo(f"Error getting pair info: {e}", err=True)
@@ -484,7 +484,7 @@ def factory_click(ctx, factory_address, limit, start):
         click.echo(f"{total_pairs} total pairs found.")
 
         end = min(start + limit, total_pairs)
-        click.echo(f"Showing pairs {start} to {end-1}:\n")
+        click.echo(f"Showing pairs {start} to {end - 1}:\n")
 
         for i in range(start, end):
             try:
@@ -546,7 +546,7 @@ def oracle_click(ctx, addresses, history):
 
     for i, address in enumerate(addresses):
         if len(addresses) > 1:
-            click.echo(f"\n---- [{i+1}] {address} ----")
+            click.echo(f"\n---- [{i + 1}] {address} ----")
 
         addr = console.web3.to_checksum_address(address)
 
@@ -595,7 +595,9 @@ def oracle_click(ctx, addresses, history):
                     aggr, "latestAnswer()->(int256)", silent=True
                 )
                 if latest is not None:
-                    click.echo(f"Latest Answer: {latest} ({latest/(10**decimals):.2f})")
+                    click.echo(
+                        f"Latest Answer: {latest} ({latest / (10**decimals):.2f})"
+                    )
 
                 # Get min/max
                 try:
@@ -604,7 +606,7 @@ def oracle_click(ctx, addresses, history):
                     )
                     if max_answer is not None:
                         click.echo(
-                            f"Max Answer: {max_answer} ({max_answer/(10**decimals):.2f})"
+                            f"Max Answer: {max_answer} ({max_answer / (10**decimals):.2f})"
                         )
 
                     min_answer = console.peth.call_contract(
@@ -612,7 +614,7 @@ def oracle_click(ctx, addresses, history):
                     )
                     if min_answer is not None:
                         click.echo(
-                            f"Min Answer: {min_answer} ({min_answer/(10**decimals):.2f})"
+                            f"Min Answer: {min_answer} ({min_answer / (10**decimals):.2f})"
                         )
                 except Exception:
                     pass
@@ -636,7 +638,7 @@ def oracle_click(ctx, addresses, history):
                                 if round_data:
                                     _, answer, started_at, updated_at, _ = round_data
                                     click.echo(
-                                        f"  Round {round_id}: {answer/(10**decimals):.2f} "
+                                        f"  Round {round_id}: {answer / (10**decimals):.2f} "
                                         f"(updated: {updated_at})"
                                     )
                     except Exception:

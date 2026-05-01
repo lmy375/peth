@@ -17,7 +17,7 @@ from .utils import (
 from .vm import VM
 
 
-class Account(object):
+class Account:
     def __init__(self, address: str, balance: int = 0) -> None:
         self.address = to_lower_address(address)
         self.balance = balance
@@ -27,7 +27,7 @@ class Account(object):
         self.remote = False
 
 
-class Chain(object):
+class Chain:
 
     debug = False
     trace = False
@@ -56,7 +56,7 @@ class Chain(object):
             self.timestamp = int(fork.block.timestamp)
             self.difficulty = fork.block.difficulty
             self.gaslimit = fork.block.gasLimit
-            self.coinbase = int(fork.block.miner, 16)
+            self.coinbase = fork.block.miner
 
         self._init_default_accounts()
 
@@ -101,16 +101,19 @@ class Chain(object):
         return len(self.__snapshots)
 
     def revert(self, i=None):
-        assert self.__snapshots, "No snapshot found."
+        if not self.__snapshots:
+            raise RuntimeError("No snapshot found.")
 
         if i is not None:
-            assert i < len(self.__snapshots), "Invalid snapshot ID."
+            if i >= len(self.__snapshots):
+                raise ValueError("Invalid snapshot ID.")
             self.__snapshots = self.__snapshots[:i]  # Drop all snapshots after the ID.
 
         self.__dict__.update(self.__snapshots.pop())
 
     def commit(self):
-        assert self.__snapshots, "No snapshot found."
+        if not self.__snapshots:
+            raise RuntimeError("No snapshot found.")
         self.__snapshots.pop()
 
     def get_blockhash(self, idx):
@@ -119,7 +122,8 @@ class Chain(object):
 
     def create_account(self, address: str) -> Account:
         address = to_lower_address(address)
-        assert address not in self.accounts, f"{address} alrealy exists."
+        if address in self.accounts:
+            raise ValueError(f"{address} already exists.")
         account = Account(address)
         self.accounts[address] = account
         return account
@@ -198,7 +202,8 @@ class Chain(object):
         contract = self.ensure_account(address)
         beneficiary = self.ensure_account(beneficiary)
 
-        assert contract.code, "Destruct EOA? %s" % (address)
+        if not contract.code:
+            raise ValueError("Destruct EOA? %s" % (address))
         amount = self.get_balance(contract.address)
         self._transfer_balance(contract.address, beneficiary.address, amount)
 
@@ -209,7 +214,8 @@ class Chain(object):
         Executes the deploy code, set returndata as code to new contract.
         Returns new contract address or 0 for failure.
         """
-        assert tx.to is None, "Sending to %#x to create? Should be None" % tx.to
+        if tx.to is not None:
+            raise ValueError("Sending to %s to create? Should be None" % tx.to)
         sender = self.ensure_account(tx.sender)
         if tx.salt is None:
             contract = generate_contract_address(sender.address, sender.nonce)
@@ -243,11 +249,15 @@ class Chain(object):
 
             vm = VM(self, tx)
             if create or tx.to == 0:
-                assert tx.data, "Creating contract without deploy code?"
+                if not tx.data:
+                    raise ValueError("Creating contract without deploy code?")
                 r = vm.execute(tx.data)
             else:
                 code = self.get_code(tx.code_address)
-                assert code, "Calling EOA? %s" % (uint_to_address(tx.code_address))
+                if not code:
+                    return Receipt(
+                        "Calling EOA? %s" % (uint_to_address(tx.code_address))
+                    )
                 r = vm.execute(code)
             return r
 
@@ -267,7 +277,8 @@ class Chain(object):
             # Revert the world.
             self.revert()
 
-        assert _ss_count == len(self.__snapshots)
+        if _ss_count != len(self.__snapshots):
+            raise RuntimeError("Snapshot count mismatch after transaction execution")
         return r
 
     def apply_transaction(self, tx: Transaction, update_nonce=True) -> Receipt:
@@ -300,7 +311,8 @@ class Chain(object):
                 sender.nonce += 1
         else:
             # Just transfer.
-            assert tx.do_transfer, "Applying non-transfer transfer?"
+            if not tx.do_transfer:
+                raise ValueError("Applying non-transfer transfer?")
             r = self._transfer_balance(tx.sender, tx.to, tx.value)
             r.tx = tx  # attach tx.
             if update_nonce and r.success:

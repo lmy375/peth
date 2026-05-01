@@ -3,7 +3,7 @@ from typing import Optional
 from ..opcodes import OpCode
 
 
-class Transaction(object):
+class Transaction:
     id = 0
 
     VIEW = "View"

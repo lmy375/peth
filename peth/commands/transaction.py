@@ -141,7 +141,7 @@ def idm_click(ctx, address, count, order, startblock, endblock):
             to = "Hacker"
 
         i += 1
-        click.echo(f"---- [{i}] {sender} to {to} ({value/1e18:.4f} ETH) ----")
+        click.echo(f"---- [{i}] {sender} to {to} ({value / 1e18:.4f} ETH) ----")
 
         try:
             msg = codecs.decode(data, "hex").decode("utf-8")
@@ -395,22 +395,27 @@ def evm_trace_tx_click(ctx, txid, debug, depth):
     tx = console.web3.eth.get_transaction(txid)
     block_number = tx["blockNumber"] - 1
 
-    if debug:
-        Chain.debug = True
-        VM.debug = True
-    VM.trace = True
+    # Save and restore class-level state to avoid polluting other commands.
+    old_chain_debug, old_vm_debug, old_vm_trace = Chain.debug, VM.debug, VM.trace
+    try:
+        if debug:
+            Chain.debug = True
+            VM.debug = True
+        VM.trace = True
 
-    chain = Chain(ForkChain(console.web3, block_number))
+        chain = Chain(ForkChain(console.web3, block_number))
 
-    r = chain.apply_transaction(
-        Transaction(
-            sender=tx["from"],
-            to=tx["to"],
-            value=tx["value"],
-            data=HexBytes(tx["input"]),
+        r = chain.apply_transaction(
+            Transaction(
+                sender=tx["from"],
+                to=tx["to"],
+                value=tx["value"],
+                data=HexBytes(tx["input"]),
+            )
         )
-    )
-    r.trace.print(depth)
+        r.trace.print(depth)
+    finally:
+        Chain.debug, VM.debug, VM.trace = old_chain_debug, old_vm_debug, old_vm_trace
 
 
 @command_click(name="evm_trace_call")
@@ -438,14 +443,19 @@ def evm_trace_call_click(ctx, to, calldata, sender, value, debug, depth):
     if not value:
         value = 0
 
-    if debug:
-        Chain.debug = True
-        VM.debug = True
-    VM.trace = True
+    # Save and restore class-level state to avoid polluting other commands.
+    old_chain_debug, old_vm_debug, old_vm_trace = Chain.debug, VM.debug, VM.trace
+    try:
+        if debug:
+            Chain.debug = True
+            VM.debug = True
+        VM.trace = True
 
-    chain = Chain(ForkChain(console.web3))
+        chain = Chain(ForkChain(console.web3))
 
-    r = chain.apply_transaction(
-        Transaction(sender=sender, to=to, value=value, data=HexBytes(calldata))
-    )
-    r.trace.print(depth)
+        r = chain.apply_transaction(
+            Transaction(sender=sender, to=to, value=value, data=HexBytes(calldata))
+        )
+        r.trace.print(depth)
+    finally:
+        Chain.debug, VM.debug, VM.trace = old_chain_debug, old_vm_debug, old_vm_trace

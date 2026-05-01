@@ -1,7 +1,7 @@
 from .utils import get_erc20_name, get_sig, hex_to_address
 
 
-class PropertyDictWrapper(object):
+class PropertyDictWrapper:
     """
     Covert getattr to getitem.
     Make python dict as JSObject.
@@ -10,9 +10,9 @@ class PropertyDictWrapper(object):
     TODO: Maybe we should use a wrapper instead of directly extending dict.
     """
 
-    def __init__(self, raw={}):
+    def __init__(self, raw=None):
         # We can't use `self.raw = raw` here as we had override `__setattr__`
-        self.__dict__["raw"] = raw
+        self.__dict__["raw"] = raw if raw is not None else {}
 
     def __getattr__(self, key):
         value = self.raw.get(key, None)

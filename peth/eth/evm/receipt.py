@@ -5,7 +5,7 @@ import eth_abi
 from .trace import Trace
 
 
-class Receipt(object):
+class Receipt:
     """
     Transcation result or EVM execution result.
 

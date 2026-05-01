@@ -6,7 +6,7 @@ from web3 import Web3
 JS_DIR = os.path.join(os.path.dirname(__file__), "js")
 
 
-class GethTracer(object):
+class GethTracer:
 
     def __init__(self, url: str, tracer: str, timeout: int = 60) -> None:
         """
@@ -33,9 +33,11 @@ class GethTracer(object):
         # self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         if os.path.exists(tracer):
-            self.tracer = open(tracer).read()
+            with open(tracer, encoding="utf-8") as f:
+                self.tracer = f.read()
         elif os.path.exists(os.path.join(JS_DIR, tracer)):
-            self.tracer = open(os.path.join(JS_DIR, tracer)).read()
+            with open(os.path.join(JS_DIR, tracer), encoding="utf-8") as f:
+                self.tracer = f.read()
         else:
             self.tracer = tracer
 
@@ -96,7 +98,8 @@ class GethTracer(object):
                 {"tracer": self.tracer, "timeout": "%ds" % self.timeout},
             ],
         )
-        assert "result" in r, "[!] Error response. %s" % r
+        if "result" not in r:
+            raise RuntimeError("[!] Error response. %s" % r)
         return r["result"]
 
     def trace_transaction(self, txid):
@@ -104,7 +107,8 @@ class GethTracer(object):
             "debug_traceTransaction",
             [txid, {"tracer": self.tracer, "timeout": "%ds" % self.timeout}],
         )
-        assert "result" in r, "[!] Error response. %s" % r
+        if "result" not in r:
+            raise RuntimeError("[!] Error response. %s" % r)
         return r["result"]
 
     def trace_block(self, block_number: int):
@@ -115,7 +119,8 @@ class GethTracer(object):
                 {"tracer": self.tracer, "timeout": "%ds" % self.timeout},
             ],
         )
-        assert "result" in r, "[!] Error response. %s" % r
+        if "result" not in r:
+            raise RuntimeError("[!] Error response. %s" % r)
         return r["result"]
 
     def enumerate_blocks(self, callback, block_start: int = 0, block_end: int = 2**63):

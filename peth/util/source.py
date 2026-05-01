@@ -16,7 +16,8 @@ def format_solidity(code):
         os.makedirs(config.diff_path)
 
     path = os.path.join(config.diff_path, "peth.tmp.sol")
-    open(path, "w").write(code)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(code)
 
     ret = os.system("npx prettier -w %s >/dev/null" % path)
     if ret != 0:
@@ -26,10 +27,11 @@ def format_solidity(code):
         _disable_format = True
         return code
 
-    return open(path).read()
+    with open(path, encoding="utf-8") as f:
+        return f.read()
 
 
-class ContractSource(object):
+class ContractSource:
 
     def __init__(self, code=None) -> None:
         self.contracts = {}  # name => source
@@ -88,7 +90,8 @@ class ContractSource(object):
     def __diff_file(self, a, b, output_filename):
         d = difflib.HtmlDiff()
         buf = d.make_file(a.splitlines(), b.splitlines())
-        open(output_filename + ".html", "w").write(buf)
+        with open(output_filename + ".html", "w", encoding="utf-8") as f:
+            f.write(buf)
         print("Written to " + output_filename + ".html")
 
     def compare(self, other, output=None):

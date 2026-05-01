@@ -16,11 +16,14 @@ ALIGN_SIZE = 32
 DYNAMIC_SIZE = -1
 
 
-class ABIType(object):
+class ABIType:
     def __init__(self, name="", typ=None, components=None, raw=None) -> None:
-        assert raw is not None or typ is not None
-        assert raw is None or type(raw) is dict, "Invalid raw"
-        assert typ is None or type(typ) is str, "Invalid typ"
+        if raw is None and typ is None:
+            raise ValueError("Either raw or typ must be provided.")
+        if raw is not None and not isinstance(raw, dict):
+            raise TypeError(f"Invalid raw: expected dict, got {type(raw)}")
+        if typ is not None and not isinstance(typ, str):
+            raise TypeError(f"Invalid typ: expected str, got {type(typ)}")
 
         if raw is None:
             raw = convert_typ_to_abi_item(typ)
@@ -39,10 +42,12 @@ class ABIType(object):
 
         if self.type.startswith("tuple"):
             self.is_tuple = True
-            assert len(self.components) > 0
+            if len(self.components) == 0:
+                raise ValueError("Tuple type must have at least one component.")
         else:
             self.is_tuple = False
-            assert len(self.components) == 0
+            if len(self.components) != 0:
+                raise ValueError("Non-tuple type should not have components.")
 
         if self.type.endswith("]"):
             self.is_array = True
@@ -72,8 +77,7 @@ class ABIType(object):
             s = "("
             s += ",".join(i.type_str for i in self.components)
             s += ")"
-            assert self.type.startswith("tuple")
-            s += self.type.strip("tuple")
+            s += self.type[len("tuple") :]
             return s
         else:
             return self.type
@@ -110,7 +114,8 @@ class ABIType(object):
             return ALIGN_SIZE
 
         if self.is_array:
-            assert not self.is_dynamic_array
+            if self.is_dynamic_array:
+                raise ValueError("Dynamic array has no static size.")
             return self.base_type.static_size * self.array_size
 
         if self.is_tuple:  # static tuple
@@ -134,21 +139,21 @@ class ABIType(object):
             s = "("
             s += ",".join(str(i) for i in self.components)
             s += ")"
-            assert self.type.startswith("tuple")
-            s += self.type.strip("tuple")
+            s += self.type[len("tuple") :]
             return f"{s} {self.name}"
         else:
             return f"{self.type_str} {self.name}"
 
     def tuple_get_static_offset(self, name):
-        assert self.is_tuple
+        if not self.is_tuple:
+            raise TypeError("tuple_get_static_offset called on non-tuple type.")
 
         static_offset = 0
         for arg in self.components:
             if arg.name == name:
                 return static_offset
             static_offset += arg.static_size
-        raise (NameError(f"{name} not in tuple of {self}"))
+        raise NameError(f"{name} not in tuple of {self}")
 
     def get_type(self, indexes="") -> "ABIType":
         indexes = normal_indexes(indexes)
@@ -165,9 +170,12 @@ class ABIType(object):
             return arg.get_type(indexes[1:])
         else:
             # string/bytes .length
-            assert self.type in ["bytes", "string"], "Should be bytes/string length"
-            assert indexes[0] == "length", "Should be length here"
-            assert len(indexes) == 1, "length should be end of indexes"
+            if self.type not in ["bytes", "string"]:
+                raise TypeError("Should be bytes/string length")
+            if indexes[0] != "length":
+                raise ValueError("Should be length here")
+            if len(indexes) != 1:
+                raise ValueError("length should be end of indexes")
             return ABIType(typ="uint256")
 
     def extract_value(self, indexes="", values=None):
@@ -175,14 +183,16 @@ class ABIType(object):
         Extract the value with the indexes path.
         """
         indexes = normal_indexes(indexes)
-        assert eth_abi.is_encodable(self.type_str, values), "Value not match type"
+        if not eth_abi.is_encodable(self.type_str, values):
+            raise ValueError(f"Value does not match type {self.type_str}")
 
         if len(indexes) == 0:
             # Return the entire value
             return self.normalize(values)
 
         elif self.is_array:
-            assert type(values) in (list, tuple), "Value not array"
+            if not isinstance(values, (list, tuple)):
+                raise TypeError("Value not array")
             if indexes[0] == "length":
                 # Array length
                 return len(values)
@@ -197,10 +207,14 @@ class ABIType(object):
 
         else:
             # string/bytes .length
-            assert self.type in ["bytes", "string"], "Should be bytes/string length"
-            assert indexes[0] == "length", "Should be length here"
-            assert len(indexes) == 1, "length should be end of indexes"
-            assert type(values) in (bytes, str)
+            if self.type not in ["bytes", "string"]:
+                raise TypeError("Should be bytes/string length")
+            if indexes[0] != "length":
+                raise ValueError("Should be length here")
+            if len(indexes) != 1:
+                raise ValueError("length should be end of indexes")
+            if not isinstance(values, (bytes, str)):
+                raise TypeError("Expected bytes or str value")
             return len(values)
 
     def map_values(self, values, include_type=False) -> Tuple:
@@ -214,7 +228,8 @@ class ABIType(object):
         ("a", "uint256", 1)
         """
         if self.is_array:
-            assert type(values) in (list, tuple), "Value not array"
+            if not isinstance(values, (list, tuple)):
+                raise TypeError("Value not array")
             r = []
             for i, v in enumerate(values):
                 name = f"[{i}]"
@@ -231,8 +246,10 @@ class ABIType(object):
                 return (self.name, r)
 
         elif self.is_tuple:
-            assert type(values) in (list, tuple), "Value not tuple"
-            assert len(values) == len(self.components), "Value not match tuple size"
+            if not isinstance(values, (list, tuple)):
+                raise TypeError("Value not tuple")
+            if len(values) != len(self.components):
+                raise ValueError("Value not match tuple size")
 
             r = []
             for i, arg in enumerate(self.components):
@@ -255,11 +272,12 @@ class ABIType(object):
                 return (self.name, values)
 
     def _convert_list(self, value):
-        if type(value) is str:
+        if isinstance(value, str):
             values = ast.literal_eval(value)
         else:
             values = value
-        assert isinstance(values, (list, tuple)), f"Invalid list {self}: {value}"
+        if not isinstance(values, (list, tuple)):
+            raise TypeError(f"Invalid list {self}: {value}")
         return values
 
     def normalize(self, value, is_list=False):
@@ -322,14 +340,17 @@ class ABIType(object):
             return bytes(_value)
 
         elif self.type.startswith("uint") or self.type.startswith("int"):
-            if type(value) is str:
+            if isinstance(value, str):
                 if value.startswith("0x"):
                     value = int(value, 16)
                 else:
                     value = int(value)
             _assert(isinstance(value, int), "int expected")
-            bits = int(self.type.strip("uint"))  # remove u, i, n, t chars.
-            assert bits % 8 == 0
+            bits = int(
+                re.sub(r"^u?int", "", self.type)
+            )  # remove "uint" or "int" prefix.
+            if bits % 8 != 0:
+                raise ValueError(f"Invalid int bit size: {bits}")
             size = bits // 8
             signed = self.type.startswith("int")
             try:
@@ -339,7 +360,7 @@ class ABIType(object):
             return value
 
         elif self.type == "bool":
-            if type(value) is str:
+            if isinstance(value, str):
                 if value.lower() == "true":
                     value = True
                 elif value.lower() == "false":
@@ -351,21 +372,23 @@ class ABIType(object):
         else:
             _assert(self.type == "address", f"Invalid type str `{self.type}`")
             _assert(
-                type(value) is str and re.match("0x[0-9a-fA-F]{40}", value),
+                isinstance(value, str) and re.match("0x[0-9a-fA-F]{40}", value),
                 "Invalid address",
             )
             return value.lower()  # lower case.
 
     @classmethod
-    def cast(cls, type, value):
-        return cls(typ=type).normalize(value)
+    def cast(cls, typ_str, value):
+        return cls(typ=typ_str).normalize(value)
 
     @classmethod
-    def match_types(cls, value, types=[]) -> bool:
+    def match_types(cls, value, types=None) -> tuple:
+        if types is None:
+            types = []
         msgs = []
-        for type in types:
+        for typ_str in types:
             try:
-                cls.cast(type, value)
+                cls.cast(typ_str, value)
                 return True, ""
             except Exception as e:
                 msgs.append(str(e))

@@ -5,7 +5,7 @@ from .receipt import Receipt
 from .transaction import Transaction
 
 
-class Inspector(object):
+class Inspector:
 
     def __init__(self, chain, peth) -> None:
         super().__init__()
@@ -118,6 +118,7 @@ class Inspector(object):
                 data["links"].append(link)
 
         if file:
-            json.dump(data, open(file, "w"))
+            with open(file, "w", encoding="utf-8") as fp:
+                json.dump(data, fp)
         else:
             print(json.dumps(data))

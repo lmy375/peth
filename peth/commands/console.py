@@ -65,6 +65,34 @@ def chain_click(ctx, chain_name, api_version):
     if not chain_name:
         return
 
+    # Handle "chain list [filter]" — list chains from chainid.network
+    if chain_name == "list":
+        from peth.core import chainlist
+
+        try:
+            chains = chainlist.get_chainlist()
+        except Exception as e:
+            click.echo(f"Failed to fetch chainid.network chainlist: {e}")
+            return
+        flt = (api_version or "").lower()
+        rows = [
+            c
+            for c in chains
+            if not flt
+            or flt in c.get("name", "").lower()
+            or flt in c.get("shortName", "").lower()
+            or flt == str(c.get("chainId"))
+        ]
+        click.echo(f"\n{len(rows)} chain(s) from chainid.network:")
+        click.echo(f"{'ChainID':<10} {'ShortName':<16} {'Name'}")
+        click.echo("-" * 70)
+        for c in sorted(rows, key=lambda x: x.get("chainId", 0)):
+            click.echo(
+                f"{c.get('chainId', ''):<10} {c.get('shortName', ''):<16} {c.get('name', '')}"
+            )
+        click.echo("\nUse 'chain <chainId|shortName|name>' to switch.")
+        return
+
     # Handle "chain v2" commands
     if chain_name == "v2":
         if not api_version:
@@ -186,7 +214,71 @@ def chain_click(ctx, chain_name, api_version):
         if hasattr(console.peth.scan, "use_v2") and console.peth.scan.use_v2:
             click.echo("  API Version: v2")
     else:
-        click.echo(f"Supported chains: {', '.join(config.chains.keys())}")
+        # Fall back to chainid.network lookup
+        from peth.core import chainlist
+
+        try:
+            entry = chainlist.find_chain(chain_name)
+        except Exception as e:
+            click.echo(f"Failed to query chainid.network: {e}")
+            click.echo(f"Supported chains (yaml): {', '.join(config.chains.keys())}")
+            return
+
+        if not entry:
+            click.echo(
+                f"Chain '{chain_name}' not found in chains.yaml or chainid.network."
+            )
+            click.echo(f"Supported chains (yaml): {', '.join(config.chains.keys())}")
+            click.echo("Try: 'chain list' or 'chain list <filter>'.")
+            return
+
+        rpc_url = chainlist.pick_rpc(entry)
+        if not rpc_url:
+            click.echo(
+                f"Found {entry.get('name')} (chainId {entry.get('chainId')}) "
+                "but no usable HTTPS RPC URL (all entries require API keys)."
+            )
+            return
+
+        explorer = chainlist.pick_explorer(entry)
+        address_url = (explorer.rstrip("/") + "/address/") if explorer else ""
+
+        chain_id = entry.get("chainId")
+        api_url = ""
+        scan_v2 = None
+        try:
+            v2_chains = ScanAPI.get_v2_chainlist() or []
+            if any(int(c.get("chainid", -1)) == chain_id for c in v2_chains):
+                api_url = "https://api.etherscan.io/v2/api"
+                scan_v2 = ScanAPI.get_or_create_v2(chain_id)
+                use_v2 = True
+        except Exception:
+            pass
+
+        old_sender = console.peth.sender
+        console.peth = Peth(
+            rpc_url=rpc_url,
+            api_url=api_url,
+            address_url=address_url,
+            chain=entry.get("shortName") or entry.get("name"),
+            sender=old_sender,
+            use_v2=use_v2,
+        )
+        if scan_v2 is not None:
+            console.peth.scan = scan_v2
+
+        click.echo("Changed (via chainid.network):")
+        click.echo(f"  Chain: {console.peth.chain}")
+        click.echo(f"     Chain ID: {chain_id}")
+        try:
+            click.echo(f"     Block number: {console.peth.web3.eth.block_number}")
+        except Exception:
+            pass
+        click.echo(f"  RPC: {rpc_url}")
+        click.echo(f"  API: {api_url or '(none)'}")
+        click.echo(f"  Address: {address_url or '(none)'}")
+        if use_v2:
+            click.echo("  API Version: v2")
 
 
 @command_click(name="config")

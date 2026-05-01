@@ -9,9 +9,17 @@ from web3 import Web3
 from ..core.config import config
 
 
-class ScanAPI(object):
+class ScanAPI:
 
     cache = {}
+
+    @staticmethod
+    def _extract_domain(url):
+        """Safely extract domain from URL, returning 'unknown' on failure."""
+        if not url:
+            return "unknown"
+        match = re.search(r"//([^/]+)", url)
+        return match.group(1) if match else "unknown"
 
     def __init__(
         self, api_url, api_key=None, chain_id=None, api_key_env=None, use_v2=None
@@ -40,14 +48,14 @@ class ScanAPI(object):
 
         self._cache_path = os.path.join(
             config.contracts_cache_path,
-            re.findall("//(.*)?/", api_url)[0] if api_url else "unknown",
+            self._extract_domain(api_url),
         )
         if not os.path.exists(self._cache_path):
             os.makedirs(self._cache_path)
 
         self._source_path = os.path.join(
             config.sources_path,
-            re.findall("//(.*)?/", self.api_url)[0] if self.api_url else "unknown",
+            self._extract_domain(self.api_url),
         )
 
     @classmethod
@@ -66,9 +74,8 @@ class ScanAPI(object):
 
     @classmethod
     def get_or_create_by_chain(cls, chain, api_key=None, use_v2=None):
-        assert (
-            chain in config.chains.keys()
-        ), f"Invalid chain {chain}. See {config.chains_path}."
+        if chain not in config.chains.keys():
+            raise ValueError(f"Invalid chain {chain}. See {config.chains_path}.")
 
         chain_config = config.chains[chain]
 
@@ -238,27 +245,37 @@ class ScanAPI(object):
     def _cache_get(self, id: str):
         path = os.path.join(self._cache_path, id)
         if os.path.exists(path):
-            return open(path).read()
+            with open(path, encoding="utf-8") as f:
+                return f.read()
         else:
             return None
 
     def _cache_set(self, id: str, data: str):
         path = os.path.join(self._cache_path, id)
-        open(path, "w").write(data)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(data)
 
-    def get(self, url):
+    def get(self, url, _retry_count=0, _max_retries=5):
         try:
-            r = requests.get(url)
+            r = requests.get(url, timeout=30)
             d = r.json()
 
-            # retry.
-            if "Max rate limit reached" in d["result"]:
+            # retry with limit to prevent stack overflow.
+            result = d.get("result", "")
+            if isinstance(result, str) and "Max rate limit reached" in result:
+                if _retry_count >= _max_retries:
+                    print("[!] Etherscan API rate limit: max retries exceeded.", url)
+                    return None
                 # API request limit.
                 time.sleep(config.scan_api_interval)
-                return self.get(url)
+                return self.get(url, _retry_count + 1, _max_retries)
 
-            assert d["status"] == "1", d
-            assert type(d["result"]) is list, d["result"]
+            if d["status"] != "1":
+                print("[!] Etherscan API non-success status.", d)
+                return None
+            if not isinstance(d["result"], list):
+                print("[!] Etherscan API unexpected result type.", d["result"])
+                return None
             return d["result"]
         except Exception as e:
             print("[!] Etherscan API fail.", e, url)
@@ -337,7 +354,8 @@ class ScanAPI(object):
             ret = {}
 
         info = self.get_contract_info(addr)
-        assert info, "ScanAPI.get_source: get_contract_info failed."
+        if not info:
+            raise ValueError("ScanAPI.get_source: get_contract_info failed.")
 
         if "SourceCode" in info:
             src = info["SourceCode"]
@@ -363,7 +381,11 @@ class ScanAPI(object):
 
             except Exception:
                 print("[!] get_source: SourceCode may be not properly handled.")
-                ret += "%s\n" % src
+                if flatten:
+                    ret += "%s\n" % src
+                else:
+                    name = info.get("ContractName", "Main") + ".sol"
+                    ret[name] = src
 
         if "AdditionalSources" in info:
             for item in info["AdditionalSources"]:
@@ -373,14 +395,20 @@ class ScanAPI(object):
                 else:
                     ret[item["Filename"]] = item["SourceCode"]
 
-        assert ret, "ScanAPI.get_source: source not found in info: %s" % (list(info))
+        if not ret:
+            raise ValueError(
+                "ScanAPI.get_source: source not found in info: %s" % (list(info))
+            )
         return ret
 
     def _normal_file_path(self, path):
-        # Protect from path travel attack.
-        path = path.strip("/")
-        path = path.strip("~")
+        # Protect from path traversal attack.
+        # Remove leading slashes and tildes, replace ".." segments.
         path = path.replace("..", "_")
+        path = path.lstrip("/")
+        path = path.lstrip("~")
+        # Ensure the path doesn't escape the intended directory
+        # by resolving and checking the final path in download_source.
         return path
 
     def download_source(self, addr, output_dir=None):
@@ -393,15 +421,24 @@ class ScanAPI(object):
 
         ret = self.get_source(addr, False)
         path_list = []
+        abs_output_dir = os.path.realpath(output_dir)
         for name, src in ret.items():
             path = os.path.join(output_dir, self._normal_file_path(name))
-            path_list.append(path)
+            # Verify resolved path stays within the output directory.
+            real_path = os.path.realpath(path)
+            if (
+                not real_path.startswith(abs_output_dir + os.sep)
+                and real_path != abs_output_dir
+            ):
+                raise ValueError(f"Path traversal detected: {name}")
+            path_list.append(real_path)
 
-            parent_dir = os.path.dirname(path)
+            parent_dir = os.path.dirname(real_path)
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
 
-            open(path, "w").write(src)
+            with open(real_path, "w", encoding="utf-8") as f:
+                f.write(src)
 
         return path_list
 
@@ -461,7 +498,7 @@ class ScanAPI(object):
     def download_json(self, addr, output_dir=None):
         if not output_dir:
             output_dir = os.path.join(
-                config.output_path, "json", re.findall("//(.*)?/", self.api_url)[0]
+                config.output_path, "json", self._extract_domain(self.api_url)
             )
 
         if not os.path.exists(output_dir):
@@ -472,7 +509,8 @@ class ScanAPI(object):
             contract_name, version, json_input = ret
             name = f"{contract_name}_{version}_{addr}.json"
             final_path = os.path.join(output_dir, name)
-            json.dump(json_input, open(final_path, "w"))
+            with open(final_path, "w", encoding="utf-8") as f:
+                json.dump(json_input, f)
             return final_path
 
     def get_txs_by_account(

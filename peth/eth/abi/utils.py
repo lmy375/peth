@@ -11,13 +11,15 @@ def normal_indexes(indexes):
         indexes = indexes.replace("[", ".").replace("]", "")
         indexes = indexes.split(".")
         indexes = list(filter(None, indexes))  # Remove ""
-    assert type(indexes) is list, "Invalid indexes"
+    if type(indexes) is not list:
+        raise TypeError("Invalid indexes")
     return indexes
 
 
 def split_sig(sig: str) -> list:
     sig = re.sub(r"\s", "", sig)  # remove blank chars.
-    assert sig.startswith("(") and sig.endswith(")"), f"Invalid sig: {sig}"
+    if not (sig.startswith("(") and sig.endswith(")")):
+        raise ValueError(f"Invalid sig: {sig}")
     sig = sig[1:-1]  # Remove ()
 
     types = []
@@ -35,7 +37,8 @@ def split_sig(sig: str) -> list:
 
         elif c == ")":
             left -= 1
-            assert left >= 0, "Invalid sig: %s" % sig
+            if left < 0:
+                raise ValueError("Invalid sig: %s" % sig)
 
         type_str += c
 
@@ -128,13 +131,15 @@ def parse_simple_to_json(sig):
 
 
 def get_item_by_index(index: str, items: list, only_int=False):
-    assert type(items) in (tuple, list)
+    if type(items) not in (tuple, list):
+        raise TypeError("items must be a tuple or list")
     try:
         # For int index
         i = int(index)
         if i < 0:
             i = len(items) + i
-        assert i < len(items), f"tuple index out-of-bound {i} >= {len(items)}"
+        if i >= len(items):
+            raise IndexError(f"tuple index out-of-bound {i} >= {len(items)}")
         return items[i]
     except ValueError:
         if not only_int:
@@ -146,16 +151,20 @@ def get_item_by_index(index: str, items: list, only_int=False):
 
 
 def get_item_value_by_index(index: str, items: list, values: list):
-    assert type(items) in (tuple, list)
-    assert type(values) in (tuple, list)
-    assert len(items) == len(values), "length mismatch"
+    if type(items) not in (tuple, list):
+        raise TypeError("items must be a tuple or list")
+    if type(values) not in (tuple, list):
+        raise TypeError("values must be a tuple or list")
+    if len(items) != len(values):
+        raise ValueError("length mismatch")
 
     try:
         # For int index
         i = int(index)
         if i < 0:
             i = len(items) + i
-        assert i < len(items), "tuple index out-of-bound"
+        if i >= len(items):
+            raise IndexError("tuple index out-of-bound")
 
         return items[i], values[i]
     except ValueError:

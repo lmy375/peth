@@ -113,7 +113,7 @@ class PethConsole(cmd.Cmd):
         """
         Run single command. This will not catch call exception by default.
         """
-        if type(cmd) is list:
+        if isinstance(cmd, list):
             cmd = " ".join(cmd)
         else:
             cmd = str(cmd)
@@ -216,30 +216,35 @@ class PethConsole(cmd.Cmd):
         [type]:
             Array.
         """
-        if type(arg) is str:
+        if isinstance(arg, str):
             args = arg.strip().split()
         else:
-            assert type(arg) is list
+            if not isinstance(arg, list):
+                raise TypeError(f"Expected str or list, got {type(arg)}")
             args = arg
 
         if typ == "auto":
             return convert_value_list(args)
         elif typ == "address":
-            assert Web3.is_address(args[0]), f"{args[0]} not address"
+            if not Web3.is_address(args[0]):
+                raise ValueError(f"{args[0]} not address")
             return Web3.to_checksum_address(args[0])
         elif typ == "number":
             value = ast.literal_eval(args[0])
-            assert type(value) is int, f"{args[0]} not number"
+            if not isinstance(value, int):
+                raise ValueError(f"{args[0]} not number")
             return value
         elif typ == "string":
             return args[0]
-        elif type(typ) is list:
-            assert len(typ) == 1, "_parse_args: invalid type"
+        elif isinstance(typ, list):
+            if len(typ) != 1:
+                raise ValueError("_parse_args: invalid type")
             return [self._parse_args(a, typ[0]) for a in args]
-        elif type(typ) is tuple:
-            assert len(typ) == len(
-                args
-            ), f"Invalid args count: {len(typ)} need. {len(args)} found."
+        elif isinstance(typ, tuple):
+            if len(typ) != len(args):
+                raise ValueError(
+                    f"Invalid args count: {len(typ)} need. {len(args)} found."
+                )
             r = []
             for a, t in zip(args, typ):
                 r.append(self._parse_args(a, t))
@@ -269,10 +274,12 @@ class PethConsole(cmd.Cmd):
             if code.startswith("0x"):
                 code = code[2:]
         elif os.path.exists(arg):
-            solc_out = json.load(open(arg))
+            with open(arg, encoding="utf-8") as f:
+                solc_out = json.load(f)
             code = solc_out["deployedBytecode"]
         else:
-            assert re.match("[a-fA-F0-9xX]+", arg), f"{arg[:10]} is not valid bytecode."
+            if not re.match("[a-fA-F0-9xX]+", arg):
+                raise ValueError(f"{arg[:10]} is not valid bytecode.")
             if arg.startswith("0x"):
                 arg = arg[2:]
             code = arg
@@ -331,7 +338,7 @@ class PethConsole(cmd.Cmd):
             sender = self.peth.sender
 
         if len(args) >= 4:
-            value = args[4]
+            value = args[3]
         else:
             value = 0
 
@@ -342,9 +349,9 @@ class PethConsole(cmd.Cmd):
         while True:
             try:
                 return self.eth.get_block(number, True)
-            except Exception as e:
+            except Exception:
                 if time.time() - start > 5:  # Error for long time.
-                    raise (e)
+                    raise
                 else:
                     time.sleep(0.5)
 
@@ -358,20 +365,20 @@ class PethConsole(cmd.Cmd):
             print(f"\t{tag} - Block {block.number}, {tx_cnt} txns")
             return
 
-        gas_used_total = 0
-        gas_used_max = 0
-        gas_used_min = 10**100
+        gas_limit_total = 0
+        gas_limit_max = 0
+        gas_limit_min = 10**100
 
         gas_price_total = 0
         gas_price_max = 0
         gas_price_min = 10**100
 
         for tx in txns:
-            gas_used_total += tx.gas
-            if tx.gas > gas_used_max:
-                gas_used_max = tx.gas
-            if tx.gas < gas_used_min:
-                gas_used_min = tx.gas
+            gas_limit_total += tx.gas
+            if tx.gas > gas_limit_max:
+                gas_limit_max = tx.gas
+            if tx.gas < gas_limit_min:
+                gas_limit_min = tx.gas
 
             gas_price_total += tx.gasPrice
 
@@ -380,10 +387,10 @@ class PethConsole(cmd.Cmd):
             if tx.gasPrice < gas_price_min:
                 gas_price_min = tx.gasPrice
 
-        gas_used_avg = gas_used_total / tx_cnt
+        gas_limit_avg = gas_limit_total / tx_cnt
         gas_price_avg = gas_price_total / tx_cnt
 
-        gas_desc = "%8d < %8d < %8d" % (gas_used_min, gas_used_avg, gas_used_max)
+        gas_desc = "%8d < %8d < %8d" % (gas_limit_min, gas_limit_avg, gas_limit_max)
         GWEI = 10**9
         gas_price_desc = "%0.2f < %0.2f < %0.2f" % (
             gas_price_min / GWEI,
@@ -404,8 +411,6 @@ class PethConsole(cmd.Cmd):
 
             print("Method:", func.full)
             print("Arguments:")
-            values = func.decode_input(calldata)
-            value_map = func.map_values(values)
             ABI.print_value_map(value_map, 4)
 
         else:

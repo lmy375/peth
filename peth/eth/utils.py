@@ -57,7 +57,7 @@ def collapse_if_tuple(abi: Dict[str, Any]) -> str:
     return collapsed
 
 
-class SelectorDatabase(object):
+class SelectorDatabase:
 
     single_instance = None
 
@@ -76,7 +76,8 @@ class SelectorDatabase(object):
                 logger.warn("SelectorDatabase init failed. %s" % e)
             logger.debug("Load sig db from %s" % config.sig_db_url)
         else:
-            self.db = json.load(open(config.sig_db_path))
+            with open(config.sig_db_path, encoding="utf-8") as f:
+                self.db = json.load(f)
             logger.debug("Load sig db from %s" % config.sig_db_path)
 
         atexit.register(self.save)
@@ -117,7 +118,8 @@ class SelectorDatabase(object):
         else:
             sigs = []  # Off-line empty result.
 
-        assert type(sigs) is list, "get_sig: should always be list here."
+        if type(sigs) is not list:
+            raise TypeError("get_sig: should always be list here.")
         if only_one:
             if sigs:
                 return sigs[0]
@@ -167,7 +169,8 @@ class SelectorDatabase(object):
             # }
 
             selector = self._normalize_selector(selector, True)
-            assert selector.startswith("0x")
+            if not selector.startswith("0x"):
+                raise ValueError(f"Selector must start with 0x, got: {selector}")
             typ = "function" if len(selector) == 10 else "event"
 
             url = f"https://api.openchain.xyz/signature-database/v1/lookup?&filter=true&{typ}={selector}"
@@ -204,7 +207,8 @@ class SelectorDatabase(object):
                 return []
 
     def save(self):
-        json.dump(self.db, open(config.sig_db_path, "w"))
+        with open(config.sig_db_path, "w", encoding="utf-8") as f:
+            json.dump(self.db, f)
         logger.debug("Save sig db to %s" % config.sig_db_path)
 
     @classmethod
@@ -327,7 +331,7 @@ def guess_single_calldata(data):
     return "bytes", data
 
 
-class CoinPrice(object):
+class CoinPrice:
 
     chain_coin_id = {
         "eth": "ethereum",

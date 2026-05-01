@@ -13,7 +13,7 @@ from peth.util.graph import ContractRelationGraph
 from peth.util.markdown import make_attr_table, make_table
 
 
-class AccountAnalysis(object):
+class AccountAnalysis:
 
     def __init__(self, peth, addr, project=None) -> None:
         self.peth = peth
@@ -34,7 +34,7 @@ class AccountAnalysis(object):
 
         self.verified = False
         self.is_proxy = False
-        self.implmentation = None
+        self.implementation = None
 
         self.flatten_source = None
 
@@ -97,11 +97,17 @@ class AccountAnalysis(object):
             return
 
         # Process proxy issue.
+        MAX_PROXY_DEPTH = 10
         impl = info["Implementation"]
+        proxy_depth = 0
         while Web3.is_address(impl):
+            proxy_depth += 1
+            if proxy_depth > MAX_PROXY_DEPTH:
+                logger.warning("Proxy chain too deep (>%d), stopping.", MAX_PROXY_DEPTH)
+                break
             self.is_proxy = True
-            self.implmentation = impl
-            logger.debug("Proxy found, implmentation %s", impl)
+            self.implementation = impl
+            logger.debug("Proxy found, implementation %s", impl)
             info = self.peth.scan.get_contract_info(impl, False)
             if info is None:
                 self.verified = False
@@ -114,7 +120,8 @@ class AccountAnalysis(object):
 
         # Now we have the real source information.
         abi = info["ABI"]
-        assert abi != "Contract source code not verified", "Bug found."
+        if abi == "Contract source code not verified":
+            raise RuntimeError("Bug: got unverified contract after verification check.")
 
         abi = json.loads(abi)  # This should be valid json.
         self.signatures = Signatures()
@@ -155,9 +162,9 @@ class AccountAnalysis(object):
 
     def analyze_unverified_contract(self):
         addr = self.addr
-        if Web3.is_address(self.implmentation):
-            # If this is a proxy, analyze the implmentation code.
-            addr = self.implmentation
+        if Web3.is_address(self.implementation):
+            # If this is a proxy, analyze the implementation code.
+            addr = self.implementation
         self.selectors = self.peth.get_selectors(addr)
         self.hardcoded_addresses = self.peth.get_hardcoded_addresses(addr)
         logger.debug(
@@ -337,12 +344,12 @@ class AccountAnalysis(object):
             txt += "\n"
             for k, v in data.items():
                 txt += " " * 2 * (depth)
-                txt += f"- {k}: {self.__json_to_markdown(v, depth+1)}\n"
+                txt += f"- {k}: {self.__json_to_markdown(v, depth + 1)}\n"
         elif isinstance(data, (list, tuple)):
             txt += "\n"
             for i in data:
                 txt += " " * 2 * (depth)
-                txt += f"- {self.__json_to_markdown(i, depth+1)}\n"
+                txt += f"- {self.__json_to_markdown(i, depth + 1)}\n"
         else:
             s = str(data)
             if Web3.is_address(s):
@@ -370,7 +377,7 @@ class AccountAnalysis(object):
         if self.verified:
             txt += "**合约已开源。** "
             if self.is_proxy:
-                txt += f"合约为 Proxy 合约，指向 {self.get_addr_md_link(self.implmentation)}。"
+                txt += f"合约为 Proxy 合约，指向 {self.get_addr_md_link(self.implementation)}。"
 
             if self.view_sigs or self.uncalled_view_sigs or self.other_sigs:
                 txt += "ABI 如下：\n\n"
@@ -427,11 +434,11 @@ class AccountAnalysis(object):
         return txt
 
 
-class Project(object):
+class Project:
 
-    def __init__(self, peth, addresses=[]) -> None:
+    def __init__(self, peth, addresses=None) -> None:
         self.peth = peth
-        self.addresses = [Web3.to_checksum_address(addr) for addr in addresses]
+        self.addresses = [Web3.to_checksum_address(addr) for addr in (addresses or [])]
 
         self.analyzed = {}  # address => AccountAnalysis
         self.accounts = []
@@ -456,9 +463,9 @@ class Project(object):
 
                 self.analyzed[addr] = account
 
-                for _, addr in account.related_addresses():
-                    if addr not in self.analyzed:
-                        found_addrs.append(addr)
+                for _, related_addr in account.related_addresses():
+                    if related_addr not in self.analyzed:
+                        found_addrs.append(related_addr)
 
             addrs_to_analyze = found_addrs
 
@@ -538,6 +545,8 @@ class Project(object):
         return txt
 
     def to_graph(self) -> ContractRelationGraph:
+        if not self.addresses:
+            raise ValueError("No addresses to generate graph from.")
         g = ContractRelationGraph(self.addresses[0], self.peth)
         for analysis in self.analyzed.values():
             g.add_contract_or_eoa(analysis.addr, analysis.name)
@@ -553,5 +562,6 @@ class Project(object):
         if not os.path.exists(report_dir):
             os.makedirs(report_dir)
         path = os.path.join(report_dir, filename)
-        open(path, "w").write(self.to_markdown())
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.to_markdown())
         logger.info("Report saved as %s.", path)

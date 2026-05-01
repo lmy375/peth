@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from .opcodes import OpCode
 
 
-class Instruction(object):
+class Instruction:
     def __init__(self, op: OpCode, opnd: Optional[int] = None, pc: int = 0) -> None:
         self.pc = pc
         self.op = op
@@ -33,7 +33,7 @@ class Instruction(object):
         return 1 + self.op.operand_size
 
 
-class Code(object):
+class Code:
     def __init__(self, code) -> None:
         self.set_code(code)
         self.pc = 0
@@ -41,9 +41,9 @@ class Code(object):
         self.instructions: List[Instruction] = []
 
     def set_code(self, code):
-        if type(code) is str and code.startswith("0x"):
+        if isinstance(code, str) and code.startswith("0x"):
             self.code = bytearray(codecs.decode(bytearray(code[2:], "ascii"), "hex"))
-        elif type(code) is Code:
+        elif isinstance(code, Code):
             self.code = bytearray(code.code)
         else:
             self.code = bytearray(code)
@@ -88,6 +88,9 @@ class Code(object):
         if self.instructions and not force:
             return self.instructions
 
+        # Reset state before collecting instructions.
+        self.instructions = []
+        self.pc = 0
         while True:
             ins = self.next_instruction()
             if ins is None:
@@ -100,9 +103,9 @@ class Code(object):
         return len(self.code)
 
     @classmethod
-    def from_asm(self, asm: str):
+    def from_asm(cls, asm: str):
         lines = asm.strip().splitlines()
-        code = b""
+        parts = []
         for line in lines:
             ops = line.split()
             op = OpCode.from_mnemonic(ops[0])
@@ -115,8 +118,8 @@ class Code(object):
                 ins = Instruction(op, opnd)
             else:
                 ins = Instruction(op)
-            code += ins.asm()
-        return Code(code)
+            parts.append(ins.asm())
+        return Code(b"".join(parts))
 
     @staticmethod
     def asm(asm: str) -> bytes:

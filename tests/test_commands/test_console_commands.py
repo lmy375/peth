@@ -74,12 +74,14 @@ class TestConsoleCommands(CommandTestBase):
                 assert "Chain: bsc" in result.output
 
     def test_chain_invalid(self, console):
-        """Test invalid chain name."""
+        """Test invalid chain name falls back to chainid.network lookup."""
         with patch("peth.core.config.config.chains", {"eth": {}, "bsc": {}}):
-            result = self.invoke_command(console, chain_click, ["invalid"])
+            with patch("peth.core.chainlist.find_chain", return_value=None):
+                result = self.invoke_command(console, chain_click, ["invalid"])
 
-            self.assert_success(result)
-            assert "Supported chains: eth, bsc" in result.output
+                self.assert_success(result)
+                assert "not found" in result.output
+                assert "eth, bsc" in result.output
 
     def test_config_show(self, console):
         """Test config command shows configuration."""
