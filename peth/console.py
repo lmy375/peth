@@ -59,6 +59,21 @@ class PethConsole(cmd.Cmd):
         commands = [a[3:] for a in self.get_names() if a.startswith(dotext)]
         return commands
 
+    def preloop(self):
+        """
+        Re-bind Tab for libedit-based readline (default on macOS Python).
+        cmd.Cmd uses GNU-readline syntax ("tab: complete") which libedit
+        silently ignores, causing Tab to insert whitespace.
+        """
+        super().preloop()
+        try:
+            import readline
+
+            if "libedit" in (readline.__doc__ or ""):
+                readline.parse_and_bind("bind ^I rl_complete")
+        except ImportError:
+            pass
+
     ##################################################################
     # Console related functions.
 
