@@ -342,18 +342,29 @@ class TestTransactionCommands(CommandTestBase):
         mock_result.trace = mock_trace
 
         with patch("peth.commands.transaction.Chain") as MockChain:
-            mock_chain = Mock()
-            mock_chain.apply_transaction = Mock(return_value=mock_result)
-            MockChain.return_value = mock_chain
-
             with patch("peth.commands.transaction.ForkChain"):
                 with patch("peth.commands.transaction.VM") as MockVM:
+                    # Capture flag state during apply_transaction, since the
+                    # command restores Chain.debug / VM.debug / VM.trace in
+                    # its finally block before we can assert on them.
+                    captured = {}
+
+                    def capture(*_a, **_kw):
+                        captured["chain_debug"] = MockChain.debug
+                        captured["vm_debug"] = MockVM.debug
+                        captured["vm_trace"] = MockVM.trace
+                        return mock_result
+
+                    mock_chain = Mock()
+                    mock_chain.apply_transaction = Mock(side_effect=capture)
+                    MockChain.return_value = mock_chain
+
                     result = self.invoke_command(
                         console, evm_trace_tx_click, [TEST_TX_HASH]
                     )
 
                     self.assert_success(result)
-                    assert MockVM.trace is True
+                    assert captured["vm_trace"] is True
                     mock_chain.apply_transaction.assert_called_once()
                     mock_trace.print.assert_called_once_with(9)
 
@@ -374,8 +385,16 @@ class TestTransactionCommands(CommandTestBase):
         with patch("peth.commands.transaction.Chain") as MockChain:
             with patch("peth.commands.transaction.VM") as MockVM:
                 with patch("peth.commands.transaction.ForkChain"):
+                    captured = {}
+
+                    def capture(*_a, **_kw):
+                        captured["chain_debug"] = MockChain.debug
+                        captured["vm_debug"] = MockVM.debug
+                        captured["vm_trace"] = MockVM.trace
+                        return mock_result
+
                     mock_chain = Mock()
-                    mock_chain.apply_transaction = Mock(return_value=mock_result)
+                    mock_chain.apply_transaction = Mock(side_effect=capture)
                     MockChain.return_value = mock_chain
 
                     result = self.invoke_command(
@@ -385,8 +404,8 @@ class TestTransactionCommands(CommandTestBase):
                     )
 
                     self.assert_success(result)
-                    assert MockChain.debug is True
-                    assert MockVM.debug is True
+                    assert captured["chain_debug"] is True
+                    assert captured["vm_debug"] is True
                     mock_result.trace.print.assert_called_once_with(15)
 
     def test_evm_trace_call_basic(self, console):
